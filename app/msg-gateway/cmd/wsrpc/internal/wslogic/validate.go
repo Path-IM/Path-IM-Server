@@ -85,6 +85,17 @@ func (l *MsggatewayLogic) argsValidate(m *Req, r int32) (isPass bool, errCode in
 			return false, 204, err.Error(), nil
 		}
 		return true, 0, "", data
+	case types.WSPullMsgBySuperGroupSeqList:
+		data := chatpb.PullMessageBySuperGroupSeqListReq{}
+		if err := proto.Unmarshal(m.Data, &data); err != nil {
+			logx.WithContext(l.ctx).Error("Decode Data struct  err", err.Error(), r)
+			return false, 203, err.Error(), nil
+		}
+		if err := validate.Struct(data); err != nil {
+			logx.WithContext(l.ctx).Error("data args validate  err", err.Error(), r)
+			return false, 204, err.Error(), nil
+		}
+		return true, 0, "", data
 
 	default:
 	}

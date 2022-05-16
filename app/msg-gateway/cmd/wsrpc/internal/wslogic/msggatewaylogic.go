@@ -151,11 +151,46 @@ func (l *MsggatewayLogic) getSeqReq(ctx context.Context, conn *UserConn, m *Req)
 		l.getSeqResp(ctx, conn, m, rpcReply)
 	}
 }
+func (l *MsggatewayLogic) getSuperGroupSeqReq(ctx context.Context, conn *UserConn, m *Req) {
+	rpcReq := &chatpb.GetMaxAndMinSuperGroupSeqReq{}
+	err := proto.Unmarshal(m.Data, rpcReq)
+	nReply := new(chatpb.GetMaxAndMinSuperGroupSeqResp)
+	if err != nil {
+		logx.WithContext(ctx).Error("proto.Unmarshal failed ", err)
+		nReply.ErrCode = 300
+		nReply.ErrMsg = "param verify failed"
+		l.getSuperGroupResp(ctx, conn, m, nReply)
+	}
+	rpcReply, err := l.svcCtx.MsgRpc.GetSuperGroupMaxAndMinSeq(ctx, rpcReq)
+	if err != nil {
+		logx.WithContext(ctx).Error("rpc call failed to getSeqReq", err, rpcReq.String())
+		nReply.ErrCode = 500
+		nReply.ErrMsg = err.Error()
+		l.getSuperGroupResp(ctx, conn, m, nReply)
+	} else {
+		logx.WithContext(ctx).Info("rpc call success to getSeqReq", rpcReply.String())
+		l.getSuperGroupResp(ctx, conn, m, rpcReply)
+	}
+}
 
 func (l *MsggatewayLogic) getSeqResp(ctx context.Context, conn *UserConn, m *Req, pb *chatpb.GetMaxAndMinSeqResp) {
 	var mReplyData chatpb.GetMaxAndMinSeqResp
 	mReplyData.MaxSeq = pb.GetMaxSeq()
 	mReplyData.MinSeq = pb.GetMinSeq()
+	b, _ := proto.Marshal(&mReplyData)
+	mReply := Resp{
+		ReqIdentifier: m.ReqIdentifier,
+		MsgIncr:       m.MsgIncr,
+		ErrCode:       pb.GetErrCode(),
+		ErrMsg:        pb.GetErrMsg(),
+		Data:          b,
+	}
+	l.sendMsg(ctx, conn, mReply)
+}
+
+func (l *MsggatewayLogic) getSuperGroupResp(ctx context.Context, conn *UserConn, m *Req, pb *chatpb.GetMaxAndMinSuperGroupSeqResp) {
+	var mReplyData chatpb.GetMaxAndMinSuperGroupSeqResp
+	mReplyData.SuperGroupSeqList = pb.GetSuperGroupSeqList()
 	b, _ := proto.Marshal(&mReplyData)
 	mReply := Resp{
 		ReqIdentifier: m.ReqIdentifier,

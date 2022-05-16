@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"github.com/showurl/Zero-IM-Server/app/msg/cmd/rpc/internal/repository"
 
 	"github.com/showurl/Zero-IM-Server/app/msg/cmd/rpc/internal/svc"
 	"github.com/showurl/Zero-IM-Server/app/msg/cmd/rpc/pb"
@@ -13,6 +14,7 @@ type PullMessageBySeqListLogic struct {
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
 	logx.Logger
+	rep *repository.Rep
 }
 
 func NewPullMessageBySeqListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *PullMessageBySeqListLogic {
@@ -20,11 +22,27 @@ func NewPullMessageBySeqListLogic(ctx context.Context, svcCtx *svc.ServiceContex
 		ctx:    ctx,
 		svcCtx: svcCtx,
 		Logger: logx.WithContext(ctx),
+		rep:    repository.NewRep(svcCtx),
 	}
 }
 
 func (l *PullMessageBySeqListLogic) PullMessageBySeqList(in *pb.WrapPullMessageBySeqListReq) (*pb.WrapPullMessageBySeqListResp, error) {
-	// todo: add your logic here and delete this line
-
-	return &pb.WrapPullMessageBySeqListResp{}, nil
+	resp := new(pb.PullMessageBySeqListResp)
+	msgList, err := l.rep.GetMsgBySeqListMongo2(in.PullMessageBySeqListReq.UserID, in.PullMessageBySeqListReq.SeqList)
+	if err != nil {
+		l.Error("PullMessageBySeqList data error ", err.Error())
+		resp.ErrCode = 201
+		resp.ErrMsg = err.Error()
+		return &pb.WrapPullMessageBySeqListResp{
+			PullMessageBySeqListResp: resp,
+		}, nil
+	}
+	//respSingleMsgFormat = singleMsgHandleByUser(SingleMsgFormat, in.UserID)
+	//respGroupMsgFormat = groupMsgHandleByUser(GroupMsgFormat)
+	resp.ErrCode = 0
+	resp.ErrMsg = ""
+	resp.List = msgList
+	return &pb.WrapPullMessageBySeqListResp{
+		PullMessageBySeqListResp: resp,
+	}, nil
 }

@@ -27,9 +27,19 @@ func (s *ChatServer) GetMaxAndMinSeq(ctx context.Context, in *pb.GetMaxAndMinSeq
 	return l.GetMaxAndMinSeq(in)
 }
 
+func (s *ChatServer) GetSuperGroupMaxAndMinSeq(ctx context.Context, in *pb.GetMaxAndMinSuperGroupSeqReq) (*pb.GetMaxAndMinSuperGroupSeqResp, error) {
+	l := logic.NewGetSuperGroupMaxAndMinSeqLogic(ctx, s.svcCtx)
+	return l.GetSuperGroupMaxAndMinSeq(in)
+}
+
 func (s *ChatServer) PullMessageBySeqList(ctx context.Context, in *pb.WrapPullMessageBySeqListReq) (*pb.WrapPullMessageBySeqListResp, error) {
 	l := logic.NewPullMessageBySeqListLogic(ctx, s.svcCtx)
 	return l.PullMessageBySeqList(in)
+}
+
+func (s *ChatServer) PullMessageBySuperGroupSeqList(ctx context.Context, in *pb.PullMessageBySuperGroupSeqListReq) (*pb.WrapPullMessageBySeqListResp, error) {
+	l := logic.NewPullMessageBySuperGroupSeqListLogic(ctx, s.svcCtx)
+	return l.PullMessageBySuperGroupSeqList(in)
 }
 
 func (s *ChatServer) SendMsg(ctx context.Context, in *pb.SendMsgReq) (*pb.SendMsgResp, error) {

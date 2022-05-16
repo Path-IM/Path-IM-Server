@@ -34,12 +34,16 @@ func (l *MsggatewayLogic) msgParse(ctx context.Context, conn *UserConn, binaryMs
 	switch m.ReqIdentifier {
 	case types.WSGetNewestSeq:
 		l.getSeqReq(ctx, conn, &m)
+	case types.WSGetNewestSuperGroupSeq:
+		l.getSuperGroupSeqReq(ctx, conn, &m)
 	case types.WSSendMsg:
 		l.sendMsgReq(ctx, conn, &m)
 	case types.WSSendSignalMsg:
 		l.sendSignalMsgReq(ctx, conn, &m)
 	case types.WSPullMsgBySeqList:
 		l.pullMsgBySeqListReq(ctx, conn, &m)
+	case types.WSPullMsgBySuperGroupSeqList:
+		l.pullMsgBySuperGroupSeqListReq(ctx, conn, &m)
 	default:
 	}
 }
@@ -159,7 +163,7 @@ func (l *MsggatewayLogic) pullMsgBySeqListReq(ctx context.Context, conn *UserCon
 			nReply.ErrMsg = err.Error()
 			l.pullMsgBySeqListResp(ctx, conn, m, nReply)
 		} else {
-			logx.WithContext(ctx).Info("rpc call success to pullMsgBySeqListReq", reply.String(), len(reply.PullMessageBySeqListResp.List))
+			logx.WithContext(ctx).Info("rpc call success to pullMsgBySeqListReq ", reply.String())
 			l.pullMsgBySeqListResp(ctx, conn, m, reply.PullMessageBySeqListResp)
 		}
 	} else {
@@ -169,8 +173,50 @@ func (l *MsggatewayLogic) pullMsgBySeqListReq(ctx context.Context, conn *UserCon
 	}
 }
 
+func (l *MsggatewayLogic) pullMsgBySuperGroupSeqListReq(ctx context.Context, conn *UserConn, m *Req) {
+	logx.WithContext(ctx).Info("Ws call success to pullMsgBySuperGroupSeqListReq start", m.SendID, m.ReqIdentifier, m.MsgIncr, m.Data)
+	nReply := new(chatpb.PullMessageBySeqListResp)
+	isPass, errCode, errMsg, data := l.argsValidate(m, types.WSPullMsgBySuperGroupSeqList)
+	if isPass {
+		rpcReq := chatpb.PullMessageBySuperGroupSeqListReq{}
+		rpcReq.SeqList = data.(chatpb.PullMessageBySuperGroupSeqListReq).SeqList
+		rpcReq.GroupID = data.(chatpb.PullMessageBySuperGroupSeqListReq).GroupID
+		logx.WithContext(ctx).Info("Ws call success to pullMsgBySeqListReq middle", m.SendID, m.ReqIdentifier, m.MsgIncr, data.(chatpb.PullMessageBySuperGroupSeqListReq).SeqList)
+		reply, err := l.svcCtx.MsgRpc.PullMessageBySuperGroupSeqList(ctx, &rpcReq)
+		if err != nil {
+			logx.WithContext(ctx).Errorf("pullMsgBySeqListReq err", err.Error())
+			nReply.ErrCode = 200
+			nReply.ErrMsg = err.Error()
+			l.pullMsgBySuperGroupSeqListResp(ctx, conn, m, nReply)
+		} else {
+			logx.WithContext(ctx).Info("rpc call success to pullMsgBySeqListReq ", reply.String())
+			l.pullMsgBySuperGroupSeqListResp(ctx, conn, m, reply.PullMessageBySeqListResp)
+		}
+	} else {
+		nReply.ErrCode = errCode
+		nReply.ErrMsg = errMsg
+		l.pullMsgBySuperGroupSeqListResp(ctx, conn, m, nReply)
+	}
+}
+
 func (l *MsggatewayLogic) pullMsgBySeqListResp(ctx context.Context, conn *UserConn, m *Req, pb *chatpb.PullMessageBySeqListResp) {
 	logx.WithContext(ctx).Info("pullMsgBySeqListResp come  here ", pb.String())
+	c, _ := proto.Marshal(pb)
+	mReply := Resp{
+		ReqIdentifier: m.ReqIdentifier,
+		MsgIncr:       m.MsgIncr,
+		ErrCode:       pb.GetErrCode(),
+		ErrMsg:        pb.GetErrMsg(),
+		Data:          c,
+	}
+	logx.WithContext(ctx).Info("pullMsgBySeqListResp all data  is ", mReply.ReqIdentifier, mReply.MsgIncr, mReply.ErrCode, mReply.ErrMsg,
+		len(mReply.Data))
+
+	l.sendMsg(ctx, conn, mReply)
+}
+
+func (l *MsggatewayLogic) pullMsgBySuperGroupSeqListResp(ctx context.Context, conn *UserConn, m *Req, pb *chatpb.PullMessageBySeqListResp) {
+	logx.WithContext(ctx).Info("pullMsgBySuperGroupSeqListResp come  here ", pb.String())
 	c, _ := proto.Marshal(pb)
 	mReply := Resp{
 		ReqIdentifier: m.ReqIdentifier,

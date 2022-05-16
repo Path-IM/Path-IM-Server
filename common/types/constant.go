@@ -2,13 +2,16 @@ package types
 
 // msg-gateway 用到的
 const (
-	WSGetNewestSeq     = 1001
-	WSPullMsgBySeqList = 1002
-	WSSendMsg          = 1003
-	WSSendSignalMsg    = 1004
-	WSPushMsg          = 2001
-	WSKickOnlineMsg    = 2002
-	WsLogoutMsg        = 2003
+	WSGetNewestSeq               = 1001
+	WSPullMsgBySeqList           = 1002
+	WSSendMsg                    = 1003
+	WSSendSignalMsg              = 1004
+	WSGetNewestSuperGroupSeq     = 1005
+	WSPullMsgBySuperGroupSeqList = 1006
+	WSPushMsg                    = 2001
+	WSKickOnlineMsg              = 2002
+	WsLogoutMsg                  = 2003
+	WSSuperGroupPushMsg          = 2004
 )
 
 // msg 用到的

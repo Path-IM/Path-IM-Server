@@ -2,6 +2,8 @@ package config
 
 import (
 	"github.com/showurl/Zero-IM-Server/common/xkafka"
+	"github.com/showurl/Zero-IM-Server/common/xmgo/global"
+	"github.com/zeromicro/go-zero/core/stores/redis"
 	"github.com/zeromicro/go-zero/zrpc"
 )
 
@@ -13,6 +15,12 @@ type Config struct {
 	ImUserRpc       zrpc.RpcClientConf
 	ConversationRpc zrpc.RpcClientConf
 	MsgCallbackRpc  zrpc.RpcClientConf
+	RedisConfig     RedisConfig
+	Mongo           MongoConfig
+}
+type RedisConfig struct {
+	Conf redis.RedisConf
+	DB   int
 }
 type CallbackConfig struct {
 	CallbackWordFilter              CallbackConfigItem
@@ -34,4 +42,12 @@ type MessageVerifyConfig struct {
 type KafkaConfig struct {
 	Online  xkafka.ProducerConfig
 	Offline xkafka.ProducerConfig
+}
+
+type MongoConfig struct {
+	global.MongoConfig
+	DBDatabase                      string
+	DBTimeout                       int
+	SingleChatMsgCollectionName     string
+	SuperGroupChatMsgCollectionName string
 }

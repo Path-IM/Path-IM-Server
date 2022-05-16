@@ -26,5 +26,12 @@ func NewCallbackWordFilterLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 func (l *CallbackWordFilterLogic) CallbackWordFilter(in *pb.CallbackWordFilterReq) (*pb.CallbackWordFilterResp, error) {
 	// todo: add your logic here and delete this line
 
-	return &pb.CallbackWordFilterResp{}, nil
+	return &pb.CallbackWordFilterResp{
+		CommonCallbackResp: &pb.CommonCallbackResp{
+			ActionCode: pb.ActionCode_Forbidden,
+			ErrCode:    pb.ErrCode_HandleFailed,
+			ErrMsg:     "",
+		},
+		ReplaceContent: "",
+	}, nil
 }

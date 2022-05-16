@@ -33,8 +33,12 @@ func (l *OnlinePushMsgLogic) OnlinePushMsg(in *pb.OnlinePushMsgReq) (*pb.OnlineP
 	logic := wslogic.NewMsggatewayLogic(nil, nil)
 	var resp []*pb.SingleMsgToUser
 	msgBytes, _ := proto.Marshal(in.MsgData)
+	reqIdentifier := types.WSPushMsg
+	if in.MsgData.SessionType == types.SuperGroupChatType {
+		reqIdentifier = types.WSSuperGroupPushMsg
+	}
 	mReply := wslogic.Resp{
-		ReqIdentifier: types.WSPushMsg,
+		ReqIdentifier: int32(reqIdentifier),
 		Data:          msgBytes,
 	}
 	var replyBytes bytes.Buffer
