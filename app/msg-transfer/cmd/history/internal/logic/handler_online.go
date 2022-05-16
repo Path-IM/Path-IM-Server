@@ -86,7 +86,7 @@ func (l *MsgTransferHistoryOnlineLogic) sendMessageToPush(ctx context.Context, m
 	_, err := l.svcCtx.MsgPush.PushMsg(ctx, &rpcPushMsg)
 	if err != nil {
 		logx.WithContext(ctx).Error("rpc send failed", "push data", rpcPushMsg.String(), "err", err.Error())
-		mqPushMsg := chatpb.PushMsgDataToMQ{MsgData: message.MsgData, PushToUserID: pushToUserID}
+		mqPushMsg := chatpb.PushMsgDataToMQ{MsgData: message.MsgData, PushToUserID: pushToUserID, OperationID: xtrace.TraceIdFromContext(l.ctx)}
 		pid, offset, err := l.svcCtx.SinglePushProducer.SendMessage(ctx, &mqPushMsg)
 		if err != nil {
 			logx.WithContext(ctx).Error("kafka send failed", mqPushMsg.OperationID, "send data", mqPushMsg.String(), "pid", pid, "offset", offset, "err", err.Error())
@@ -97,7 +97,7 @@ func (l *MsgTransferHistoryOnlineLogic) sendMessageToPush(ctx context.Context, m
 }
 
 func (l *MsgTransferHistoryOnlineLogic) sendMessageToSuperGroupPush(ctx context.Context, message *chatpb.MsgDataToMQ, groupId string) {
-	mqPushMsg := chatpb.PushMsgToSuperGroupDataToMQ{MsgData: message.MsgData, SuperGroupID: groupId}
+	mqPushMsg := chatpb.PushMsgToSuperGroupDataToMQ{MsgData: message.MsgData, SuperGroupID: groupId, OperationID: xtrace.TraceIdFromContext(l.ctx)}
 	pid, offset, err := l.svcCtx.SuperGroupPushProducer.SendMessage(ctx, &mqPushMsg)
 	if err != nil {
 		logx.WithContext(ctx).Error("kafka send failed ", "send data ", mqPushMsg.String(), " pid ", pid, " offset ", offset, " err ", err.Error())

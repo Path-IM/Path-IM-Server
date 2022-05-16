@@ -6,11 +6,8 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/showurl/Zero-IM-Server/app/auth/cmd/rpc/pb"
 	chatpb "github.com/showurl/Zero-IM-Server/app/msg/cmd/rpc/pb"
-	"github.com/showurl/Zero-IM-Server/common/utils"
-	"github.com/zeromicro/go-zero/core/trace"
-	"go.opentelemetry.io/otel"
+	"github.com/showurl/Zero-IM-Server/common/xtrace"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/propagation"
 	"net/http"
 	"sync"
 	"time"
@@ -19,7 +16,6 @@ import (
 	"github.com/showurl/Zero-IM-Server/app/msg-gateway/cmd/wsrpc/internal/wssvc"
 
 	"github.com/zeromicro/go-zero/core/logx"
-	oteltrace "go.opentelemetry.io/otel/trace"
 )
 
 type UserConn struct {
@@ -35,22 +31,6 @@ type MsggatewayLogic struct {
 	wsUpGrader   *websocket.Upgrader
 	wsConnToUser map[*UserConn]map[string]string
 	wsUserToConn map[string]map[string]*UserConn
-}
-
-func (l *MsggatewayLogic) runWithCtx(f func(ctx context.Context), kv ...attribute.KeyValue) {
-	propagator := otel.GetTextMapPropagator()
-	tracer := otel.GetTracerProvider().Tracer(trace.TraceName)
-	ctx := propagator.Extract(context.Background(), propagation.HeaderCarrier(http.Header{}))
-	spanName := utils.CallerFuncName()
-	spanCtx, span := tracer.Start(
-		ctx,
-		spanName,
-		oteltrace.WithSpanKind(oteltrace.SpanKindServer),
-		oteltrace.WithAttributes(kv...),
-	)
-	defer span.End()
-	propagator.Inject(spanCtx, propagation.HeaderCarrier(http.Header{}))
-	f(spanCtx)
 }
 
 var msgGatewayLogic *MsggatewayLogic
@@ -144,7 +124,7 @@ func (l *MsggatewayLogic) readMsg(conn *UserConn, uid string, platformID string)
 			l.delUserConn(conn)
 			return
 		}
-		l.runWithCtx(func(ctx context.Context) {
+		xtrace.RunWithTrace("", func(ctx context.Context) {
 			l.msgParse(ctx, conn, msg)
 		}, attribute.KeyValue{
 			Key:   "uid",

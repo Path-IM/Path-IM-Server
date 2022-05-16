@@ -7,21 +7,14 @@ import (
 	"context"
 	"github.com/Shopify/sarama"
 	"github.com/golang/protobuf/proto"
-	chatpb "github.com/showurl/Zero-IM-Server/app/msg/cmd/rpc/pb"
-	"github.com/showurl/Zero-IM-Server/common/utils"
-	"github.com/showurl/Zero-IM-Server/common/xkafka"
-	"github.com/showurl/Zero-IM-Server/common/xtrace"
-	"github.com/zeromicro/go-zero/core/logx"
-	"github.com/zeromicro/go-zero/core/trace"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/propagation"
-	oteltrace "go.opentelemetry.io/otel/trace"
-	"net/http"
-
 	"github.com/showurl/Zero-IM-Server/app/msg-push/cmd/rpc/internal/logic"
 	"github.com/showurl/Zero-IM-Server/app/msg-push/cmd/rpc/internal/svc"
 	pushpb "github.com/showurl/Zero-IM-Server/app/msg-push/cmd/rpc/pb"
+	chatpb "github.com/showurl/Zero-IM-Server/app/msg/cmd/rpc/pb"
+	"github.com/showurl/Zero-IM-Server/common/xkafka"
+	"github.com/showurl/Zero-IM-Server/common/xtrace"
+	"github.com/zeromicro/go-zero/core/logx"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 type fcb func(msg []byte, msgKey string)
@@ -37,21 +30,6 @@ type MsgPushServiceServer struct {
 	SuperGroupConsumerGroup *xkafka.MConsumerGroup
 }
 
-func (s *MsgPushServiceServer) runWithCtx(f func(ctx context.Context), kv ...attribute.KeyValue) {
-	propagator := otel.GetTextMapPropagator()
-	tracer := otel.GetTracerProvider().Tracer(trace.TraceName)
-	ctx := propagator.Extract(context.Background(), propagation.HeaderCarrier(http.Header{}))
-	spanName := utils.CallerFuncName()
-	spanCtx, span := tracer.Start(
-		ctx,
-		spanName,
-		oteltrace.WithSpanKind(oteltrace.SpanKindServer),
-		oteltrace.WithAttributes(kv...),
-	)
-	defer span.End()
-	propagator.Inject(spanCtx, propagation.HeaderCarrier(http.Header{}))
-	f(spanCtx)
-}
 func (s *MsgPushServiceServer) Setup(session sarama.ConsumerGroupSession) error {
 	return nil
 }
@@ -61,12 +39,12 @@ func (s *MsgPushServiceServer) Cleanup(session sarama.ConsumerGroupSession) erro
 }
 
 func (s *MsgPushServiceServer) ConsumeSingle(sess sarama.ConsumerGroupSession, msg *sarama.ConsumerMessage) {
-	s.runWithCtx(func(ctx context.Context) {
-		msgFromMQ := chatpb.PushMsgDataToMQ{}
-		if err := proto.Unmarshal(msg.Value, &msgFromMQ); err != nil {
-			logx.WithContext(ctx).Errorf("unmarshal msg error: %v", err)
-			return
-		}
+	msgFromMQ := chatpb.PushMsgDataToMQ{}
+	if err := proto.Unmarshal(msg.Value, &msgFromMQ); err != nil {
+		logx.Errorf("unmarshal msg error: %v", err)
+		return
+	}
+	xtrace.RunWithTrace(msgFromMQ.OperationID, func(ctx context.Context) {
 		xtrace.StartFuncSpan(ctx, "MsgPushServiceServer.ConsumeSingle.PushMsg", func(ctx context.Context) {
 			_, _ = s.PushMsg(ctx, &pushpb.PushMsgReq{
 				MsgData:      msgFromMQ.MsgData,
@@ -79,12 +57,12 @@ func (s *MsgPushServiceServer) ConsumeSingle(sess sarama.ConsumerGroupSession, m
 }
 
 func (s *MsgPushServiceServer) ConsumeSuperGroup(sess sarama.ConsumerGroupSession, msg *sarama.ConsumerMessage) {
-	s.runWithCtx(func(ctx context.Context) {
-		msgFromMQ := &chatpb.PushMsgToSuperGroupDataToMQ{}
-		if err := proto.Unmarshal(msg.Value, msgFromMQ); err != nil {
-			logx.WithContext(ctx).Errorf("unmarshal msg error: %v", err)
-			return
-		}
+	msgFromMQ := &chatpb.PushMsgToSuperGroupDataToMQ{}
+	if err := proto.Unmarshal(msg.Value, msgFromMQ); err != nil {
+		logx.Errorf("unmarshal msg error: %v", err)
+		return
+	}
+	xtrace.RunWithTrace(msgFromMQ.OperationID, func(ctx context.Context) {
 		xtrace.StartFuncSpan(ctx, "MsgPushServiceServer.ConsumeSuperGroup", func(ctx context.Context) {
 			_, err := s.PushSuperGroupMsg(ctx, msgFromMQ)
 			if err == nil {

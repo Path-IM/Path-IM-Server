@@ -27,6 +27,7 @@ message PushMsgDataToMQ{
 message PushMsgToSuperGroupDataToMQ {
   server_api_params.MsgData msgData = 1;
   string superGroupID = 2;
+  string OperationID = 3;
 }
 //message PullMessageReq {
 //  string UserID = 1;

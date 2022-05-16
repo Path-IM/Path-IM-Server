@@ -4,17 +4,14 @@ import (
 	"context"
 	"errors"
 	"github.com/Shopify/sarama"
+	"github.com/golang/protobuf/proto"
 	"github.com/showurl/Zero-IM-Server/app/msg-transfer/cmd/history/internal/logic"
 	"github.com/showurl/Zero-IM-Server/app/msg-transfer/cmd/history/internal/svc"
-	"github.com/showurl/Zero-IM-Server/common/utils"
+	chatpb "github.com/showurl/Zero-IM-Server/app/msg/cmd/rpc/pb"
 	"github.com/showurl/Zero-IM-Server/common/xkafka"
+	"github.com/showurl/Zero-IM-Server/common/xtrace"
 	"github.com/zeromicro/go-zero/core/logx"
-	"github.com/zeromicro/go-zero/core/trace"
-	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/propagation"
-	oteltrace "go.opentelemetry.io/otel/trace"
-	"net/http"
 	"sync"
 	"time"
 )
@@ -37,24 +34,15 @@ func (s *MsgTransferHistoryServer) Start() {
 	s.historyConsumerGroup.RegisterHandleAndConsumer(s)
 }
 
-func (s *MsgTransferHistoryServer) runWithCtx(f func(ctx context.Context), kv ...attribute.KeyValue) {
-	propagator := otel.GetTextMapPropagator()
-	tracer := otel.GetTracerProvider().Tracer(trace.TraceName)
-	ctx := propagator.Extract(context.Background(), propagation.HeaderCarrier(http.Header{}))
-	spanName := utils.CallerFuncName()
-	spanCtx, span := tracer.Start(
-		ctx,
-		spanName,
-		oteltrace.WithSpanKind(oteltrace.SpanKindServer),
-		oteltrace.WithAttributes(kv...),
-	)
-	defer span.End()
-	propagator.Inject(spanCtx, propagation.HeaderCarrier(http.Header{}))
-	f(spanCtx)
-}
-
 func (s *MsgTransferHistoryServer) ChatMs2Mongo(msg []byte, msgKey string) {
-	s.runWithCtx(func(ctx context.Context) {
+	msgFromMQ := chatpb.MsgDataToMQ{}
+	err := proto.Unmarshal(msg, &msgFromMQ)
+	if err != nil {
+		logx.Errorf("unmarshal msg failed, err: %v", err)
+		return
+	}
+	logx.Info("msgFromMQ.OperationID: ", msgFromMQ.OperationID)
+	xtrace.RunWithTrace(msgFromMQ.OperationID, func(ctx context.Context) {
 		logic.NewMsgTransferHistoryOnlineLogic(ctx, s.svcCtx).ChatMs2Mongo(msg, msgKey)
 	}, attribute.String("msgKey", msgKey))
 }

@@ -4,11 +4,12 @@ import (
 	"errors"
 	chatpb "github.com/showurl/Zero-IM-Server/app/msg/cmd/rpc/pb"
 	"github.com/showurl/Zero-IM-Server/common/types"
+	"github.com/showurl/Zero-IM-Server/common/xtrace"
 	"sync"
 )
 
 func (l *SendMsgLogic) sendMsgToKafka(m *chatpb.MsgDataToMQ, key string, status string) error {
-
+	m.OperationID = xtrace.TraceIdFromContext(l.ctx)
 	switch status {
 	case types.OnlineStatus:
 		pid, offset, err := l.svcCtx.OnlineProducer.SendMessage(l.ctx, m, key)
