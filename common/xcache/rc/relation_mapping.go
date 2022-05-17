@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/showurl/Zero-IM-Server/common/fastjson"
+	"github.com/showurl/Zero-IM-Server/common/xcache/global"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 	"net/url"

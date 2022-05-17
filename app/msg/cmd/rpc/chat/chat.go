@@ -25,8 +25,6 @@ type (
 	PushMsgToSuperGroupDataToMQ       = pb.PushMsgToSuperGroupDataToMQ
 	SendMsgReq                        = pb.SendMsgReq
 	SendMsgResp                       = pb.SendMsgResp
-	WrapDelMsgListReq                 = pb.WrapDelMsgListReq
-	WrapDelMsgListResp                = pb.WrapDelMsgListResp
 	WrapPullMessageBySeqListReq       = pb.WrapPullMessageBySeqListReq
 	WrapPullMessageBySeqListResp      = pb.WrapPullMessageBySeqListResp
 
@@ -36,7 +34,6 @@ type (
 		PullMessageBySeqList(ctx context.Context, in *WrapPullMessageBySeqListReq, opts ...grpc.CallOption) (*WrapPullMessageBySeqListResp, error)
 		PullMessageBySuperGroupSeqList(ctx context.Context, in *PullMessageBySuperGroupSeqListReq, opts ...grpc.CallOption) (*WrapPullMessageBySeqListResp, error)
 		SendMsg(ctx context.Context, in *SendMsgReq, opts ...grpc.CallOption) (*SendMsgResp, error)
-		DelMsgList(ctx context.Context, in *WrapDelMsgListReq, opts ...grpc.CallOption) (*WrapDelMsgListResp, error)
 	}
 
 	defaultChat struct {
@@ -73,9 +70,4 @@ func (m *defaultChat) PullMessageBySuperGroupSeqList(ctx context.Context, in *Pu
 func (m *defaultChat) SendMsg(ctx context.Context, in *SendMsgReq, opts ...grpc.CallOption) (*SendMsgResp, error) {
 	client := pb.NewChatClient(m.cli.Conn())
 	return client.SendMsg(ctx, in, opts...)
-}
-
-func (m *defaultChat) DelMsgList(ctx context.Context, in *WrapDelMsgListReq, opts ...grpc.CallOption) (*WrapDelMsgListResp, error) {
-	client := pb.NewChatClient(m.cli.Conn())
-	return client.DelMsgList(ctx, in, opts...)
 }

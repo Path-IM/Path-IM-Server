@@ -11,3 +11,6 @@
 
 ## 业务流程图
 ![flow.svg](https://public.msypy.xyz/images/Zero-IM-Server/Zero-IM-Server-Flow.svg)
+
+# Zero-IM-Server-Demo
+[Zero-IM-Server-Demo](DEMO_README.md)

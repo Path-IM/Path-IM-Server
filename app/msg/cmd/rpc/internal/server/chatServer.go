@@ -46,8 +46,3 @@ func (s *ChatServer) SendMsg(ctx context.Context, in *pb.SendMsgReq) (*pb.SendMs
 	l := logic.NewSendMsgLogic(ctx, s.svcCtx)
 	return l.SendMsg(in)
 }
-
-func (s *ChatServer) DelMsgList(ctx context.Context, in *pb.WrapDelMsgListReq) (*pb.WrapDelMsgListResp, error) {
-	l := logic.NewDelMsgListLogic(ctx, s.svcCtx)
-	return l.DelMsgList(in)
-}

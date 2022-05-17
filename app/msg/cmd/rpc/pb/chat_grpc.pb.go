@@ -27,7 +27,6 @@ type ChatClient interface {
 	PullMessageBySeqList(ctx context.Context, in *WrapPullMessageBySeqListReq, opts ...grpc.CallOption) (*WrapPullMessageBySeqListResp, error)
 	PullMessageBySuperGroupSeqList(ctx context.Context, in *PullMessageBySuperGroupSeqListReq, opts ...grpc.CallOption) (*WrapPullMessageBySeqListResp, error)
 	SendMsg(ctx context.Context, in *SendMsgReq, opts ...grpc.CallOption) (*SendMsgResp, error)
-	DelMsgList(ctx context.Context, in *WrapDelMsgListReq, opts ...grpc.CallOption) (*WrapDelMsgListResp, error)
 }
 
 type chatClient struct {
@@ -83,15 +82,6 @@ func (c *chatClient) SendMsg(ctx context.Context, in *SendMsgReq, opts ...grpc.C
 	return out, nil
 }
 
-func (c *chatClient) DelMsgList(ctx context.Context, in *WrapDelMsgListReq, opts ...grpc.CallOption) (*WrapDelMsgListResp, error) {
-	out := new(WrapDelMsgListResp)
-	err := c.cc.Invoke(ctx, "/pbChat.Chat/DelMsgList", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // ChatServer is the server API for Chat service.
 // All implementations must embed UnimplementedChatServer
 // for forward compatibility
@@ -101,7 +91,6 @@ type ChatServer interface {
 	PullMessageBySeqList(context.Context, *WrapPullMessageBySeqListReq) (*WrapPullMessageBySeqListResp, error)
 	PullMessageBySuperGroupSeqList(context.Context, *PullMessageBySuperGroupSeqListReq) (*WrapPullMessageBySeqListResp, error)
 	SendMsg(context.Context, *SendMsgReq) (*SendMsgResp, error)
-	DelMsgList(context.Context, *WrapDelMsgListReq) (*WrapDelMsgListResp, error)
 	mustEmbedUnimplementedChatServer()
 }
 
@@ -123,9 +112,6 @@ func (UnimplementedChatServer) PullMessageBySuperGroupSeqList(context.Context, *
 }
 func (UnimplementedChatServer) SendMsg(context.Context, *SendMsgReq) (*SendMsgResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendMsg not implemented")
-}
-func (UnimplementedChatServer) DelMsgList(context.Context, *WrapDelMsgListReq) (*WrapDelMsgListResp, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DelMsgList not implemented")
 }
 func (UnimplementedChatServer) mustEmbedUnimplementedChatServer() {}
 
@@ -230,24 +216,6 @@ func _Chat_SendMsg_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Chat_DelMsgList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WrapDelMsgListReq)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ChatServer).DelMsgList(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pbChat.Chat/DelMsgList",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServer).DelMsgList(ctx, req.(*WrapDelMsgListReq))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Chat_ServiceDesc is the grpc.ServiceDesc for Chat service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -274,10 +242,6 @@ var Chat_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SendMsg",
 			Handler:    _Chat_SendMsg_Handler,
-		},
-		{
-			MethodName: "DelMsgList",
-			Handler:    _Chat_DelMsgList_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

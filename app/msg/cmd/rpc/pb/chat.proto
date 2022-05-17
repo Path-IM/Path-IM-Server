@@ -95,12 +95,7 @@ message WrapPullMessageBySeqListReq {
 message WrapPullMessageBySeqListResp {
   server_api_params.PullMessageBySeqListResp PullMessageBySeqListResp = 1;
 }
-message WrapDelMsgListReq {
-  server_api_params.DelMsgListReq DelMsgListReq = 1;
-}
-message WrapDelMsgListResp {
-  server_api_params.DelMsgListResp DelMsgListResp = 1;
-}
+
 message PullMessageBySuperGroupSeqListReq {
   string groupID = 1;
   repeated uint32 seqList = 2;
@@ -111,5 +106,4 @@ service Chat {
   rpc PullMessageBySeqList(WrapPullMessageBySeqListReq) returns(WrapPullMessageBySeqListResp);
   rpc PullMessageBySuperGroupSeqList(PullMessageBySuperGroupSeqListReq) returns(WrapPullMessageBySeqListResp);
   rpc SendMsg(SendMsgReq) returns(SendMsgResp);
-  rpc DelMsgList(WrapDelMsgListReq) returns(WrapDelMsgListResp);
 }
