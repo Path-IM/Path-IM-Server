@@ -28,23 +28,37 @@ func NewGetSuperGroupMaxAndMinSeqLogic(ctx context.Context, svcCtx *svc.ServiceC
 }
 
 func (l *GetSuperGroupMaxAndMinSeqLogic) GetSuperGroupMaxAndMinSeq(in *pb.GetMaxAndMinSuperGroupSeqReq) (*pb.GetMaxAndMinSuperGroupSeqResp, error) {
+	resp := new(pb.GetMaxAndMinSuperGroupSeqResp)
 	var seqs []*pb.GetMaxAndMinSuperGroupSeqRespItem
 	for _, groupID := range in.SuperGroupIDList {
-		maxSeq, err := l.rep.GetSuperGroupSeq(groupID)
+		maxSeq, err := l.rep.GetSuperGroupMaxSeq(groupID)
 		if err != nil {
 			if err == redis.Nil {
 				err = nil
 			} else {
-				return nil, err
+				l.Error("GetSuperGroupMaxSeq err ", err)
+				resp.ErrCode = 500
+				resp.ErrMsg = err.Error()
+				//return nil, err
+			}
+		}
+		minSeq, err := l.rep.GetSuperGroupMinSeq(groupID)
+		if err != nil {
+			if err == redis.Nil {
+				err = nil
+			} else {
+				l.Error("GetSuperGroupMaxSeq err ", err)
+				resp.ErrCode = 500
+				resp.ErrMsg = err.Error()
+				//return nil, err
 			}
 		}
 		seqs = append(seqs, &pb.GetMaxAndMinSuperGroupSeqRespItem{
 			SuperGroupID: groupID,
 			MaxSeq:       uint32(maxSeq),
-			MinSeq:       0,
+			MinSeq:       uint32(minSeq),
 		})
 	}
-	resp := new(pb.GetMaxAndMinSuperGroupSeqResp)
 	resp.SuperGroupSeqList = seqs
 	return resp, nil
 }

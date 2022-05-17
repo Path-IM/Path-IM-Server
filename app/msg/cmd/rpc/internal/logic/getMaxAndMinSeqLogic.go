@@ -28,8 +28,8 @@ func NewGetMaxAndMinSeqLogic(ctx context.Context, svcCtx *svc.ServiceContext) *G
 }
 
 func (l *GetMaxAndMinSeqLogic) GetMaxAndMinSeq(in *pb.GetMaxAndMinSeqReq) (*pb.GetMaxAndMinSeqResp, error) {
-	maxSeq, err := l.rep.GetUserSeq(in.UserID)
 	resp := new(pb.GetMaxAndMinSeqResp)
+	maxSeq, err := l.rep.GetUserMaxSeq(in.UserID)
 	if err == nil {
 		resp.MaxSeq = uint32(maxSeq)
 	} else if err == redis.Nil {
@@ -38,7 +38,18 @@ func (l *GetMaxAndMinSeqLogic) GetMaxAndMinSeq(in *pb.GetMaxAndMinSeqReq) (*pb.G
 		l.Error("getMaxSeq from redis error", in.String(), err.Error())
 		resp.ErrCode = 200
 		resp.ErrMsg = "redis get err"
+		return resp, nil
 	}
-	resp.MinSeq = 0
+	minSeq, err := l.rep.GetUserMinSeq(in.UserID)
+	if err == nil {
+		resp.MinSeq = uint32(minSeq)
+	} else if err == redis.Nil {
+		resp.MinSeq = 0
+	} else {
+		l.Error("getMinSeq from redis error", in.String(), err.Error())
+		resp.ErrCode = 200
+		resp.ErrMsg = "redis get err"
+		return resp, nil
+	}
 	return resp, nil
 }
