@@ -5,7 +5,7 @@
 ### 服务注册发现
 > 使用go-zero微服务框架 开发更方便 自带 `链路追踪` `服务发现` `服务负载`
 
-![jaeger.png](https://raw.githubusercontent.com/showurl/Zero-IM-Docs/main/images/20220517/jaeger.svg)
+![jaeger.png](https://raw.githubusercontent.com/showurl/Zero-IM-Docs/main/images/20220517/jaeger.png)
 
 > 不依赖 `mysql` 所有业务逻辑均请求业务rpc服务 
 
