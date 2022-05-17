@@ -9,6 +9,12 @@
 
 > 不依赖 `mysql` 所有业务逻辑均请求业务rpc服务 
 
+## 系统架构图
+![system.svg](https://public.msypy.xyz/images/Zero-IM-Server/Zero-IM-Server%20%20%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84%E5%9B%BE.svg)
+
+## 业务架构图
+![service.svg](https://public.msypy.xyz/images/Zero-IM-Server/Zero-IM-Server%20%E4%B8%9A%E5%8A%A1%E6%9E%B6%E6%9E%84%E5%9B%BE.svg)
+
 ## 业务流程图
 ![flow.svg](https://public.msypy.xyz/images/Zero-IM-Server/Zero-IM-Server-Flow.svg)
 
