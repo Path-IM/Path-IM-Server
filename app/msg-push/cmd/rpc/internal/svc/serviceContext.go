@@ -11,13 +11,13 @@ import (
 type ServiceContext struct {
 	Config        config.Config
 	offlinePusher sdk.OfflinePusher
-	ImUserRpc     imuserservice.ImUserService
+	ImUserService imuserservice.ImUserService
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
 	return &ServiceContext{
-		Config:    c,
-		ImUserRpc: imuserservice.NewImUserService(zrpc.MustNewClient(c.ImUserRpc)),
+		Config:        c,
+		ImUserService: imuserservice.NewImUserService(zrpc.MustNewClient(c.ImUserRpc)),
 	}
 }
 func (s *ServiceContext) GetOfflinePusher() sdk.OfflinePusher {

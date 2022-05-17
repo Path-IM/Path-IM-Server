@@ -25,9 +25,9 @@ Telemetry:
   Batcher: jaeger
 
 #rpc service
-AuthRpc:
+ImUserRpc:
   Endpoints:
-    - 192.168.2.77:10160
+    - 192.168.2.77:10240
 
 MsgRpc:
   Endpoints:

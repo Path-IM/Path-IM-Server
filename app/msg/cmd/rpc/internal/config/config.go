@@ -9,14 +9,13 @@ import (
 
 type Config struct {
 	zrpc.RpcServerConf
-	Kafka           KafkaConfig
-	Callback        CallbackConfig
-	MessageVerify   MessageVerifyConfig
-	ImUserRpc       zrpc.RpcClientConf
-	ConversationRpc zrpc.RpcClientConf
-	MsgCallbackRpc  zrpc.RpcClientConf
-	RedisConfig     RedisConfig
-	Mongo           MongoConfig
+	Kafka          KafkaConfig
+	Callback       CallbackConfig
+	MessageVerify  MessageVerifyConfig
+	ImUserRpc      zrpc.RpcClientConf
+	MsgCallbackRpc zrpc.RpcClientConf
+	RedisConfig    RedisConfig
+	Mongo          MongoConfig
 }
 type RedisConfig struct {
 	Conf redis.RedisConf

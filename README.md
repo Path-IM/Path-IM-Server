@@ -8,3 +8,6 @@
 ![jaeger.png](https://public.msypy.xyz/images/Zero-IM-Server/477E4F088A59947E34D949A584E39A62.jpg)
 
 > 不依赖 `mysql` 所有业务逻辑均请求业务rpc服务 
+
+## 业务流程图
+![flow.svg](https://public.msypy.xyz/images/Zero-IM-Server/Zero-IM-Server-Flow.svg)

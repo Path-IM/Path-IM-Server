@@ -51,3 +51,9 @@ func (s *ImUserServiceServer) GetUserListFromSuperGroupWithOpt(ctx context.Conte
 	l := logic.NewGetUserListFromSuperGroupWithOptLogic(ctx, s.svcCtx)
 	return l.GetUserListFromSuperGroupWithOpt(in)
 }
+
+//  检查token
+func (s *ImUserServiceServer) VerifyToken(ctx context.Context, in *pb.VerifyTokenReq) (*pb.VerifyTokenResp, error) {
+	l := logic.NewVerifyTokenLogic(ctx, s.svcCtx)
+	return l.VerifyToken(in)
+}

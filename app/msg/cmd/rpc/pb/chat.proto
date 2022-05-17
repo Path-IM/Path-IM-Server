@@ -51,7 +51,6 @@ message PushMsgToSuperGroupDataToMQ {
 //}
 message GetMaxAndMinSeqReq {
   string UserID = 1;
-  string OperationID = 2;
 }
 message GetMaxAndMinSeqResp {
   int32 ErrCode = 1;

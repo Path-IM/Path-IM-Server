@@ -7,7 +7,7 @@ import (
 
 type Config struct {
 	rest.RestConf
-	AuthRpc   zrpc.RpcClientConf
+	ImUserRpc zrpc.RpcClientConf
 	MsgRpc    zrpc.RpcClientConf
 	Websocket WebsocketConfig
 }

@@ -32,6 +32,8 @@ type ImUserServiceClient interface {
 	GetSingleConversationRecvMsgOpts(ctx context.Context, in *GetSingleConversationRecvMsgOptsReq, opts ...grpc.CallOption) (*GetSingleConversationRecvMsgOptsResp, error)
 	// 获取超级群成员列表 通过消息接收选项
 	GetUserListFromSuperGroupWithOpt(ctx context.Context, in *GetUserListFromSuperGroupWithOptReq, opts ...grpc.CallOption) (*GetUserListFromSuperGroupWithOptResp, error)
+	// 检查token
+	VerifyToken(ctx context.Context, in *VerifyTokenReq, opts ...grpc.CallOption) (*VerifyTokenResp, error)
 }
 
 type imUserServiceClient struct {
@@ -87,6 +89,15 @@ func (c *imUserServiceClient) GetUserListFromSuperGroupWithOpt(ctx context.Conte
 	return out, nil
 }
 
+func (c *imUserServiceClient) VerifyToken(ctx context.Context, in *VerifyTokenReq, opts ...grpc.CallOption) (*VerifyTokenResp, error) {
+	out := new(VerifyTokenResp)
+	err := c.cc.Invoke(ctx, "/imuser.imUserService/VerifyToken", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ImUserServiceServer is the server API for ImUserService service.
 // All implementations must embed UnimplementedImUserServiceServer
 // for forward compatibility
@@ -101,6 +112,8 @@ type ImUserServiceServer interface {
 	GetSingleConversationRecvMsgOpts(context.Context, *GetSingleConversationRecvMsgOptsReq) (*GetSingleConversationRecvMsgOptsResp, error)
 	// 获取超级群成员列表 通过消息接收选项
 	GetUserListFromSuperGroupWithOpt(context.Context, *GetUserListFromSuperGroupWithOptReq) (*GetUserListFromSuperGroupWithOptResp, error)
+	// 检查token
+	VerifyToken(context.Context, *VerifyTokenReq) (*VerifyTokenResp, error)
 	mustEmbedUnimplementedImUserServiceServer()
 }
 
@@ -122,6 +135,9 @@ func (UnimplementedImUserServiceServer) GetSingleConversationRecvMsgOpts(context
 }
 func (UnimplementedImUserServiceServer) GetUserListFromSuperGroupWithOpt(context.Context, *GetUserListFromSuperGroupWithOptReq) (*GetUserListFromSuperGroupWithOptResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserListFromSuperGroupWithOpt not implemented")
+}
+func (UnimplementedImUserServiceServer) VerifyToken(context.Context, *VerifyTokenReq) (*VerifyTokenResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VerifyToken not implemented")
 }
 func (UnimplementedImUserServiceServer) mustEmbedUnimplementedImUserServiceServer() {}
 
@@ -226,6 +242,24 @@ func _ImUserService_GetUserListFromSuperGroupWithOpt_Handler(srv interface{}, ct
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ImUserService_VerifyToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VerifyTokenReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ImUserServiceServer).VerifyToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/imuser.imUserService/VerifyToken",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ImUserServiceServer).VerifyToken(ctx, req.(*VerifyTokenReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ImUserService_ServiceDesc is the grpc.ServiceDesc for ImUserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -252,6 +286,10 @@ var ImUserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserListFromSuperGroupWithOpt",
 			Handler:    _ImUserService_GetUserListFromSuperGroupWithOpt_Handler,
+		},
+		{
+			MethodName: "VerifyToken",
+			Handler:    _ImUserService_VerifyToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

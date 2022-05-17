@@ -21,9 +21,6 @@ Telemetry:
 ImUserRpc:
   Endpoints:
     - 192.168.2.77:10240
-ConversationRpc:
-  Endpoints:
-    - 192.168.2.77:10230
 MsgCallbackRpc:
   Endpoints:
     - 192.168.2.77:10250

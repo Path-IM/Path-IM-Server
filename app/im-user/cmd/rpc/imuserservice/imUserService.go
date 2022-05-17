@@ -26,6 +26,8 @@ type (
 	IfAInBFriendListResp                 = pb.IfAInBFriendListResp
 	UserIDOpt                            = pb.UserIDOpt
 	UserInfo                             = pb.UserInfo
+	VerifyTokenReq                       = pb.VerifyTokenReq
+	VerifyTokenResp                      = pb.VerifyTokenResp
 
 	ImUserService interface {
 		//  获取群组成员列表
@@ -38,6 +40,8 @@ type (
 		GetSingleConversationRecvMsgOpts(ctx context.Context, in *GetSingleConversationRecvMsgOptsReq, opts ...grpc.CallOption) (*GetSingleConversationRecvMsgOptsResp, error)
 		//  获取超级群成员列表 通过消息接收选项
 		GetUserListFromSuperGroupWithOpt(ctx context.Context, in *GetUserListFromSuperGroupWithOptReq, opts ...grpc.CallOption) (*GetUserListFromSuperGroupWithOptResp, error)
+		//  检查token
+		VerifyToken(ctx context.Context, in *VerifyTokenReq, opts ...grpc.CallOption) (*VerifyTokenResp, error)
 	}
 
 	defaultImUserService struct {
@@ -79,4 +83,10 @@ func (m *defaultImUserService) GetSingleConversationRecvMsgOpts(ctx context.Cont
 func (m *defaultImUserService) GetUserListFromSuperGroupWithOpt(ctx context.Context, in *GetUserListFromSuperGroupWithOptReq, opts ...grpc.CallOption) (*GetUserListFromSuperGroupWithOptResp, error) {
 	client := pb.NewImUserServiceClient(m.cli.Conn())
 	return client.GetUserListFromSuperGroupWithOpt(ctx, in, opts...)
+}
+
+//  检查token
+func (m *defaultImUserService) VerifyToken(ctx context.Context, in *VerifyTokenReq, opts ...grpc.CallOption) (*VerifyTokenResp, error) {
+	client := pb.NewImUserServiceClient(m.cli.Conn())
+	return client.VerifyToken(ctx, in, opts...)
 }

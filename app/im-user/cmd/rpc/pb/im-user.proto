@@ -74,6 +74,18 @@ message GetUserListFromSuperGroupWithOptResp {
   CommonResp commonResp = 1;
   repeated UserIDOpt UserIDOptList = 2;
 }
+
+message VerifyTokenReq {
+  string token = 1;
+  string platform = 2;
+  string sendID = 3;
+}
+message VerifyTokenResp {
+  string uid = 1;
+  bool success = 2;
+  string errMsg = 3;
+}
+
 service imUserService{
   // 获取群组成员列表
   rpc GetGroupMemberIDListFromCache(GetGroupMemberIDListFromCacheReq) returns (GetGroupMemberIDListFromCacheResp);
@@ -85,4 +97,6 @@ service imUserService{
   rpc GetSingleConversationRecvMsgOpts(GetSingleConversationRecvMsgOptsReq) returns (GetSingleConversationRecvMsgOptsResp);
   // 获取超级群成员列表 通过消息接收选项
   rpc GetUserListFromSuperGroupWithOpt(GetUserListFromSuperGroupWithOptReq) returns (GetUserListFromSuperGroupWithOptResp);
+  // 检查token
+  rpc VerifyToken(VerifyTokenReq) returns (VerifyTokenResp);
 }

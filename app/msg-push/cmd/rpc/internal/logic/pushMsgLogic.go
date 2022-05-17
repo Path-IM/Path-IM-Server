@@ -173,7 +173,7 @@ func (l *PushMsgLogic) PushSuperGroupMsg(in *chatpb.PushMsgToSuperGroupDataToMQ)
 	if tagAll {
 		xtrace.StartFuncSpan(l.ctx, "PushSuperGroupMsg.GetUserListFromSuperGroupWithOpt", func(ctx context.Context) {
 			// 我们去查询这个群的所有接收消息通知的用户
-			atUsers, err = l.svcCtx.ImUserRpc.GetUserListFromSuperGroupWithOpt(l.ctx, &imuserpb.GetUserListFromSuperGroupWithOptReq{
+			atUsers, err = l.svcCtx.ImUserService.GetUserListFromSuperGroupWithOpt(l.ctx, &imuserpb.GetUserListFromSuperGroupWithOptReq{
 				SuperGroupID: in.SuperGroupID,
 				Opts: []imuserpb.RecvMsgOpt{
 					imuserpb.RecvMsgOpt_ReceiveMessage,
@@ -190,7 +190,7 @@ func (l *PushMsgLogic) PushSuperGroupMsg(in *chatpb.PushMsgToSuperGroupDataToMQ)
 	} else if len(a.AtUserList) > 0 {
 		xtrace.StartFuncSpan(l.ctx, "PushSuperGroupMsg.GetUserListFromSuperGroupWithOpt", func(ctx context.Context) {
 			// 我们去查询这个群的所有接收消息通知的用户
-			atUsers, err = l.svcCtx.ImUserRpc.GetUserListFromSuperGroupWithOpt(l.ctx, &imuserpb.GetUserListFromSuperGroupWithOptReq{
+			atUsers, err = l.svcCtx.ImUserService.GetUserListFromSuperGroupWithOpt(l.ctx, &imuserpb.GetUserListFromSuperGroupWithOptReq{
 				SuperGroupID: in.SuperGroupID,
 				Opts: []imuserpb.RecvMsgOpt{
 					imuserpb.RecvMsgOpt_ReceiveNotNotifyMessage,
@@ -221,7 +221,7 @@ func (l *PushMsgLogic) PushSuperGroupMsg(in *chatpb.PushMsgToSuperGroupDataToMQ)
 	offlinePushUserChan := make(chan string, 1)
 	xtrace.StartFuncSpan(l.ctx, "PushSuperGroupMsg.GetUserListFromSuperGroupWithOpt", func(ctx context.Context) {
 		// 我们去查询这个群的所有接收消息通知的用户
-		allUsers, err = l.svcCtx.ImUserRpc.GetUserListFromSuperGroupWithOpt(l.ctx, &imuserpb.GetUserListFromSuperGroupWithOptReq{
+		allUsers, err = l.svcCtx.ImUserService.GetUserListFromSuperGroupWithOpt(l.ctx, &imuserpb.GetUserListFromSuperGroupWithOptReq{
 			SuperGroupID: in.SuperGroupID,
 			Opts: []imuserpb.RecvMsgOpt{
 				imuserpb.RecvMsgOpt_ReceiveMessage,

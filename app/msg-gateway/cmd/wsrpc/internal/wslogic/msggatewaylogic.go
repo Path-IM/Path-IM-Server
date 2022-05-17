@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
-	"github.com/showurl/Zero-IM-Server/app/auth/cmd/rpc/pb"
+	"github.com/showurl/Zero-IM-Server/app/im-user/cmd/rpc/pb"
 	chatpb "github.com/showurl/Zero-IM-Server/app/msg/cmd/rpc/pb"
 	"github.com/showurl/Zero-IM-Server/common/xtrace"
 	"go.opentelemetry.io/otel/attribute"
@@ -59,7 +59,7 @@ func NewMsggatewayLogic(ctx context.Context, svcCtx *wssvc.ServiceContext) *Msgg
 func (l *MsggatewayLogic) Msggateway(req *types.Request) (*types.Response, bool) {
 	if len(req.Token) != 0 && len(req.SendID) != 0 && len(req.PlatformID) != 0 {
 		// 调用rpc验证token
-		resp, err := l.svcCtx.AuthService.VerifyToken(l.ctx, &pb.VerifyTokenReq{
+		resp, err := l.svcCtx.ImUserService.VerifyToken(l.ctx, &pb.VerifyTokenReq{
 			Token:    req.Token,
 			Platform: req.PlatformID,
 			SendID:   req.SendID,

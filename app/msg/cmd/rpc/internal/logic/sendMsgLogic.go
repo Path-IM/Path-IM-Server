@@ -3,12 +3,10 @@ package logic
 import (
 	"context"
 	"github.com/golang/protobuf/proto"
-	conversationpb "github.com/showurl/Zero-IM-Server/app/conversation/cmd/rpc/pb"
 	imuserpb "github.com/showurl/Zero-IM-Server/app/im-user/cmd/rpc/pb"
 	chatpb "github.com/showurl/Zero-IM-Server/app/msg/cmd/rpc/pb"
 	"github.com/showurl/Zero-IM-Server/common/types"
 	"github.com/showurl/Zero-IM-Server/common/utils"
-	strUtils "github.com/showurl/Zero-IM-Server/common/utils/str"
 	"sync"
 
 	"github.com/showurl/Zero-IM-Server/app/msg/cmd/rpc/internal/svc"
@@ -191,53 +189,6 @@ func (l *SendMsgLogic) SendMsg(pb *pb.SendMsgReq) (*pb.SendMsgResp, error) {
 		if !sendTag {
 			return returnMsg(&replay, pb, 201, "kafka send msg err", "", 0)
 		} else {
-			if pb.MsgData.ContentType == types.AtText {
-				go func() {
-					var conversationReq conversationpb.ModifyConversationFieldReq
-					var tag bool
-					var atUserID []string
-					conversation := conversationpb.Conversation{
-						OwnerUserID:      pb.MsgData.SendID,
-						ConversationID:   types.GetConversationIDBySessionType(pb.MsgData.GroupID, types.GroupChatType),
-						ConversationType: types.GroupChatType,
-						GroupID:          pb.MsgData.GroupID,
-					}
-					conversationReq.Conversation = &conversation
-					conversationReq.OperationID = pb.OperationID
-					conversationReq.FieldType = conversationpb.FieldType_FieldGroupAtType
-					tagAll := strUtils.IsContain(types.AtAllString, pb.MsgData.AtUserIDList)
-					if tagAll {
-						atUserID = strUtils.DifferenceString([]string{types.AtAllString}, pb.MsgData.AtUserIDList)
-						if len(atUserID) == 0 { //just @everyone
-							conversationReq.UserIDList = memberUserIDList
-							conversation.GroupAtType = types.AtAll
-						} else { //@Everyone and @other people
-							conversationReq.UserIDList = atUserID
-							conversation.GroupAtType = types.AtAllAtMe
-							tag = true
-						}
-					} else {
-						conversationReq.UserIDList = pb.MsgData.AtUserIDList
-						conversation.GroupAtType = types.AtMe
-					}
-					conversationReply, err := l.svcCtx.Conversation.ModifyConversationField(l.ctx, &conversationReq)
-					if err != nil {
-						logx.WithContext(l.ctx).Error(conversationReq.OperationID, "ModifyConversationField rpc failed, ", conversationReq.String(), err.Error())
-					} else if conversationReply.CommonResp.ErrCode != 0 {
-						logx.WithContext(l.ctx).Error(conversationReq.OperationID, "ModifyConversationField rpc failed, ", conversationReq.String(), conversationReply.String())
-					}
-					if tag {
-						conversationReq.UserIDList = strUtils.DifferenceString(atUserID, memberUserIDList)
-						conversation.GroupAtType = types.AtAll
-						conversationReply, err := l.svcCtx.Conversation.ModifyConversationField(context.Background(), &conversationReq)
-						if err != nil {
-							logx.WithContext(l.ctx).Error(conversationReq.OperationID, "ModifyConversationField rpc failed, ", conversationReq.String(), err.Error())
-						} else if conversationReply.CommonResp.ErrCode != 0 {
-							logx.WithContext(l.ctx).Error(conversationReq.OperationID, "ModifyConversationField rpc failed, ", conversationReq.String(), conversationReply.String())
-						}
-					}
-				}()
-			}
 			return returnMsg(&replay, pb, 0, "", msgToMQSingle.MsgData.ServerMsgID, msgToMQSingle.MsgData.SendTime)
 
 		}
