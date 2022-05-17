@@ -14,3 +14,7 @@
 
 # Zero-IM-Server-Demo
 [Zero-IM-Server-Demo](DEMO_README.md)
+
+# Zero-IM-Client-Go
+[Zero-IM-Client-Go](https://github.com/showurl/Zero-IM-Client.git)
+> 我们计划编写 `dart` sdk；由于时间问题，暂时放出 `golang` 客户端 测试代码；以供参考！
