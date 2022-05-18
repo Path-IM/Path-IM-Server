@@ -28,7 +28,7 @@ func (j *JPush) Push(ctx context.Context, accounts []string, alert, detailConten
 	var me requestBody.Message
 	me.SetMsgContent(detailContent)
 	var o requestBody.Options
-	o.SetApnsProduction(false)
+	o.SetApnsProduction(j.Config.Jpns.ApnsProduction)
 	var po requestBody.PushObj
 	po.SetPlatform(&pf)
 	po.SetAudience(&au)

@@ -16,10 +16,11 @@ type Config struct {
 	SuperGroupPushConsumer SuperGroupPushConsumerConfig
 }
 type JpnsConf struct {
-	PushIntent   string
-	PushUrl      string
-	AppKey       string
-	MasterSecret string
+	PushIntent     string
+	PushUrl        string
+	AppKey         string
+	MasterSecret   string
+	ApnsProduction bool `json:",default=false"`
 }
 
 type SinglePushConsumerConfig struct {
