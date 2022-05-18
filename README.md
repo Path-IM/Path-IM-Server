@@ -17,7 +17,9 @@
 ![flow.svg](https://raw.githubusercontent.com/showurl/Zero-IM-Docs/main/images/20220517/Zero-IM-Server-Flow.svg)
 
 # Zero-IM-Server-Demo
-[Zero-IM-Server-Demo](DEMO_README.md)
+> 使用 `Zero-IM-Server` 开发一个 `IM` 应用 
+## 开发记录
+- [Zero-IM-Server-Demo 第一天](https://github.com/showurl/Zero-IM-Server-Demo/tree/main/docs/day01)
 
 # Zero-IM-Client-Go
 [Zero-IM-Client-Go](https://github.com/showurl/Zero-IM-Client-Go.git)
