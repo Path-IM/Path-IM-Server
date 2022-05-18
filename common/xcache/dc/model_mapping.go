@@ -69,7 +69,7 @@ func (v *DbMapping) FirstByID(model interface{}, options ...FuncFirstOption) err
 				expiredTime = global.ExpireDuration(d.DetailExpiredSecond())
 			}
 			// 去数据库里查询
-			err = v.tx.Model(model).Where(option.where, option.args...).First(model).Error
+			err = v.tx.Model(model).Table(tablerName).Where(option.where, option.args...).First(model).Error
 			if err != nil {
 				if errors.Is(err, gorm.ErrRecordNotFound) {
 					v.rc.Set(ctx, redisKey, RecordNotFoundPlaceholder, expiredTime)
