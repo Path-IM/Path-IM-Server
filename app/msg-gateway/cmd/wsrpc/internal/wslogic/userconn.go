@@ -84,6 +84,20 @@ func (l *MsggatewayLogic) GetUserConn(uid string, platform string) *UserConn {
 	return nil
 }
 
+func (l *MsggatewayLogic) DelUserConn(uid string, platform string) {
+	rwLock.RLock()
+	defer rwLock.RUnlock()
+	if connMap, ok := l.wsUserToConn[uid]; ok {
+		if len(connMap) == 0 {
+			delete(l.wsUserToConn, uid)
+		} else {
+			if _, flag := connMap[platform]; flag {
+				delete(connMap, platform)
+			}
+		}
+	}
+}
+
 func (l *MsggatewayLogic) SendMsgToUser(ctx context.Context, conn *UserConn, bMsg []byte, in *pb.OnlinePushMsgReq, RecvPlatForm, RecvID string) (ResultCode int64) {
 	err := l.writeMsg(conn, websocket.BinaryMessage, bMsg)
 	if err != nil {

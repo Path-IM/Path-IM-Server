@@ -320,6 +320,116 @@ func (x *GetUsersOnlineStatusResp) GetFailedResult() []*GetUsersOnlineStatusResp
 	return nil
 }
 
+type KickUserConnsReq struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	UserID      string   `protobuf:"bytes,1,opt,name=userID,proto3" json:"userID,omitempty"`
+	PlatformIDs []string `protobuf:"bytes,2,rep,name=platformIDs,proto3" json:"platformIDs,omitempty"`
+}
+
+func (x *KickUserConnsReq) Reset() {
+	*x = KickUserConnsReq{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_msg_gateway_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *KickUserConnsReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*KickUserConnsReq) ProtoMessage() {}
+
+func (x *KickUserConnsReq) ProtoReflect() protoreflect.Message {
+	mi := &file_msg_gateway_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use KickUserConnsReq.ProtoReflect.Descriptor instead.
+func (*KickUserConnsReq) Descriptor() ([]byte, []int) {
+	return file_msg_gateway_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *KickUserConnsReq) GetUserID() string {
+	if x != nil {
+		return x.UserID
+	}
+	return ""
+}
+
+func (x *KickUserConnsReq) GetPlatformIDs() []string {
+	if x != nil {
+		return x.PlatformIDs
+	}
+	return nil
+}
+
+type KickUserConnsResp struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ErrCode int32  `protobuf:"varint,1,opt,name=errCode,proto3" json:"errCode,omitempty"`
+	ErrMsg  string `protobuf:"bytes,2,opt,name=errMsg,proto3" json:"errMsg,omitempty"`
+}
+
+func (x *KickUserConnsResp) Reset() {
+	*x = KickUserConnsResp{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_msg_gateway_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *KickUserConnsResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*KickUserConnsResp) ProtoMessage() {}
+
+func (x *KickUserConnsResp) ProtoReflect() protoreflect.Message {
+	mi := &file_msg_gateway_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use KickUserConnsResp.ProtoReflect.Descriptor instead.
+func (*KickUserConnsResp) Descriptor() ([]byte, []int) {
+	return file_msg_gateway_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *KickUserConnsResp) GetErrCode() int32 {
+	if x != nil {
+		return x.ErrCode
+	}
+	return 0
+}
+
+func (x *KickUserConnsResp) GetErrMsg() string {
+	if x != nil {
+		return x.ErrMsg
+	}
+	return ""
+}
+
 type GetUsersOnlineStatusResp_SuccessDetail struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -332,7 +442,7 @@ type GetUsersOnlineStatusResp_SuccessDetail struct {
 func (x *GetUsersOnlineStatusResp_SuccessDetail) Reset() {
 	*x = GetUsersOnlineStatusResp_SuccessDetail{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_msg_gateway_proto_msgTypes[5]
+		mi := &file_msg_gateway_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -345,7 +455,7 @@ func (x *GetUsersOnlineStatusResp_SuccessDetail) String() string {
 func (*GetUsersOnlineStatusResp_SuccessDetail) ProtoMessage() {}
 
 func (x *GetUsersOnlineStatusResp_SuccessDetail) ProtoReflect() protoreflect.Message {
-	mi := &file_msg_gateway_proto_msgTypes[5]
+	mi := &file_msg_gateway_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -388,7 +498,7 @@ type GetUsersOnlineStatusResp_FailedDetail struct {
 func (x *GetUsersOnlineStatusResp_FailedDetail) Reset() {
 	*x = GetUsersOnlineStatusResp_FailedDetail{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_msg_gateway_proto_msgTypes[6]
+		mi := &file_msg_gateway_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -401,7 +511,7 @@ func (x *GetUsersOnlineStatusResp_FailedDetail) String() string {
 func (*GetUsersOnlineStatusResp_FailedDetail) ProtoMessage() {}
 
 func (x *GetUsersOnlineStatusResp_FailedDetail) ProtoReflect() protoreflect.Message {
-	mi := &file_msg_gateway_proto_msgTypes[6]
+	mi := &file_msg_gateway_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -451,7 +561,7 @@ type GetUsersOnlineStatusResp_SuccessResult struct {
 func (x *GetUsersOnlineStatusResp_SuccessResult) Reset() {
 	*x = GetUsersOnlineStatusResp_SuccessResult{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_msg_gateway_proto_msgTypes[7]
+		mi := &file_msg_gateway_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -464,7 +574,7 @@ func (x *GetUsersOnlineStatusResp_SuccessResult) String() string {
 func (*GetUsersOnlineStatusResp_SuccessResult) ProtoMessage() {}
 
 func (x *GetUsersOnlineStatusResp_SuccessResult) ProtoReflect() protoreflect.Message {
-	mi := &file_msg_gateway_proto_msgTypes[7]
+	mi := &file_msg_gateway_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -569,21 +679,35 @@ var file_msg_gateway_proto_rawDesc = []byte{
 	0x65, 0x72, 0x73, 0x4f, 0x6e, 0x6c, 0x69, 0x6e, 0x65, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52,
 	0x65, 0x73, 0x70, 0x2e, 0x53, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x44, 0x65, 0x74, 0x61, 0x69,
 	0x6c, 0x52, 0x14, 0x64, 0x65, 0x74, 0x61, 0x69, 0x6c, 0x50, 0x6c, 0x61, 0x74, 0x66, 0x6f, 0x72,
-	0x6d, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x32, 0xd0, 0x01, 0x0a, 0x19, 0x4f, 0x6e, 0x6c, 0x69,
-	0x6e, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x65, 0x6c, 0x61, 0x79, 0x53, 0x65,
-	0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x4e, 0x0a, 0x0d, 0x4f, 0x6e, 0x6c, 0x69, 0x6e, 0x65, 0x50,
-	0x75, 0x73, 0x68, 0x4d, 0x73, 0x67, 0x12, 0x1d, 0x2e, 0x6d, 0x73, 0x67, 0x5f, 0x67, 0x61, 0x74,
-	0x65, 0x77, 0x61, 0x79, 0x2e, 0x4f, 0x6e, 0x6c, 0x69, 0x6e, 0x65, 0x50, 0x75, 0x73, 0x68, 0x4d,
-	0x73, 0x67, 0x52, 0x65, 0x71, 0x1a, 0x1e, 0x2e, 0x6d, 0x73, 0x67, 0x5f, 0x67, 0x61, 0x74, 0x65,
-	0x77, 0x61, 0x79, 0x2e, 0x4f, 0x6e, 0x6c, 0x69, 0x6e, 0x65, 0x50, 0x75, 0x73, 0x68, 0x4d, 0x73,
-	0x67, 0x52, 0x65, 0x73, 0x70, 0x12, 0x63, 0x0a, 0x14, 0x47, 0x65, 0x74, 0x55, 0x73, 0x65, 0x72,
-	0x73, 0x4f, 0x6e, 0x6c, 0x69, 0x6e, 0x65, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x24, 0x2e,
-	0x6d, 0x73, 0x67, 0x5f, 0x67, 0x61, 0x74, 0x65, 0x77, 0x61, 0x79, 0x2e, 0x47, 0x65, 0x74, 0x55,
-	0x73, 0x65, 0x72, 0x73, 0x4f, 0x6e, 0x6c, 0x69, 0x6e, 0x65, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73,
-	0x52, 0x65, 0x71, 0x1a, 0x25, 0x2e, 0x6d, 0x73, 0x67, 0x5f, 0x67, 0x61, 0x74, 0x65, 0x77, 0x61,
-	0x79, 0x2e, 0x47, 0x65, 0x74, 0x55, 0x73, 0x65, 0x72, 0x73, 0x4f, 0x6e, 0x6c, 0x69, 0x6e, 0x65,
-	0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x65, 0x73, 0x70, 0x42, 0x06, 0x5a, 0x04, 0x2e, 0x2f,
-	0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x6d, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x22, 0x4c, 0x0a, 0x10, 0x4b, 0x69, 0x63, 0x6b, 0x55,
+	0x73, 0x65, 0x72, 0x43, 0x6f, 0x6e, 0x6e, 0x73, 0x52, 0x65, 0x71, 0x12, 0x16, 0x0a, 0x06, 0x75,
+	0x73, 0x65, 0x72, 0x49, 0x44, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x75, 0x73, 0x65,
+	0x72, 0x49, 0x44, 0x12, 0x20, 0x0a, 0x0b, 0x70, 0x6c, 0x61, 0x74, 0x66, 0x6f, 0x72, 0x6d, 0x49,
+	0x44, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x09, 0x52, 0x0b, 0x70, 0x6c, 0x61, 0x74, 0x66, 0x6f,
+	0x72, 0x6d, 0x49, 0x44, 0x73, 0x22, 0x45, 0x0a, 0x11, 0x4b, 0x69, 0x63, 0x6b, 0x55, 0x73, 0x65,
+	0x72, 0x43, 0x6f, 0x6e, 0x6e, 0x73, 0x52, 0x65, 0x73, 0x70, 0x12, 0x18, 0x0a, 0x07, 0x65, 0x72,
+	0x72, 0x43, 0x6f, 0x64, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x07, 0x65, 0x72, 0x72,
+	0x43, 0x6f, 0x64, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x65, 0x72, 0x72, 0x4d, 0x73, 0x67, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x65, 0x72, 0x72, 0x4d, 0x73, 0x67, 0x32, 0xa0, 0x02, 0x0a,
+	0x19, 0x4f, 0x6e, 0x6c, 0x69, 0x6e, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x65,
+	0x6c, 0x61, 0x79, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x4e, 0x0a, 0x0d, 0x4f, 0x6e,
+	0x6c, 0x69, 0x6e, 0x65, 0x50, 0x75, 0x73, 0x68, 0x4d, 0x73, 0x67, 0x12, 0x1d, 0x2e, 0x6d, 0x73,
+	0x67, 0x5f, 0x67, 0x61, 0x74, 0x65, 0x77, 0x61, 0x79, 0x2e, 0x4f, 0x6e, 0x6c, 0x69, 0x6e, 0x65,
+	0x50, 0x75, 0x73, 0x68, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x71, 0x1a, 0x1e, 0x2e, 0x6d, 0x73, 0x67,
+	0x5f, 0x67, 0x61, 0x74, 0x65, 0x77, 0x61, 0x79, 0x2e, 0x4f, 0x6e, 0x6c, 0x69, 0x6e, 0x65, 0x50,
+	0x75, 0x73, 0x68, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x73, 0x70, 0x12, 0x63, 0x0a, 0x14, 0x47, 0x65,
+	0x74, 0x55, 0x73, 0x65, 0x72, 0x73, 0x4f, 0x6e, 0x6c, 0x69, 0x6e, 0x65, 0x53, 0x74, 0x61, 0x74,
+	0x75, 0x73, 0x12, 0x24, 0x2e, 0x6d, 0x73, 0x67, 0x5f, 0x67, 0x61, 0x74, 0x65, 0x77, 0x61, 0x79,
+	0x2e, 0x47, 0x65, 0x74, 0x55, 0x73, 0x65, 0x72, 0x73, 0x4f, 0x6e, 0x6c, 0x69, 0x6e, 0x65, 0x53,
+	0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x65, 0x71, 0x1a, 0x25, 0x2e, 0x6d, 0x73, 0x67, 0x5f, 0x67,
+	0x61, 0x74, 0x65, 0x77, 0x61, 0x79, 0x2e, 0x47, 0x65, 0x74, 0x55, 0x73, 0x65, 0x72, 0x73, 0x4f,
+	0x6e, 0x6c, 0x69, 0x6e, 0x65, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x65, 0x73, 0x70, 0x12,
+	0x4e, 0x0a, 0x0d, 0x4b, 0x69, 0x63, 0x6b, 0x55, 0x73, 0x65, 0x72, 0x43, 0x6f, 0x6e, 0x6e, 0x73,
+	0x12, 0x1d, 0x2e, 0x6d, 0x73, 0x67, 0x5f, 0x67, 0x61, 0x74, 0x65, 0x77, 0x61, 0x79, 0x2e, 0x4b,
+	0x69, 0x63, 0x6b, 0x55, 0x73, 0x65, 0x72, 0x43, 0x6f, 0x6e, 0x6e, 0x73, 0x52, 0x65, 0x71, 0x1a,
+	0x1e, 0x2e, 0x6d, 0x73, 0x67, 0x5f, 0x67, 0x61, 0x74, 0x65, 0x77, 0x61, 0x79, 0x2e, 0x4b, 0x69,
+	0x63, 0x6b, 0x55, 0x73, 0x65, 0x72, 0x43, 0x6f, 0x6e, 0x6e, 0x73, 0x52, 0x65, 0x73, 0x70, 0x42,
+	0x06, 0x5a, 0x04, 0x2e, 0x2f, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -598,33 +722,37 @@ func file_msg_gateway_proto_rawDescGZIP() []byte {
 	return file_msg_gateway_proto_rawDescData
 }
 
-var file_msg_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_msg_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_msg_gateway_proto_goTypes = []interface{}{
 	(*OnlinePushMsgReq)(nil),                       // 0: msg_gateway.OnlinePushMsgReq
 	(*OnlinePushMsgResp)(nil),                      // 1: msg_gateway.OnlinePushMsgResp
 	(*SingleMsgToUser)(nil),                        // 2: msg_gateway.SingleMsgToUser
 	(*GetUsersOnlineStatusReq)(nil),                // 3: msg_gateway.GetUsersOnlineStatusReq
 	(*GetUsersOnlineStatusResp)(nil),               // 4: msg_gateway.GetUsersOnlineStatusResp
-	(*GetUsersOnlineStatusResp_SuccessDetail)(nil), // 5: msg_gateway.GetUsersOnlineStatusResp.SuccessDetail
-	(*GetUsersOnlineStatusResp_FailedDetail)(nil),  // 6: msg_gateway.GetUsersOnlineStatusResp.FailedDetail
-	(*GetUsersOnlineStatusResp_SuccessResult)(nil), // 7: msg_gateway.GetUsersOnlineStatusResp.SuccessResult
-	(*pb.MsgData)(nil),                             // 8: server_api_params.MsgData
+	(*KickUserConnsReq)(nil),                       // 5: msg_gateway.KickUserConnsReq
+	(*KickUserConnsResp)(nil),                      // 6: msg_gateway.KickUserConnsResp
+	(*GetUsersOnlineStatusResp_SuccessDetail)(nil), // 7: msg_gateway.GetUsersOnlineStatusResp.SuccessDetail
+	(*GetUsersOnlineStatusResp_FailedDetail)(nil),  // 8: msg_gateway.GetUsersOnlineStatusResp.FailedDetail
+	(*GetUsersOnlineStatusResp_SuccessResult)(nil), // 9: msg_gateway.GetUsersOnlineStatusResp.SuccessResult
+	(*pb.MsgData)(nil),                             // 10: server_api_params.MsgData
 }
 var file_msg_gateway_proto_depIdxs = []int32{
-	8, // 0: msg_gateway.OnlinePushMsgReq.msgData:type_name -> server_api_params.MsgData
-	2, // 1: msg_gateway.OnlinePushMsgResp.resp:type_name -> msg_gateway.SingleMsgToUser
-	7, // 2: msg_gateway.GetUsersOnlineStatusResp.successResult:type_name -> msg_gateway.GetUsersOnlineStatusResp.SuccessResult
-	6, // 3: msg_gateway.GetUsersOnlineStatusResp.failedResult:type_name -> msg_gateway.GetUsersOnlineStatusResp.FailedDetail
-	5, // 4: msg_gateway.GetUsersOnlineStatusResp.SuccessResult.detailPlatformStatus:type_name -> msg_gateway.GetUsersOnlineStatusResp.SuccessDetail
-	0, // 5: msg_gateway.OnlineMessageRelayService.OnlinePushMsg:input_type -> msg_gateway.OnlinePushMsgReq
-	3, // 6: msg_gateway.OnlineMessageRelayService.GetUsersOnlineStatus:input_type -> msg_gateway.GetUsersOnlineStatusReq
-	1, // 7: msg_gateway.OnlineMessageRelayService.OnlinePushMsg:output_type -> msg_gateway.OnlinePushMsgResp
-	4, // 8: msg_gateway.OnlineMessageRelayService.GetUsersOnlineStatus:output_type -> msg_gateway.GetUsersOnlineStatusResp
-	7, // [7:9] is the sub-list for method output_type
-	5, // [5:7] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	10, // 0: msg_gateway.OnlinePushMsgReq.msgData:type_name -> server_api_params.MsgData
+	2,  // 1: msg_gateway.OnlinePushMsgResp.resp:type_name -> msg_gateway.SingleMsgToUser
+	9,  // 2: msg_gateway.GetUsersOnlineStatusResp.successResult:type_name -> msg_gateway.GetUsersOnlineStatusResp.SuccessResult
+	8,  // 3: msg_gateway.GetUsersOnlineStatusResp.failedResult:type_name -> msg_gateway.GetUsersOnlineStatusResp.FailedDetail
+	7,  // 4: msg_gateway.GetUsersOnlineStatusResp.SuccessResult.detailPlatformStatus:type_name -> msg_gateway.GetUsersOnlineStatusResp.SuccessDetail
+	0,  // 5: msg_gateway.OnlineMessageRelayService.OnlinePushMsg:input_type -> msg_gateway.OnlinePushMsgReq
+	3,  // 6: msg_gateway.OnlineMessageRelayService.GetUsersOnlineStatus:input_type -> msg_gateway.GetUsersOnlineStatusReq
+	5,  // 7: msg_gateway.OnlineMessageRelayService.KickUserConns:input_type -> msg_gateway.KickUserConnsReq
+	1,  // 8: msg_gateway.OnlineMessageRelayService.OnlinePushMsg:output_type -> msg_gateway.OnlinePushMsgResp
+	4,  // 9: msg_gateway.OnlineMessageRelayService.GetUsersOnlineStatus:output_type -> msg_gateway.GetUsersOnlineStatusResp
+	6,  // 10: msg_gateway.OnlineMessageRelayService.KickUserConns:output_type -> msg_gateway.KickUserConnsResp
+	8,  // [8:11] is the sub-list for method output_type
+	5,  // [5:8] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_msg_gateway_proto_init() }
@@ -694,7 +822,7 @@ func file_msg_gateway_proto_init() {
 			}
 		}
 		file_msg_gateway_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetUsersOnlineStatusResp_SuccessDetail); i {
+			switch v := v.(*KickUserConnsReq); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -706,7 +834,7 @@ func file_msg_gateway_proto_init() {
 			}
 		}
 		file_msg_gateway_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetUsersOnlineStatusResp_FailedDetail); i {
+			switch v := v.(*KickUserConnsResp); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -718,6 +846,30 @@ func file_msg_gateway_proto_init() {
 			}
 		}
 		file_msg_gateway_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetUsersOnlineStatusResp_SuccessDetail); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_msg_gateway_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetUsersOnlineStatusResp_FailedDetail); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_msg_gateway_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetUsersOnlineStatusResp_SuccessResult); i {
 			case 0:
 				return &v.state
@@ -736,7 +888,7 @@ func file_msg_gateway_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_msg_gateway_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

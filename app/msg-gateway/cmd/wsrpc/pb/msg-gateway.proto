@@ -46,9 +46,18 @@ message GetUsersOnlineStatusResp{
     repeated SuccessDetail detailPlatformStatus = 3;
   }
 }
+
+message KickUserConnsReq{
+  string userID = 1;
+  repeated string platformIDs = 2;
+}
+message KickUserConnsResp{
+  int32  errCode = 1;
+  string errMsg = 2;
+}
 service OnlineMessageRelayService {
   rpc OnlinePushMsg(OnlinePushMsgReq) returns(OnlinePushMsgResp);
   rpc GetUsersOnlineStatus(GetUsersOnlineStatusReq)returns(GetUsersOnlineStatusResp);
-  //  rpc SendMsgByWS(SendMsgByWSReq)  returns(MsgToUserResp);
+  rpc KickUserConns(KickUserConnsReq) returns(KickUserConnsResp);
 }
 
