@@ -18,8 +18,14 @@
 
 # Zero-IM-Server-Demo
 > 使用 `Zero-IM-Server` 开发一个 `IM` 应用 
-## 开发记录
-- [Zero-IM-Server-Demo 第一天](https://github.com/showurl/Zero-IM-Server-Demo/tree/main/docs/day01)
+## 开发计划
+- [ ] 完成 Zero-IM-Server 的 TODO [第一天](https://github.com/showurl/Zero-IM-Server-Demo/tree/main/docs/day01)
+- [ ] 完成 用户模块 rpc 接口 编写 [第二天](https://github.com/showurl/Zero-IM-Server-Demo/tree/main/docs/day02)
+- [x] 完成 用户关系模块 rpc 接口 编写
+- [x] 完成 群聊模块 rpc 接口 编写
+- [x] 完成 用户模块 api 接口 编写
+- [x] 完成 用户关系模块 api 接口 编写
+- [x] 完成 群聊模块 api 接口 编写
 
 # Zero-IM-Client-Go
 [Zero-IM-Client-Go](https://github.com/showurl/Zero-IM-Client-Go.git)
