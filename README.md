@@ -3,9 +3,12 @@
 
 ## 修改部分
 ### 服务注册发现
-> 使用go-zero微服务框架 开发更方便 自带 `链路追踪` `服务发现` `服务负载`
+> 使用go-zero微服务框架 开发更方便 自带`链路追踪` `服务发现` `服务负载`
 
-> 不依赖 `mysql` 所有业务逻辑均请求业务rpc服务 
+> 不依赖`mysql`所有业务逻辑均请求业务rpc服务 
+
+### 新增超级大群功能
+> 类似`QQ`群聊的`写扩散`模式  妈妈再也不用担心mongodb性能问题了
 
 ## 系统架构图
 ![system.svg](https://raw.githubusercontent.com/showurl/Zero-IM-Docs/main/images/20220517/Zero-IM-Server-System.svg)
