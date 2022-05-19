@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm/schema"
 )
 
-func Transaction(tx gorm.DB, fs ...func(tx *gorm.DB) error) error {
+func Transaction(tx *gorm.DB, fs ...func(tx *gorm.DB) error) error {
 	return tx.Transaction(func(tx *gorm.DB) error {
 		var err error
 		for _, f := range fs {
