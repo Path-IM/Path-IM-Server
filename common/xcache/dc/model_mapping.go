@@ -10,7 +10,10 @@ import (
 	"github.com/showurl/Zero-IM-Server/common/xcache/global"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
+	"net/url"
 	"reflect"
+	"sort"
+	"strings"
 	"time"
 )
 
@@ -29,11 +32,21 @@ func GetDbMapping(rc redis.UniversalClient, tx *gorm.DB) *DbMapping {
 	return &DbMapping{rc: rc, tx: tx}
 }
 
-func (v *DbMapping) FirstByID(model interface{}, options ...FuncFirstOption) error {
+type filter struct {
+	Where string
+	Args  []interface{}
+}
+
+func whereMap2Filters(whereMap map[string][]interface{}) (filters []filter) {
+	for where, args := range whereMap {
+		filters = append(filters, filter{Where: where, Args: args})
+	}
+	return
+}
+func (v *DbMapping) FirstByWhere(model interface{}, whereMap map[string][]interface{}, options ...FuncFirstOption) error {
 	var (
 		tablerName string // 表名
 		ctx        = context.Background()
-		id         string
 	)
 	// tableName
 	{
@@ -44,24 +57,17 @@ func (v *DbMapping) FirstByID(model interface{}, options ...FuncFirstOption) err
 			tablerName = tabler.TableName()
 		}
 	}
-	// id
-	{
-		if iGetID, ok := model.(global.IGetId); !ok {
-			return global.ErrIGetIDNotImplement
-		} else {
-			id = iGetID.GetIdString()
-		}
-	}
 	var (
-		option = defaultOption(id)
+		option = defaultOption()
 	)
 	{
 		for _, o := range options {
 			o(option)
 		}
 	}
-	redisKey := v.GetKey(tablerName, id, options...)
+	redisKey := v.Key(model, whereMap, options...)
 	result, err := v.rc.Get(ctx, redisKey).Result()
+
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			var expiredTime = time.Minute
@@ -69,7 +75,12 @@ func (v *DbMapping) FirstByID(model interface{}, options ...FuncFirstOption) err
 				expiredTime = global.ExpireDuration(d.DetailExpiredSecond())
 			}
 			// 去数据库里查询
-			err = v.tx.Model(model).Table(tablerName).Where(option.where, option.args...).First(model).Error
+			filters := whereMap2Filters(whereMap)
+			tx := v.tx.Model(model).Table(tablerName)
+			for _, f := range filters {
+				tx = tx.Where(f.Where, f.Args...)
+			}
+			err = tx.Order(option.order).First(model).Error
 			if err != nil {
 				if errors.Is(err, gorm.ErrRecordNotFound) {
 					v.rc.Set(ctx, redisKey, RecordNotFoundPlaceholder, expiredTime)
@@ -96,165 +107,95 @@ func (v *DbMapping) FirstByID(model interface{}, options ...FuncFirstOption) err
 	}
 	return nil
 }
-
-func (v *DbMapping) ListByID(
-	model,
-	list interface{},
-	ids []string,
-	options ...FuncFirstOption,
-) error {
-	if len(ids) == 0 {
+func (v *DbMapping) FirstById(model interface{}, id string, options ...FuncFirstOption) error {
+	return v.FirstByWhere(model, map[string][]interface{}{"id = ?": {id}}, options...)
+}
+func (v *DbMapping) FlushByWhere(model interface{}, whereMap map[string][]interface{}, options ...FuncFirstOption) error {
+	k := v.Key(model, whereMap, options...)
+	return v.rc.Del(context.Background(), k).Err()
+}
+func (v *DbMapping) FlushByIds(model interface{}, ids []string, options ...FuncFirstOption) error {
+	var keys []string
+	for _, id := range ids {
+		k := v.Key(model, map[string][]interface{}{"id = ?": {id}}, options...)
+		keys = append(keys, k)
+	}
+	if len(keys) == 0 {
 		return nil
 	}
+	return v.rc.Del(context.Background(), keys...).Err()
+}
+
+// ListByIds
+func (v *DbMapping) ListByIds(model interface{}, results interface{}, ids []string, options ...FuncFirstOption) error {
 	var (
-		ctx        = context.Background()
 		keys       []string
-		tablerName string
-		cacheIdMap = make(map[string]bool)
-		needDbIds  []string
-		option     = defaultListOption()
+		cacheIdMap = make(map[string]interface{})
 	)
-	// tablerName
-	{
-		if tabler, ok := model.(schema.Tabler); !ok {
-			return global.ErrTablerNotImplement
-		} else {
-			tablerName = tabler.TableName()
-		}
+	for _, id := range ids {
+		k := v.Key(model, map[string][]interface{}{"id = ?": {id}}, options...)
+		keys = append(keys, k)
 	}
-	// id
-	{
-		if _, ok := model.(global.IGetId); !ok {
-			return global.ErrIGetIDNotImplement
-		}
+	if len(keys) == 0 {
+		return nil
 	}
-	{
-		for _, listOption := range options {
-			listOption(option)
-		}
-	}
-	// keys
-	{
-		for _, id := range ids {
-			keys = append(keys, v.GetKey(tablerName, id, options...))
-		}
-	}
-	result, err := v.rc.MGet(ctx, keys...).Result()
+	result, err := v.rc.MGet(context.Background(), keys...).Result()
 	if err != nil {
 		return err
 	}
+	resultsV := reflect.ValueOf(results)
+	list := deepcopy.Copy(results)
 	objT := reflect.TypeOf(list)
 	objV := reflect.ValueOf(list)
 	if objT.Kind() == reflect.Ptr {
 		objT = objT.Elem()
 		objV = objV.Elem()
 	} else {
-		return global.ErrInputListNotPtr
+		panic(global.ErrInputListNotPtr)
 	}
-	if objT.Kind() == reflect.Slice {
-		sliceElem := objT.Elem()
-		if sliceElem.Kind() == reflect.Ptr {
-			sliceElem = sliceElem.Elem()
-		} else {
-			return global.ErrInputModelNotPtr
-		}
-		if sliceElem.Kind() == reflect.Struct {
-			for _, i := range result {
-				copyModel := deepcopy.Copy(model)
-				if s, ok := i.(string); ok {
-					if s == RecordNotFoundPlaceholder {
-						continue
-					}
-					buf := []byte(s)
-					err = fastjson.Unmarshal(buf, copyModel)
-					if err != nil {
-						continue
-					}
-					id := copyModel.(global.IGetId).GetIdString()
-					cacheIdMap[id] = true
-					objV.Set(reflect.Append(objV, reflect.ValueOf(copyModel)))
-				}
+	if objT.Kind() != reflect.Slice {
+		panic(global.ErrInputListNotSlice)
+	}
+	sliceElem := objT.Elem()
+	if sliceElem.Kind() != reflect.Ptr {
+		panic(global.ErrInputListNotPtr)
+	}
+	if sliceElem.Kind() != reflect.Struct {
+		panic(global.ErrInputModelNotStruct)
+	}
+	for _, i := range result {
+		copyModel := deepcopy.Copy(model)
+		if s, ok := i.(string); ok {
+			if s == RecordNotFoundPlaceholder {
+				continue
 			}
-		} else {
-			return global.ErrInputModelNotStruct
-		}
-	} else {
-		return global.ErrInputListNotSlice
-	}
-	// 对比缓存中的和需要查询的
-	idsFmt := ","
-	{
-		for _, id := range ids {
-			idsFmt += id + ","
-			if _, exist := cacheIdMap[id]; !exist {
-				needDbIds = append(needDbIds, id)
-			}
-		}
-	}
-	var expiredTime = time.Minute
-	if d, ok := model.(IDetailExpired); ok {
-		expiredTime = global.ExpireDuration(d.DetailExpiredSecond())
-	}
-	if len(needDbIds) > 0 {
-		dbList := deepcopy.Copy(list)
-		//dbList := reflect.MakeSlice(objT, 0, len(needDbIds))
-		//reflect.utils.Copy(dbList, objV)
-		orderExpr := fmt.Sprintf("INSTR('%s',CONCAT(',',%s,','))", idsFmt, option.fieldId)
-		tx := v.tx.Table(tablerName).
-			Where(option.fieldId+" in (?)", needDbIds)
-		if option.where != "" {
-			tx = tx.Where(option.where, option.args...)
-		}
-		err = tx.
-			Order(orderExpr).Find(dbList).Error
-		if err != nil {
-			return err
-		}
-		objV1 := reflect.ValueOf(dbList).Elem()
-		for i := 0; i < objV1.Len(); i++ {
-			m := objV1.Index(i).Interface()
-			buf, err := fastjson.Marshal(m)
+			buf := []byte(s)
+			err = fastjson.Unmarshal(buf, copyModel)
 			if err != nil {
 				continue
 			}
-			id := m.(global.IGetId).GetIdString()
-			v.rc.Set(ctx, v.GetKey(tablerName, id, options...), string(buf), expiredTime)
-			cacheIdMap[id] = true
-			objV.Set(reflect.Append(objV, reflect.ValueOf(m)))
+			id := copyModel.(global.IGetId).GetIdString()
+			cacheIdMap[id] = copyModel
+			objV.Set(reflect.Append(objV, reflect.ValueOf(copyModel)))
 		}
 	}
-	// 对比缓存中的和需要查询的
-	{
-		needDbIds = []string{}
-		for _, id := range ids {
-			if _, exist := cacheIdMap[id]; !exist {
-				needDbIds = append(needDbIds, id)
+	for _, id := range ids {
+		if value, ok := cacheIdMap[id]; !ok {
+			copyModel := deepcopy.Copy(model)
+			err = v.FirstById(copyModel, id, options...)
+			if err != nil {
+				if errors.Is(err, gorm.ErrRecordNotFound) || errors.Is(err, global.RedisErrorNotExists) {
+					continue
+				}
+				return err
 			}
+			resultsV.Set(reflect.Append(resultsV, reflect.ValueOf(copyModel)))
+		} else {
+			resultsV.Set(reflect.Append(resultsV, reflect.ValueOf(value)))
 		}
-	}
-	// 缓存制空
-	{
-		for _, id := range needDbIds {
-			v.rc.Set(ctx, v.GetKey(tablerName, id, options...), RecordNotFoundPlaceholder, expiredTime)
-		}
-	}
-	return err
-}
-
-func (v *DbMapping) FlushByID(model interface{}, ids []string, options ...FuncFirstOption) error {
-	var (
-		ctx = context.Background()
-	)
-	keys, err := v.GetKeys(model, ids, options...)
-	if err != nil {
-		return err
-	}
-	if len(keys) > 0 {
-		return v.rc.Del(ctx, keys...).Err()
 	}
 	return nil
 }
-
 func (v *DbMapping) MapByID(
 	model,
 	list interface{},
@@ -277,7 +218,7 @@ func (v *DbMapping) MapByID(
 	if kind != reflect.Map {
 		return global.ErrInputMpNotMap
 	}
-	err := v.ListByID(model, list, ids, options...)
+	err := v.ListByIds(model, list, ids, options...)
 	if err != nil {
 		return err
 	}
@@ -292,66 +233,36 @@ func (v *DbMapping) MapByID(
 	return nil
 }
 
-func (v *DbMapping) GetKeys(model interface{}, ids []string, options ...FuncFirstOption) (keys []string, err error) {
+func (v *DbMapping) Key(model interface{}, whereMap map[string][]interface{}, options ...FuncFirstOption) string {
+	option := v.option(options...)
 	var (
-		ctx        = context.Background()
-		tablerName string
-		option     = defaultListOption()
+		tableName = model.(schema.Tabler).TableName()
+		where     = "" // key1:value1:key2:value2
 	)
-	// tablerName
+	// where
 	{
-		if tabler, ok := model.(schema.Tabler); !ok {
-			err = global.ErrTablerNotImplement
-			return
-		} else {
-			tablerName = tabler.TableName()
+		var keys []string
+		for k := range whereMap {
+			keys = append(keys, strings.TrimSpace(k))
+		}
+		sort.StringsAreSorted(keys)
+		for _, k := range keys {
+			v := whereMap[k]
+			where += fmt.Sprintf("%s:%v", k, v)
 		}
 	}
-	{
-		for _, firstOption := range options {
-			firstOption(option)
-		}
-	}
-	if len(ids) == 0 {
-		keys, err = v.rc.Keys(ctx, v.GetKey(tablerName, "*", options...)).Result()
-		if err != nil {
-			return
-		}
-	} else {
-		for _, id := range ids {
-			keys = append(keys, v.GetKey(tablerName, id, options...))
-		}
-	}
-	return
+	return strings.ReplaceAll(url.QueryEscape(fmt.Sprintf(`%s:tablename:%s:where:%s:orderby:%s`, StringDetailPrefix, tableName, where, option.order)), "%3A", ":")
+}
+func (v *DbMapping) KeyById(model interface{}, id string, options ...FuncFirstOption) string {
+	return v.Key(model, map[string][]interface{}{
+		"id = ?": {id},
+	}, options...)
 }
 
-func (v *DbMapping) GetKeyByModel(model interface{}, id string, options ...FuncFirstOption) (string, error) {
-	var (
-		tableName string
-		option    = defaultListOption()
-	)
-	{
-		for _, firstOption := range options {
-			firstOption(option)
-		}
+func (v *DbMapping) option(options ...FuncFirstOption) *FirstOption {
+	option := defaultOption()
+	for _, o := range options {
+		o(option)
 	}
-	// tablerName
-	{
-		if tabler, ok := model.(schema.Tabler); !ok {
-			return "", global.ErrTablerNotImplement
-		} else {
-			tableName = tabler.TableName()
-		}
-	}
-	return v.GetKey(tableName, id, options...), nil
-}
-
-func (v *DbMapping) GetKey(tableName string, id string, options ...FuncFirstOption) string {
-	var option = defaultListOption()
-	{
-		for _, firstOption := range options {
-			firstOption(option)
-		}
-	}
-	return global.MergeKey(StringDetailPrefix, tableName, id) + option.keySuffix
+	return option
 }
