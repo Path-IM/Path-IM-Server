@@ -17,6 +17,8 @@ const ( ///消息类型
 	Quote          = 114
 	Common         = 200
 	GroupMsg       = 201
+
+	NotificationUser2User = 301 // 用户对用户的通知 比如添加好友请求 打招呼... 不是好友也可以发送 但是拉黑就不能发送了
 )
 
 var ContentType2PushContent = map[int64]string{
