@@ -24,8 +24,8 @@
 ## 开发计划
 - [x] 完成 Zero-IM-Server 的 TODO [第一天](https://github.com/showurl/Zero-IM-Server-Demo/tree/main/docs/day01)
 - [x] 完成 用户模块 rpc 接口 编写 [第二天](https://github.com/showurl/Zero-IM-Server-Demo/tree/main/docs/day02)
-- [ ] 完成 用户关系模块 rpc 接口 编写
-- [ ] 完成 群聊模块 rpc 接口 编写
+- [x] 完成 用户关系模块 rpc 接口 编写 [第三天](https://github.com/showurl/Zero-IM-Server-Demo/tree/main/docs/day03/relation.md)
+- [x] 完成 群聊模块 rpc 接口 编写 [第三天](https://github.com/showurl/Zero-IM-Server-Demo/tree/main/docs/day03/group.md)
 - [ ] 完成 用户模块 api 接口 编写
 - [ ] 完成 用户关系模块 api 接口 编写
 - [ ] 完成 群聊模块 api 接口 编写
