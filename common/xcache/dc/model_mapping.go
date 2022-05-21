@@ -160,6 +160,7 @@ func (v *DbMapping) ListByIds(model interface{}, results interface{}, ids []stri
 	if sliceElem.Kind() != reflect.Ptr {
 		panic(global.ErrInputListNotPtr)
 	}
+	sliceElem = sliceElem.Elem()
 	if sliceElem.Kind() != reflect.Struct {
 		panic(global.ErrInputModelNotStruct)
 	}
