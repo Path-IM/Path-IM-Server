@@ -31,3 +31,8 @@ func (s *OnlineMessageRelayServiceServer) GetUsersOnlineStatus(ctx context.Conte
 	l := rpclogic.NewGetUsersOnlineStatusLogic(ctx, s.svcCtx)
 	return l.GetUsersOnlineStatus(in)
 }
+
+func (s *OnlineMessageRelayServiceServer) KickUserConns(ctx context.Context, in *pb.KickUserConnsReq) (*pb.KickUserConnsResp, error) {
+	l := rpclogic.NewKickUserConnsLogic(ctx, s.svcCtx)
+	return l.KickUserConns(in)
+}
