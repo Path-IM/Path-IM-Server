@@ -143,7 +143,7 @@ func (v *DbMapping) ListByIds(model interface{}, results interface{}, ids []stri
 	if err != nil {
 		return err
 	}
-	resultsV := reflect.ValueOf(results)
+	resultsV := reflect.ValueOf(results).Elem()
 	list := deepcopy.Copy(results)
 	objT := reflect.TypeOf(list)
 	objV := reflect.ValueOf(list)
