@@ -30,6 +30,7 @@
 - [x] 完成 用户关系模块 api 接口 编写 [第四天](https://github.com/showurl/Zero-IM-Server-Demo/tree/main/docs/day04)
 - [x] 完成 群聊模块 api 接口 编写 [第四天](https://github.com/showurl/Zero-IM-Server-Demo/tree/main/docs/day04)
 - [x] 完成 k8s 部署 [第五天](https://github.com/showurl/Zero-IM-Server-Demo/tree/main/deploy/k8s)
+- [x] 完成 api 文档 编写 [第六天](https://github.com/showurl/Zero-IM-Server-Demo/tree/main/docs/api.md)
 
 # Zero-IM-Client-Go
 [Zero-IM-Client-Go](https://github.com/showurl/Zero-IM-Client-Go.git)
