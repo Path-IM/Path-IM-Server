@@ -1,9 +1,7 @@
 package rpclogic
 
 import (
-	"bytes"
 	"context"
-	"encoding/gob"
 	"github.com/golang/protobuf/proto"
 	"github.com/showurl/Zero-IM-Server/app/msg-gateway/cmd/wsrpc/internal/rpcsvc"
 	"github.com/showurl/Zero-IM-Server/app/msg-gateway/cmd/wsrpc/internal/wslogic"
@@ -37,13 +35,11 @@ func (l *OnlinePushMsgLogic) OnlinePushMsg(in *pb.OnlinePushMsgReq) (*pb.OnlineP
 	if in.MsgData.SessionType == types.GroupChatType {
 		reqIdentifier = types.WSGroupPushMsg
 	}
-	mReply := wslogic.Resp{
-		ReqIdentifier: int32(reqIdentifier),
+	mReply := &pb.Resp{
+		ReqIdentifier: uint32(reqIdentifier),
 		Data:          msgBytes,
 	}
-	var replyBytes bytes.Buffer
-	enc := gob.NewEncoder(&replyBytes)
-	err := enc.Encode(mReply)
+	replyBytes, err := proto.Marshal(mReply)
 	if err != nil {
 		l.Error("data encode err ", err.Error())
 	}
@@ -63,7 +59,7 @@ func (l *OnlinePushMsgLogic) OnlinePushMsg(in *pb.OnlinePushMsgReq) (*pb.OnlineP
 			tag = true
 			var resultCode int64
 			xtrace.StartFuncSpan(l.ctx, "OnlinePushMsgLogic.OnlinePushMsg", func(ctx context.Context) {
-				resultCode = logic.SendMsgToUser(ctx, conn, replyBytes.Bytes(), in, v, recvID)
+				resultCode = logic.SendMsgToUser(ctx, conn, replyBytes, in, v, recvID)
 			})
 			temp := &pb.SingleMsgToUser{
 				ResultCode:     resultCode,

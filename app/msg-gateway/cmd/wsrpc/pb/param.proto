@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option go_package = "./pb";
+package msg_gateway;
+message Req {
+  uint32 ReqIdentifier = 1;
+  string Token = 2;
+  string SendID = 3;
+  string MsgIncr = 4;
+  bytes Data = 5;
+}
+message Resp {
+  uint32 ReqIdentifier = 1;
+  string MsgIncr = 2;
+  uint32 ErrCode = 3;
+  string ErrMsg = 4;
+  bytes Data = 5;
+}

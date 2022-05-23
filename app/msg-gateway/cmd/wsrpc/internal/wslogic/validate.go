@@ -2,6 +2,7 @@ package wslogic
 
 import (
 	"github.com/golang/protobuf/proto"
+	msggatewaypb "github.com/showurl/Zero-IM-Server/app/msg-gateway/cmd/wsrpc/pb"
 	chatpb "github.com/showurl/Zero-IM-Server/app/msg/cmd/rpc/pb"
 	"github.com/showurl/Zero-IM-Server/common/types"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -48,7 +49,7 @@ type SeqListData struct {
 	SeqList []int64 `mapstructure:"seqList" validate:"required"`
 }
 
-func (l *MsggatewayLogic) argsValidate(m *Req, r int32) (isPass bool, errCode int32, errMsg string, returnData interface{}) {
+func (l *MsggatewayLogic) argsValidate(m *msggatewaypb.Req, r int32) (isPass bool, errCode int32, errMsg string, returnData interface{}) {
 	switch r {
 	case types.WSSendMsg:
 		data := chatpb.MsgData{}

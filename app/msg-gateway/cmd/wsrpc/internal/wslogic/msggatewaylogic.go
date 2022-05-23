@@ -5,6 +5,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
 	"github.com/showurl/Zero-IM-Server/app/im-user/cmd/rpc/pb"
+	msggatewaypb "github.com/showurl/Zero-IM-Server/app/msg-gateway/cmd/wsrpc/pb"
 	chatpb "github.com/showurl/Zero-IM-Server/app/msg/cmd/rpc/pb"
 	"github.com/showurl/Zero-IM-Server/common/xtrace"
 	"go.opentelemetry.io/otel/attribute"
@@ -136,7 +137,7 @@ func (l *MsggatewayLogic) readMsg(conn *UserConn, uid string, platformID string)
 	}
 }
 
-func (l *MsggatewayLogic) getSeqReq(ctx context.Context, conn *UserConn, m *Req) {
+func (l *MsggatewayLogic) getSeqReq(ctx context.Context, conn *UserConn, m *msggatewaypb.Req) {
 	rpcReq := chatpb.GetMaxAndMinSeqReq{}
 	nReply := new(chatpb.GetMaxAndMinSeqResp)
 	rpcReq.UserID = m.SendID
@@ -151,7 +152,7 @@ func (l *MsggatewayLogic) getSeqReq(ctx context.Context, conn *UserConn, m *Req)
 		l.getSeqResp(ctx, conn, m, rpcReply)
 	}
 }
-func (l *MsggatewayLogic) getSuperGroupSeqReq(ctx context.Context, conn *UserConn, m *Req) {
+func (l *MsggatewayLogic) getSuperGroupSeqReq(ctx context.Context, conn *UserConn, m *msggatewaypb.Req) {
 	rpcReq := &chatpb.GetMaxAndMinSuperGroupSeqReq{}
 	err := proto.Unmarshal(m.Data, rpcReq)
 	nReply := new(chatpb.GetMaxAndMinSuperGroupSeqResp)
@@ -173,13 +174,13 @@ func (l *MsggatewayLogic) getSuperGroupSeqReq(ctx context.Context, conn *UserCon
 	}
 }
 
-func (l *MsggatewayLogic) getSeqResp(ctx context.Context, conn *UserConn, m *Req, pb *chatpb.GetMaxAndMinSeqResp) {
+func (l *MsggatewayLogic) getSeqResp(ctx context.Context, conn *UserConn, m *msggatewaypb.Req, pb *chatpb.GetMaxAndMinSeqResp) {
 	var mReplyData chatpb.GetMaxAndMinSeqResp
 	mReplyData.MaxSeq = pb.GetMaxSeq()
 	mReplyData.MinSeq = pb.GetMinSeq()
 	b, _ := proto.Marshal(&mReplyData)
 	mReply := Resp{
-		ReqIdentifier: m.ReqIdentifier,
+		ReqIdentifier: int32(m.ReqIdentifier),
 		MsgIncr:       m.MsgIncr,
 		ErrCode:       pb.GetErrCode(),
 		ErrMsg:        pb.GetErrMsg(),
@@ -188,12 +189,12 @@ func (l *MsggatewayLogic) getSeqResp(ctx context.Context, conn *UserConn, m *Req
 	l.sendMsg(ctx, conn, mReply)
 }
 
-func (l *MsggatewayLogic) getSuperGroupResp(ctx context.Context, conn *UserConn, m *Req, pb *chatpb.GetMaxAndMinSuperGroupSeqResp) {
+func (l *MsggatewayLogic) getSuperGroupResp(ctx context.Context, conn *UserConn, m *msggatewaypb.Req, pb *chatpb.GetMaxAndMinSuperGroupSeqResp) {
 	var mReplyData chatpb.GetMaxAndMinSuperGroupSeqResp
 	mReplyData.SuperGroupSeqList = pb.GetSuperGroupSeqList()
 	b, _ := proto.Marshal(&mReplyData)
 	mReply := Resp{
-		ReqIdentifier: m.ReqIdentifier,
+		ReqIdentifier: int32(m.ReqIdentifier),
 		MsgIncr:       m.MsgIncr,
 		ErrCode:       pb.GetErrCode(),
 		ErrMsg:        pb.GetErrMsg(),
