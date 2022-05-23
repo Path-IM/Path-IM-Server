@@ -16,7 +16,7 @@ func (l *SendMsgLogic) copyCallbackCommonReqStruct(msg *chatpb.SendMsgReq) msgca
 		SessionType:      msg.MsgData.SessionType,
 		MsgFrom:          msg.MsgData.MsgFrom,
 		ContentType:      msg.MsgData.ContentType,
-		Status:           msg.MsgData.Status,
+		Status:           0,
 		CreateTime:       msg.MsgData.CreateTime,
 		Content:          string(msg.MsgData.Content),
 	}

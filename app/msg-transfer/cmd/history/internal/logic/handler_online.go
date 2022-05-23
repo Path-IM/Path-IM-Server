@@ -135,18 +135,6 @@ func (l *MsgTransferHistoryOnlineLogic) ChatMs2Mongo(msg []byte, msgKey string) 
 			}
 		})
 	case types.GroupChatType:
-		xtrace.StartFuncSpan(l.ctx, "MsgTransferHistoryOnlineLogic.ChatMs2Mongo.GroupChat", func(ctx context.Context) {
-			if isHistory {
-				err := l.saveUserChat(ctx, msgFromMQ.MsgData.RecvID, &msgFromMQ)
-				if err != nil {
-					l.Logger.Error("group data insert to mongo err ", msgFromMQ.String(), " ", msgFromMQ.MsgData.RecvID, " ", err.Error())
-					return
-				}
-				groupMsgCount++
-			}
-			go l.sendMessageToPush(ctx, &msgFromMQ, msgFromMQ.MsgData.RecvID)
-		})
-	case types.SuperGroupChatType:
 		xtrace.StartFuncSpan(l.ctx, "MsgTransferHistoryOnlineLogic.ChatMs2Mongo.SuperGroupChat", func(ctx context.Context) {
 			if isHistory {
 				err := l.saveSuperGroupChat(ctx, msgFromMQ.MsgData.GroupID, &msgFromMQ)

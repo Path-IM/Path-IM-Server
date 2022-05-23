@@ -32,3 +32,5 @@ ImUserRpc:
 MsgRpc:
   Endpoints:
     - 192.168.2.77:10130
+
+VerifyTokenOnce: true

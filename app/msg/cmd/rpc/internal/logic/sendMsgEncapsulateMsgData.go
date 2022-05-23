@@ -25,8 +25,6 @@ func (l *SendMsgLogic) encapsulateMsgData(msg *chatpb.MsgData) {
 		fallthrough
 	case types.File:
 		fallthrough
-	case types.AtText:
-		fallthrough
 	case types.Merger:
 		fallthrough
 	case types.Card:

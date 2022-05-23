@@ -17,13 +17,13 @@ func (r *Rep) GetUserMinSeq(uid string) (uint64, error) {
 }
 
 func (r *Rep) GetSuperGroupMaxSeq(groupId string) (uint64, error) {
-	key := types.RedisKeySuperGroupIncrSeq + groupId
+	key := types.RedisKeyGroupIncrSeq + groupId
 	count, err := r.Cache.Get(context.Background(), key).Int64()
 	return uint64(count), err
 }
 
 func (r *Rep) GetSuperGroupMinSeq(groupId string) (uint64, error) {
-	key := types.RedisKeySuperGroupMinSeq + groupId
+	key := types.RedisKeyGroupMinSeq + groupId
 	count, err := r.Cache.Get(context.Background(), key).Int64()
 	return uint64(count), err
 }

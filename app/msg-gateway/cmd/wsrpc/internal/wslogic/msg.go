@@ -6,10 +6,13 @@ import (
 	"encoding/gob"
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
+	imuserpb "github.com/showurl/Zero-IM-Server/app/im-user/cmd/rpc/pb"
 	"github.com/showurl/Zero-IM-Server/app/msg/cmd/rpc/chat"
 	chatpb "github.com/showurl/Zero-IM-Server/app/msg/cmd/rpc/pb"
 	"github.com/showurl/Zero-IM-Server/common/types"
+	"github.com/showurl/Zero-IM-Server/common/utils"
 	"github.com/showurl/Zero-IM-Server/common/xerr"
+	"github.com/showurl/Zero-IM-Server/common/xtrace"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
@@ -31,30 +34,46 @@ func (l *MsggatewayLogic) msgParse(ctx context.Context, conn *UserConn, binaryMs
 		l.sendErrMsg(ctx, conn, 201, err.Error(), xerr.NewErrCode(int(m.ReqIdentifier)), m.MsgIncr)
 		return
 	}
+	if !l.svcCtx.Config.VerifyTokenOnce {
+		tokenInvalid := false
+		tokenInvalidMsg := ""
+		xtrace.StartFuncSpan(ctx, utils.CallerFuncName(), func(ctx context.Context) {
+			uid, platform := l.getUserUid(conn)
+			tokenResp, err1 := l.svcCtx.ImUserService.VerifyToken(ctx, &imuserpb.VerifyTokenReq{
+				Token:    m.Token,
+				Platform: platform,
+				SendID:   uid,
+			})
+			if err1 != nil {
+				tokenInvalid = true
+				tokenInvalidMsg = "server error"
+				logx.WithContext(ctx).Error("ws verify token err", err1.Error())
+				return
+			}
+			if !tokenResp.Success {
+				tokenInvalid = true
+				tokenInvalidMsg = tokenResp.ErrMsg
+				logx.WithContext(ctx).Error("ws verify token err", "token invalid")
+				return
+			}
+		})
+		if tokenInvalid {
+			l.sendErrMsg(ctx, conn, 202, tokenInvalidMsg, xerr.NewErrCode(int(m.ReqIdentifier)), m.MsgIncr)
+			return
+		}
+	}
 	switch m.ReqIdentifier {
 	case types.WSGetNewestSeq:
 		l.getSeqReq(ctx, conn, &m)
-	case types.WSGetNewestSuperGroupSeq:
+	case types.WSGetNewestGroupSeq:
 		l.getSuperGroupSeqReq(ctx, conn, &m)
 	case types.WSSendMsg:
 		l.sendMsgReq(ctx, conn, &m)
-	case types.WSSendSignalMsg:
-		l.sendSignalMsgReq(ctx, conn, &m)
 	case types.WSPullMsgBySeqList:
 		l.pullMsgBySeqListReq(ctx, conn, &m)
-	case types.WSPullMsgBySuperGroupSeqList:
+	case types.WSPullMsgByGroupSeqList:
 		l.pullMsgBySuperGroupSeqListReq(ctx, conn, &m)
 	default:
-	}
-}
-func (l *MsggatewayLogic) sendSignalMsgReq(ctx context.Context, conn *UserConn, m *Req) {
-	logx.WithContext(ctx).Info("Ws call success to sendSignalMsgReq start", m.MsgIncr, m.ReqIdentifier, m.SendID, m.Data)
-	//nReply := new(chatpb.SendMsgResp)
-	isPass, errCode, errMsg, _ := l.argsValidate(m, types.WSSendSignalMsg)
-	if isPass {
-		l.sendSignalMsgResp(ctx, conn, 204, "grpc SignalMessageAssemble failed: 不支持了", m)
-	} else {
-		l.sendSignalMsgResp(ctx, conn, errCode, errMsg, m)
 	}
 }
 
@@ -176,7 +195,7 @@ func (l *MsggatewayLogic) pullMsgBySeqListReq(ctx context.Context, conn *UserCon
 func (l *MsggatewayLogic) pullMsgBySuperGroupSeqListReq(ctx context.Context, conn *UserConn, m *Req) {
 	logx.WithContext(ctx).Info("Ws call success to pullMsgBySuperGroupSeqListReq start", m.SendID, m.ReqIdentifier, m.MsgIncr, m.Data)
 	nReply := new(chatpb.PullMessageBySeqListResp)
-	isPass, errCode, errMsg, data := l.argsValidate(m, types.WSPullMsgBySuperGroupSeqList)
+	isPass, errCode, errMsg, data := l.argsValidate(m, types.WSPullMsgByGroupSeqList)
 	if isPass {
 		rpcReq := chatpb.PullMessageBySuperGroupSeqListReq{}
 		rpcReq.SeqList = data.(chatpb.PullMessageBySuperGroupSeqListReq).SeqList

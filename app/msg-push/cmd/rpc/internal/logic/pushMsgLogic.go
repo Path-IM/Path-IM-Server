@@ -122,6 +122,13 @@ func (l *PushMsgLogic) MsgToUser(pushMsg *pb.PushMsgReq) {
 					switch pushMsg.MsgData.ContentType {
 					case types.Text:
 						content = types.ContentType2PushContent[types.Text]
+						if pushMsg.MsgData.AtUserIDList != nil {
+							if strUtils.IsContain(v.RecvID, pushMsg.MsgData.AtUserIDList) {
+								content = "[有人@你]" + types.ContentType2PushContent[types.Common]
+							} else {
+								content = types.ContentType2PushContent[types.GroupMsg]
+							}
+						}
 					case types.Picture:
 						content = types.ContentType2PushContent[types.Picture]
 					case types.Voice:
@@ -130,14 +137,6 @@ func (l *PushMsgLogic) MsgToUser(pushMsg *pb.PushMsgReq) {
 						content = types.ContentType2PushContent[types.Video]
 					case types.File:
 						content = types.ContentType2PushContent[types.File]
-					case types.AtText:
-						a := AtContent{}
-						_ = fastjson.Unmarshal(pushMsg.MsgData.Content, &a)
-						if strUtils.IsContain(v.RecvID, a.AtUserList) {
-							content = types.ContentType2PushContent[types.AtText] + types.ContentType2PushContent[types.Common]
-						} else {
-							content = types.ContentType2PushContent[types.GroupMsg]
-						}
 					default:
 						content = types.ContentType2PushContent[types.Common]
 					}
@@ -161,7 +160,7 @@ func (l *PushMsgLogic) PushSuperGroupMsg(in *chatpb.PushMsgToSuperGroupDataToMQ)
 	a := AtContent{}
 	tagAll := false
 	// 如果艾特人了
-	if in.MsgData.ContentType == types.AtText {
+	if in.MsgData.AtUserIDList != nil {
 		tagAll = strUtils.IsContain(types.AtAllString, in.MsgData.AtUserIDList)
 		_ = fastjson.Unmarshal(in.MsgData.Content, &a)
 	}
@@ -325,6 +324,9 @@ func (l *PushMsgLogic) listenOfflinePushUserChan(
 		switch pushMsg.MsgData.ContentType {
 		case types.Text:
 			content = types.ContentType2PushContent[types.Text]
+			if pushMsg.MsgData.AtUserIDList != nil {
+				content = types.ContentType2PushContent[types.GroupMsg]
+			}
 		case types.Picture:
 			content = types.ContentType2PushContent[types.Picture]
 		case types.Voice:
@@ -333,10 +335,6 @@ func (l *PushMsgLogic) listenOfflinePushUserChan(
 			content = types.ContentType2PushContent[types.Video]
 		case types.File:
 			content = types.ContentType2PushContent[types.File]
-		case types.AtText:
-			a := AtContent{}
-			_ = fastjson.Unmarshal(pushMsg.MsgData.Content, &a)
-			content = types.ContentType2PushContent[types.GroupMsg]
 		default:
 			content = types.ContentType2PushContent[types.Common]
 		}

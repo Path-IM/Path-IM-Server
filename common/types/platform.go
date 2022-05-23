@@ -6,9 +6,9 @@ const (
 	AndroidPlatformID = 2
 	WindowsPlatformID = 3
 	OSXPlatformID     = 4
-	WebPlatformID     = 5
-	MiniWebPlatformID = 6
-	LinuxPlatformID   = 7
+	LinuxPlatformID   = 5
+	WebPlatformID     = 6
+	MiniWebPlatformID = 7
 
 	//Platform string match to Platform ID
 	IOSPlatformStr     = "IOS"

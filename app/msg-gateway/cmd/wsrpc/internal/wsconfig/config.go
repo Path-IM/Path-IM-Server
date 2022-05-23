@@ -7,9 +7,10 @@ import (
 
 type Config struct {
 	rest.RestConf
-	ImUserRpc zrpc.RpcClientConf
-	MsgRpc    zrpc.RpcClientConf
-	Websocket WebsocketConfig
+	ImUserRpc       zrpc.RpcClientConf
+	MsgRpc          zrpc.RpcClientConf
+	Websocket       WebsocketConfig
+	VerifyTokenOnce bool
 }
 type WebsocketConfig struct {
 	MaxConnNum int

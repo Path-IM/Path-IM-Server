@@ -2,15 +2,12 @@ package logic
 
 import (
 	"context"
-	"github.com/golang/protobuf/proto"
 	imuserpb "github.com/showurl/Zero-IM-Server/app/im-user/cmd/rpc/pb"
+	"github.com/showurl/Zero-IM-Server/app/msg/cmd/rpc/internal/svc"
+	"github.com/showurl/Zero-IM-Server/app/msg/cmd/rpc/pb"
 	chatpb "github.com/showurl/Zero-IM-Server/app/msg/cmd/rpc/pb"
 	"github.com/showurl/Zero-IM-Server/common/types"
 	"github.com/showurl/Zero-IM-Server/common/utils"
-	"sync"
-
-	"github.com/showurl/Zero-IM-Server/app/msg/cmd/rpc/internal/svc"
-	"github.com/showurl/Zero-IM-Server/app/msg/cmd/rpc/pb"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -97,102 +94,8 @@ func (l *SendMsgLogic) SendMsg(pb *pb.SendMsgReq) (*pb.SendMsgResp, error) {
 			logx.WithContext(l.ctx).Error(utils.GetSelfFuncName(), "callbackAfterSendSingleMsg failed", err.Error())
 		}
 		return returnMsg(&replay, pb, 0, "", msgToMQSingle.MsgData.ServerMsgID, msgToMQSingle.MsgData.SendTime)
+
 	case types.GroupChatType:
-		// callback
-		canSend, err := l.callbackBeforeSendGroupMsg(pb)
-		if err != nil {
-			logx.WithContext(l.ctx).Error(utils.GetSelfFuncName(), "callbackBeforeSendGroupMsg failed", err.Error())
-		}
-		if !canSend {
-			return returnMsg(&replay, pb, 201, "callbackBeforeSendGroupMsg result stop rpc and return", "", 0)
-		}
-		getGroupMemberIDListFromCacheReq := &imuserpb.GetGroupMemberIDListFromCacheReq{
-			GroupID: pb.MsgData.RecvID,
-		}
-		memberListResp, err := l.svcCtx.ImUser.GetGroupMemberIDListFromCache(l.ctx, getGroupMemberIDListFromCacheReq)
-		if err != nil {
-			logx.WithContext(l.ctx).Error("GetGroupMemberIDListFromCache rpc call failed ", err.Error())
-			return returnMsg(&replay, pb, 201, "GetGroupMemberIDListFromCache failed", "", 0)
-		}
-		if memberListResp.CommonResp.ErrCode != 0 {
-			logx.WithContext(l.ctx).Error("GetGroupMemberIDListFromCache rpc logic call failed ", memberListResp.String())
-			return returnMsg(&replay, pb, 201, "GetGroupMemberIDListFromCache logic failed", "", 0)
-		}
-		memberUserIDList := memberListResp.MemberIDList
-		var addUidList []string
-		switch pb.MsgData.ContentType {
-		case types.MemberKickedNotification:
-			var tips chatpb.TipsComm
-			var memberKickedTips chatpb.MemberKickedTips
-			err := proto.Unmarshal(pb.MsgData.Content, &tips)
-			if err != nil {
-				logx.WithContext(l.ctx).Error(pb.OperationID, "Unmarshal err", err.Error())
-			}
-			err = proto.Unmarshal(tips.Detail, &memberKickedTips)
-			if err != nil {
-				logx.WithContext(l.ctx).Error(pb.OperationID, "Unmarshal err", err.Error())
-			}
-			logx.WithContext(l.ctx).Info(pb.OperationID, "data is ", memberKickedTips.String())
-			for _, v := range memberKickedTips.KickedUserList {
-				addUidList = append(addUidList, v.UserID)
-			}
-		case types.MemberQuitNotification:
-			addUidList = append(addUidList, pb.MsgData.SendID)
-
-		default:
-		}
-		onUserIDList, offUserIDList := l.getOnlineAndOfflineUserIDList(memberUserIDList)
-		groupID := pb.MsgData.GroupID
-		//split  parallel send
-		var wg sync.WaitGroup
-		var sendTag bool
-		var split = 50
-		remain := len(onUserIDList) % split
-		for i := 0; i < len(onUserIDList)/split; i++ {
-			wg.Add(1)
-			go l.sendMsgToGroup(onUserIDList[i*split:(i+1)*split], pb, types.OnlineStatus, &sendTag, &wg)
-		}
-		if remain > 0 {
-			wg.Add(1)
-			go l.sendMsgToGroup(onUserIDList[split*(len(onUserIDList)/split):], pb, types.OnlineStatus, &sendTag, &wg)
-		}
-		wg.Wait()
-		remain = len(offUserIDList) % split
-		for i := 0; i < len(offUserIDList)/split; i++ {
-			wg.Add(1)
-			go l.sendMsgToGroup(offUserIDList[i*split:(i+1)*split], pb, types.OfflineStatus, &sendTag, &wg)
-		}
-		if remain > 0 {
-			wg.Add(1)
-			go l.sendMsgToGroup(offUserIDList[split*(len(offUserIDList)/split):], pb, types.OfflineStatus, &sendTag, &wg)
-		}
-		wg.Wait()
-		logx.WithContext(l.ctx).Info(msgToMQSingle.OperationID, "addUidList", addUidList)
-		for _, v := range addUidList {
-			pb.MsgData.RecvID = v
-			isSend := l.modifyMessageByUserMessageReceiveOpt(v, groupID, types.GroupChatType, pb)
-			logx.WithContext(l.ctx).Info(msgToMQSingle.OperationID, "isSend", isSend)
-			if isSend {
-				msgToMQSingle.MsgData = pb.MsgData
-				err := l.sendMsgToKafka(&msgToMQSingle, v, types.OnlineStatus)
-				if err != nil {
-					logx.WithContext(l.ctx).Error(msgToMQSingle.OperationID, "kafka send msg err:UserId", v, msgToMQSingle.String())
-				} else {
-					sendTag = true
-				}
-			}
-		}
-		// callback
-		if err := l.callbackAfterSendGroupMsg(pb); err != nil {
-			logx.WithContext(l.ctx).Error(utils.GetSelfFuncName(), "callbackAfterSendGroupMsg failed", err.Error())
-		}
-		if !sendTag {
-			return returnMsg(&replay, pb, 201, "kafka send msg err", "", 0)
-		} else {
-			return returnMsg(&replay, pb, 0, "", msgToMQSingle.MsgData.ServerMsgID, msgToMQSingle.MsgData.SendTime)
-
-		}
-	case types.SuperGroupChatType:
 		// callback
 		canSend, err := l.callbackBeforeSendSuperGroupMsg(pb)
 		if err != nil {
@@ -208,42 +111,6 @@ func (l *SendMsgLogic) SendMsg(pb *pb.SendMsgReq) (*pb.SendMsgResp, error) {
 		if err1 != nil {
 			logx.WithContext(l.ctx).Error(msgToMQSingle.OperationID, "kafka send msg err:GroupID ", msgToMQSingle.MsgData.GroupID, msgToMQSingle.String())
 			return returnMsg(&replay, pb, 201, "kafka send msg err ", "", 0)
-		}
-		var addUidList []string
-		switch pb.MsgData.ContentType {
-		case types.MemberKickedNotification:
-			var tips chatpb.TipsComm
-			var memberKickedTips chatpb.MemberKickedTips
-			err := proto.Unmarshal(pb.MsgData.Content, &tips)
-			if err != nil {
-				logx.WithContext(l.ctx).Error(pb.OperationID, "Unmarshal err", err.Error())
-			}
-			err = proto.Unmarshal(tips.Detail, &memberKickedTips)
-			if err != nil {
-				logx.WithContext(l.ctx).Error(pb.OperationID, "Unmarshal err", err.Error())
-			}
-			logx.WithContext(l.ctx).Info(pb.OperationID, "data is ", memberKickedTips.String())
-			for _, v := range memberKickedTips.KickedUserList {
-				addUidList = append(addUidList, v.UserID)
-			}
-		case types.MemberQuitNotification:
-			addUidList = append(addUidList, pb.MsgData.SendID)
-
-		default:
-		}
-		logx.WithContext(l.ctx).Info("addUidList ", addUidList)
-		groupID := pb.MsgData.GroupID
-		for _, v := range addUidList {
-			pb.MsgData.RecvID = v
-			isSend := l.modifyMessageByUserMessageReceiveOpt(v, groupID, types.SuperGroupChatType, pb)
-			logx.WithContext(l.ctx).Info("isSend ", isSend)
-			if isSend {
-				msgToMQSingle.MsgData = pb.MsgData
-				err := l.sendMsgToKafka(&msgToMQSingle, v, types.OnlineStatus)
-				if err != nil {
-					logx.WithContext(l.ctx).Error("kafka send msg err:UserId ", v, msgToMQSingle.String())
-				}
-			}
 		}
 		// callback
 		if err := l.callbackAfterSendSuperGroupMsg(pb); err != nil {
@@ -286,7 +153,7 @@ func returnMsg(replay *chatpb.SendMsgResp, pb *chatpb.SendMsgReq, errCode int32,
 }
 
 func (l *SendMsgLogic) userRelationshipVerification(data *chatpb.SendMsgReq) (bool, int32, string) {
-	if data.MsgData.SessionType == types.GroupChatType || data.MsgData.SessionType == types.SuperGroupChatType {
+	if data.MsgData.SessionType == types.GroupChatType {
 		return true, 0, ""
 	}
 	// 是不是拉黑了
