@@ -265,6 +265,11 @@ func (l *PushMsgLogic) pushSuperGroupMsg(
 						})
 						if err != nil {
 							l.Errorf("PushMsgToUser error: %v", err)
+							return
+						}
+						if resp == nil || resp.Resp == nil {
+							l.Errorf("PushMsgToUser error: resp == nil")
+							return
 						}
 						for _, res := range resp.Resp {
 							// 是否全部平台都失败了
