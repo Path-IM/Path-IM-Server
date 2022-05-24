@@ -165,8 +165,7 @@ message PullMessageBySeqListResp {
 }
 message PullMessageBySeqListReq{
   string userID = 1;
-  string operationID = 2;
-  repeated uint32 seqList = 3;
+  repeated uint32 seqList = 2;
 }
 
 message UserSendMsgResp {
