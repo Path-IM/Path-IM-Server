@@ -6,7 +6,7 @@ Log:
 
 Prometheus:
   Host: 0.0.0.0
-  Port: 10261
+  Port: 10262
   Path: /metrics
 
 Telemetry:
@@ -15,3 +15,11 @@ Telemetry:
   Endpoint: http://127.0.0.1:14268/api/traces
   Sampler: 1.0
   Batcher: jaeger
+
+
+Kafka:
+  Online:
+    Brokers:
+      - 172.27.10.3:9092
+    Topic: im_msg_online
+    MsgToMongoGroupID: msgtransfer_persistent_online
