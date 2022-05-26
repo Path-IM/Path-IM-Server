@@ -2,10 +2,10 @@ package rpclogic
 
 import (
 	"context"
-	"github.com/showurl/Zero-IM-Server/app/msg-gateway/cmd/wsrpc/internal/wslogic"
+	"github.com/showurl/Path-IM-Server/app/msg-gateway/cmd/wsrpc/internal/wslogic"
 
-	"github.com/showurl/Zero-IM-Server/app/msg-gateway/cmd/wsrpc/internal/rpcsvc"
-	"github.com/showurl/Zero-IM-Server/app/msg-gateway/cmd/wsrpc/pb"
+	"github.com/showurl/Path-IM-Server/app/msg-gateway/cmd/wsrpc/internal/rpcsvc"
+	"github.com/showurl/Path-IM-Server/app/msg-gateway/cmd/wsrpc/pb"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )

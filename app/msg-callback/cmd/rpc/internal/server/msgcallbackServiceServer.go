@@ -6,9 +6,9 @@ package server
 import (
 	"context"
 
-	"github.com/showurl/Zero-IM-Server/app/msg-callback/cmd/rpc/internal/logic"
-	"github.com/showurl/Zero-IM-Server/app/msg-callback/cmd/rpc/internal/svc"
-	"github.com/showurl/Zero-IM-Server/app/msg-callback/cmd/rpc/pb"
+	"github.com/showurl/Path-IM-Server/app/msg-callback/cmd/rpc/internal/logic"
+	"github.com/showurl/Path-IM-Server/app/msg-callback/cmd/rpc/internal/svc"
+	"github.com/showurl/Path-IM-Server/app/msg-callback/cmd/rpc/pb"
 )
 
 type MsgcallbackServiceServer struct {

@@ -2,10 +2,10 @@ package repository
 
 import (
 	"github.com/go-redis/redis/v8"
-	"github.com/showurl/Zero-IM-Server/app/msg/cmd/rpc/internal/svc"
-	"github.com/showurl/Zero-IM-Server/common/xcache"
-	"github.com/showurl/Zero-IM-Server/common/xcache/global"
-	"github.com/showurl/Zero-IM-Server/common/xmgo"
+	"github.com/showurl/Path-IM-Server/app/msg/cmd/rpc/internal/svc"
+	"github.com/showurl/Path-IM-Server/common/xcache"
+	"github.com/showurl/Path-IM-Server/common/xcache/global"
+	"github.com/showurl/Path-IM-Server/common/xmgo"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 

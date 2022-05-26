@@ -4,17 +4,17 @@ import (
 	"context"
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
-	"github.com/showurl/Zero-IM-Server/app/im-user/cmd/rpc/pb"
-	msggatewaypb "github.com/showurl/Zero-IM-Server/app/msg-gateway/cmd/wsrpc/pb"
-	chatpb "github.com/showurl/Zero-IM-Server/app/msg/cmd/rpc/pb"
-	"github.com/showurl/Zero-IM-Server/common/xtrace"
+	"github.com/showurl/Path-IM-Server/app/im-user/cmd/rpc/pb"
+	msggatewaypb "github.com/showurl/Path-IM-Server/app/msg-gateway/cmd/wsrpc/pb"
+	chatpb "github.com/showurl/Path-IM-Server/app/msg/cmd/rpc/pb"
+	"github.com/showurl/Path-IM-Server/common/xtrace"
 	"go.opentelemetry.io/otel/attribute"
 	"net/http"
 	"sync"
 	"time"
 
-	"github.com/showurl/Zero-IM-Server/app/msg-gateway/cmd/wsrpc/internal/types"
-	"github.com/showurl/Zero-IM-Server/app/msg-gateway/cmd/wsrpc/internal/wssvc"
+	"github.com/showurl/Path-IM-Server/app/msg-gateway/cmd/wsrpc/internal/types"
+	"github.com/showurl/Path-IM-Server/app/msg-gateway/cmd/wsrpc/internal/wssvc"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )

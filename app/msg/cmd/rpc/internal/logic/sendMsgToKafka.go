@@ -2,9 +2,9 @@ package logic
 
 import (
 	"errors"
-	chatpb "github.com/showurl/Zero-IM-Server/app/msg/cmd/rpc/pb"
-	"github.com/showurl/Zero-IM-Server/common/types"
-	"github.com/showurl/Zero-IM-Server/common/xtrace"
+	chatpb "github.com/showurl/Path-IM-Server/app/msg/cmd/rpc/pb"
+	"github.com/showurl/Path-IM-Server/common/types"
+	"github.com/showurl/Path-IM-Server/common/xtrace"
 )
 
 func (l *SendMsgLogic) sendMsgToKafka(m *chatpb.MsgDataToMQ, key string, status string) error {

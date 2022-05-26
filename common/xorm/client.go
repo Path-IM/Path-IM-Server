@@ -1,7 +1,7 @@
 package xorm
 
 import (
-	"github.com/showurl/Zero-IM-Server/common/xorm/global"
+	"github.com/showurl/Path-IM-Server/common/xorm/global"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"

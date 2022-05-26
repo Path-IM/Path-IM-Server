@@ -1,4 +1,4 @@
-module github.com/showurl/Zero-IM-Server
+module github.com/showurl/Path-IM-Server
 
 go 1.18
 

@@ -1,8 +1,8 @@
 package logic
 
 import (
-	msgcallbackpb "github.com/showurl/Zero-IM-Server/app/msg-callback/cmd/rpc/pb"
-	chatpb "github.com/showurl/Zero-IM-Server/app/msg/cmd/rpc/pb"
+	msgcallbackpb "github.com/showurl/Path-IM-Server/app/msg-callback/cmd/rpc/pb"
+	chatpb "github.com/showurl/Path-IM-Server/app/msg/cmd/rpc/pb"
 )
 
 func (l *SendMsgLogic) callbackBeforeSendSingleMsg(msg *chatpb.SendMsgReq) (canSend bool, err error) {

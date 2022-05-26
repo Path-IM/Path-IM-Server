@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/showurl/Zero-IM-Server/app/msg-push/cmd/rpc/internal/config"
-	"github.com/showurl/Zero-IM-Server/app/msg-push/cmd/rpc/internal/sdk/jpush/common"
-	"github.com/showurl/Zero-IM-Server/app/msg-push/cmd/rpc/internal/sdk/jpush/requestBody"
+	"github.com/showurl/Path-IM-Server/app/msg-push/cmd/rpc/internal/config"
+	"github.com/showurl/Path-IM-Server/app/msg-push/cmd/rpc/internal/sdk/jpush/common"
+	"github.com/showurl/Path-IM-Server/app/msg-push/cmd/rpc/internal/sdk/jpush/requestBody"
 	"io/ioutil"
 	"net/http"
 )

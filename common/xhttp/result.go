@@ -3,7 +3,7 @@ package xhttp
 import (
 	"fmt"
 	"github.com/pkg/errors"
-	"github.com/showurl/Zero-IM-Server/common/xerr"
+	"github.com/showurl/Path-IM-Server/common/xerr"
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest/httpx"
 	"google.golang.org/grpc/status"

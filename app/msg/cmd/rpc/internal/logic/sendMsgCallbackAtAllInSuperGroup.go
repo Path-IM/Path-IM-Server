@@ -1,9 +1,9 @@
 package logic
 
 import (
-	msgcallbackpb "github.com/showurl/Zero-IM-Server/app/msg-callback/cmd/rpc/pb"
-	chatpb "github.com/showurl/Zero-IM-Server/app/msg/cmd/rpc/pb"
-	"github.com/showurl/Zero-IM-Server/common/types"
+	msgcallbackpb "github.com/showurl/Path-IM-Server/app/msg-callback/cmd/rpc/pb"
+	chatpb "github.com/showurl/Path-IM-Server/app/msg/cmd/rpc/pb"
+	"github.com/showurl/Path-IM-Server/common/types"
 )
 
 func (l *SendMsgLogic) callbackAtAllInSuperGroup(msg *chatpb.SendMsgReq) (canSend bool, err error) {

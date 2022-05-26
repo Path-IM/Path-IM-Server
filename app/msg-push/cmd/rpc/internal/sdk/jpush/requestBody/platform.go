@@ -2,7 +2,7 @@ package requestBody
 
 import (
 	"errors"
-	"github.com/showurl/Zero-IM-Server/common/types"
+	"github.com/showurl/Path-IM-Server/common/types"
 )
 
 const (

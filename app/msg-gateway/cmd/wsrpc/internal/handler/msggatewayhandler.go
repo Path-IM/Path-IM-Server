@@ -5,9 +5,9 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 	"net/http"
 
-	"github.com/showurl/Zero-IM-Server/app/msg-gateway/cmd/wsrpc/internal/types"
-	"github.com/showurl/Zero-IM-Server/app/msg-gateway/cmd/wsrpc/internal/wslogic"
-	"github.com/showurl/Zero-IM-Server/app/msg-gateway/cmd/wsrpc/internal/wssvc"
+	"github.com/showurl/Path-IM-Server/app/msg-gateway/cmd/wsrpc/internal/types"
+	"github.com/showurl/Path-IM-Server/app/msg-gateway/cmd/wsrpc/internal/wslogic"
+	"github.com/showurl/Path-IM-Server/app/msg-gateway/cmd/wsrpc/internal/wssvc"
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
 

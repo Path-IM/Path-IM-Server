@@ -3,9 +3,9 @@ package repository
 import (
 	"context"
 	"github.com/golang/protobuf/proto"
-	"github.com/showurl/Zero-IM-Server/app/msg-transfer/cmd/history/model"
-	"github.com/showurl/Zero-IM-Server/app/msg/cmd/rpc/pb"
-	numUtils "github.com/showurl/Zero-IM-Server/common/utils/num"
+	"github.com/showurl/Path-IM-Server/app/msg-transfer/cmd/history/model"
+	"github.com/showurl/Path-IM-Server/app/msg/cmd/rpc/pb"
+	numUtils "github.com/showurl/Path-IM-Server/common/utils/num"
 	"github.com/zeromicro/go-zero/core/logx"
 	"go.mongodb.org/mongo-driver/bson"
 	"strconv"

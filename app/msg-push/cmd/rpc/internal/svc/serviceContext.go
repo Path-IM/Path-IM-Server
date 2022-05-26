@@ -1,10 +1,10 @@
 package svc
 
 import (
-	"github.com/showurl/Zero-IM-Server/app/im-user/cmd/rpc/imuserservice"
-	"github.com/showurl/Zero-IM-Server/app/msg-push/cmd/rpc/internal/config"
-	"github.com/showurl/Zero-IM-Server/app/msg-push/cmd/rpc/internal/sdk"
-	push "github.com/showurl/Zero-IM-Server/app/msg-push/cmd/rpc/internal/sdk/jpush"
+	"github.com/showurl/Path-IM-Server/app/im-user/cmd/rpc/imuserservice"
+	"github.com/showurl/Path-IM-Server/app/msg-push/cmd/rpc/internal/config"
+	"github.com/showurl/Path-IM-Server/app/msg-push/cmd/rpc/internal/sdk"
+	push "github.com/showurl/Path-IM-Server/app/msg-push/cmd/rpc/internal/sdk/jpush"
 	"github.com/zeromicro/go-zero/zrpc"
 )
 

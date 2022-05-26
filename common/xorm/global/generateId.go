@@ -2,7 +2,7 @@ package global
 
 import (
 	"github.com/bwmarrin/snowflake"
-	"github.com/showurl/Zero-IM-Server/common/utils/encrypt"
+	"github.com/showurl/Path-IM-Server/common/utils/encrypt"
 	"math/rand"
 	"time"
 )

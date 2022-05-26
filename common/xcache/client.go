@@ -3,7 +3,7 @@ package xcache
 import (
 	"context"
 	"github.com/go-redis/redis/v8"
-	"github.com/showurl/Zero-IM-Server/common/xcache/global"
+	"github.com/showurl/Path-IM-Server/common/xcache/global"
 	zeroredis "github.com/zeromicro/go-zero/core/stores/redis"
 	"log"
 )

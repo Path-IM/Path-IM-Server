@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"github.com/showurl/Zero-IM-Server/common/types"
+	"github.com/showurl/Path-IM-Server/common/types"
 )
 
 func (r *Rep) IncrUserSeq(uid string) (uint64, error) {

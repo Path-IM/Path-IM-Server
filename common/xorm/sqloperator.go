@@ -1,7 +1,7 @@
 package xorm
 
 import (
-	xormerr "github.com/showurl/Zero-IM-Server/common/xorm/err"
+	xormerr "github.com/showurl/Path-IM-Server/common/xorm/err"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 )

@@ -1,7 +1,7 @@
 package global
 
 import (
-	envUtils "github.com/showurl/Zero-IM-Server/common/utils/env"
+	envUtils "github.com/showurl/Path-IM-Server/common/utils/env"
 	"gorm.io/gorm"
 )
 

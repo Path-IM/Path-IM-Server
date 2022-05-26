@@ -7,7 +7,7 @@
 package pb
 
 import (
-	pb "github.com/showurl/Zero-IM-Server/app/msg/cmd/rpc/pb"
+	pb "github.com/showurl/Path-IM-Server/app/msg/cmd/rpc/pb"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
