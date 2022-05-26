@@ -34,23 +34,28 @@ func (s *MsgTransferPersistentServer) Start() {
 	s.persistentConsumerGroup.RegisterHandleAndConsumer(s)
 }
 
-func (s *MsgTransferPersistentServer) ChatMs2Mongo(msg []byte, msgKey string) {
+func (s *MsgTransferPersistentServer) ChatMs2Mongo(msg []byte, msgKey string) error {
 	msgFromMQ := chatpb.MsgDataToMQ{}
 	err := proto.Unmarshal(msg, &msgFromMQ)
 	if err != nil {
 		logx.Errorf("unmarshal msg failed, err: %v", err)
-		return
+		return nil
 	}
 	logx.Info("msgFromMQ.OperationID: ", msgFromMQ.OperationID)
 	xtrace.RunWithTrace(msgFromMQ.OperationID, func(ctx context.Context) {
-		logic.NewMsgTransferPersistentOnlineLogic(ctx, s.svcCtx).Do(msg, msgKey)
+		err = logic.NewMsgTransferPersistentOnlineLogic(ctx, s.svcCtx).Do(msg, msgKey)
 	}, attribute.String("msgKey", msgKey))
+	return err
 }
 
 func (s *MsgTransferPersistentServer) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
 	for msg := range claim.Messages() {
 		s.SetOnlineTopicStatus(OnlineTopicBusy)
-		s.msgHandle[msg.Topic](msg.Value, string(msg.Key))
+		err := s.msgHandle[msg.Topic](msg.Value, string(msg.Key))
+		if err != nil {
+			logx.Errorf("msgHandle error: %v", err)
+			continue
+		}
 		sess.MarkMessage(msg, "")
 		if claim.HighWaterMarkOffset()-msg.Offset <= 1 {
 			s.SetOnlineTopicStatus(OnlineTopicVacancy)

@@ -104,9 +104,8 @@ func (l *MsgTransferHistoryOnlineLogic) sendMessageToSuperGroupPush(ctx context.
 	}
 }
 
-func (l *MsgTransferHistoryOnlineLogic) ChatMs2Mongo(msg []byte, msgKey string) {
+func (l *MsgTransferHistoryOnlineLogic) ChatMs2Mongo(msg []byte, msgKey string) (err error) {
 	msgFromMQ := chatpb.MsgDataToMQ{}
-	var err error
 	xtrace.StartFuncSpan(l.ctx, "MsgTransferHistoryOnlineLogic.ChatMs2Mongo.UnmarshalMsg", func(ctx context.Context) {
 		err = proto.Unmarshal(msg, &msgFromMQ)
 	})
@@ -121,7 +120,7 @@ func (l *MsgTransferHistoryOnlineLogic) ChatMs2Mongo(msg []byte, msgKey string) 
 	case types.SingleChatType:
 		xtrace.StartFuncSpan(l.ctx, "MsgTransferHistoryOnlineLogic.ChatMs2Mongo.SingleChat", func(ctx context.Context) {
 			if isHistory {
-				err := l.saveUserChat(ctx, msgKey, &msgFromMQ)
+				err = l.saveUserChat(ctx, msgKey, &msgFromMQ)
 				if err != nil {
 					singleMsgFailedCount++
 					l.Logger.Error("single data insert to mongo err ", err.Error(), " ", msgFromMQ.String())
@@ -137,7 +136,7 @@ func (l *MsgTransferHistoryOnlineLogic) ChatMs2Mongo(msg []byte, msgKey string) 
 	case types.GroupChatType:
 		xtrace.StartFuncSpan(l.ctx, "MsgTransferHistoryOnlineLogic.ChatMs2Mongo.SuperGroupChat", func(ctx context.Context) {
 			if isHistory {
-				err := l.saveSuperGroupChat(ctx, msgFromMQ.MsgData.GroupID, &msgFromMQ)
+				err = l.saveSuperGroupChat(ctx, msgFromMQ.MsgData.GroupID, &msgFromMQ)
 				if err != nil {
 					l.Logger.Error("super group data insert to mongo err ", msgFromMQ.String(), " GroupID ", msgFromMQ.MsgData.GroupID, " ", err.Error())
 					return
@@ -149,7 +148,7 @@ func (l *MsgTransferHistoryOnlineLogic) ChatMs2Mongo(msg []byte, msgKey string) 
 	case types.NotificationChatType:
 		xtrace.StartFuncSpan(l.ctx, "MsgTransferHistoryOnlineLogic.ChatMs2Mongo.NotificationChat", func(ctx context.Context) {
 			if isHistory {
-				err := l.saveUserChat(ctx, msgKey, &msgFromMQ)
+				err = l.saveUserChat(ctx, msgKey, &msgFromMQ)
 				if err != nil {
 					l.Logger.Error("single data insert to mongo err ", err.Error(), " ", msgFromMQ.String())
 					return
@@ -164,4 +163,5 @@ func (l *MsgTransferHistoryOnlineLogic) ChatMs2Mongo(msg []byte, msgKey string) 
 		l.Logger.Error("SessionType error ", msgFromMQ.String())
 		return
 	}
+	return err
 }

@@ -9,7 +9,7 @@ import (
 const OnlineTopicBusy = 1
 const OnlineTopicVacancy = 0
 
-type fcb func(msg []byte, msgKey string)
+type fcb func(msg []byte, msgKey string) error
 type Cmd2Value struct {
 	Cmd   int
 	Value interface{}
