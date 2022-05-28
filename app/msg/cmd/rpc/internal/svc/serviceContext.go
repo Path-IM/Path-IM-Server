@@ -1,10 +1,10 @@
 package svc
 
 import (
-	"github.com/showurl/Path-IM-Server/app/im-user/cmd/rpc/imuserservice"
-	"github.com/showurl/Path-IM-Server/app/msg-callback/cmd/rpc/msgcallbackservice"
-	"github.com/showurl/Path-IM-Server/app/msg/cmd/rpc/internal/config"
-	"github.com/showurl/Path-IM-Server/common/xkafka"
+	"github.com/Path-IM/Path-IM-Server/app/im-user/cmd/rpc/imuserservice"
+	"github.com/Path-IM/Path-IM-Server/app/msg-callback/cmd/rpc/msgcallbackservice"
+	"github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/internal/config"
+	"github.com/Path-IM/Path-IM-Server/common/xkafka"
 	"github.com/zeromicro/go-zero/zrpc"
 )
 

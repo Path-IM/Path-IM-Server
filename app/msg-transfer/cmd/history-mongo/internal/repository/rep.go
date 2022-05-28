@@ -2,11 +2,11 @@ package repository
 
 import (
 	"context"
+	"github.com/Path-IM/Path-IM-Server/app/msg-transfer/cmd/history-mongo/internal/svc"
+	"github.com/Path-IM/Path-IM-Server/common/xcache"
+	"github.com/Path-IM/Path-IM-Server/common/xcache/global"
+	"github.com/Path-IM/Path-IM-Server/common/xmgo"
 	"github.com/go-redis/redis/v8"
-	"github.com/showurl/Path-IM-Server/app/msg-transfer/cmd/history/internal/svc"
-	"github.com/showurl/Path-IM-Server/common/xcache"
-	"github.com/showurl/Path-IM-Server/common/xcache/global"
-	"github.com/showurl/Path-IM-Server/common/xmgo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )

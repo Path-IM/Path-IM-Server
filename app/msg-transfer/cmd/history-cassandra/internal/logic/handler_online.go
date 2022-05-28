@@ -3,15 +3,15 @@ package logic
 import (
 	"context"
 	"fmt"
+	pushpb "github.com/Path-IM/Path-IM-Server/app/msg-push/cmd/rpc/pb"
+	"github.com/Path-IM/Path-IM-Server/app/msg-transfer/cmd/history-cassandra/internal/repository"
+	"github.com/Path-IM/Path-IM-Server/app/msg-transfer/cmd/history-cassandra/internal/svc"
+	chatpb "github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/pb"
+	"github.com/Path-IM/Path-IM-Server/common/types"
+	"github.com/Path-IM/Path-IM-Server/common/utils"
+	"github.com/Path-IM/Path-IM-Server/common/utils/statistics"
+	"github.com/Path-IM/Path-IM-Server/common/xtrace"
 	"github.com/golang/protobuf/proto"
-	pushpb "github.com/showurl/Path-IM-Server/app/msg-push/cmd/rpc/pb"
-	"github.com/showurl/Path-IM-Server/app/msg-transfer/cmd/history/internal/repository"
-	"github.com/showurl/Path-IM-Server/app/msg-transfer/cmd/history/internal/svc"
-	chatpb "github.com/showurl/Path-IM-Server/app/msg/cmd/rpc/pb"
-	"github.com/showurl/Path-IM-Server/common/types"
-	"github.com/showurl/Path-IM-Server/common/utils"
-	"github.com/showurl/Path-IM-Server/common/utils/statistics"
-	"github.com/showurl/Path-IM-Server/common/xtrace"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
@@ -23,9 +23,9 @@ var (
 )
 
 func init() {
-	statistics.NewStatistics(&singleMsgSuccessCount, "msg-transfer-history", fmt.Sprintf("%d second singleMsgCount insert to mongo", 300), 300)
-	statistics.NewStatistics(&groupMsgCount, "msg-transfer-history", fmt.Sprintf("%d second groupMsgCount insert to mongo", 300), 300)
-	statistics.NewStatistics(&superGroupMsgCount, "msg-transfer-history", fmt.Sprintf("%d second superGroupMsgCount insert to mongo", 300), 300)
+	statistics.NewStatistics(&singleMsgSuccessCount, "msg-transfer-history-cassandra", fmt.Sprintf("%d second singleMsgCount insert to cassandra", 300), 300)
+	statistics.NewStatistics(&groupMsgCount, "msg-transfer-history-cassandra", fmt.Sprintf("%d second groupMsgCount insert to cassandra", 300), 300)
+	statistics.NewStatistics(&superGroupMsgCount, "msg-transfer-history-cassandra", fmt.Sprintf("%d second superGroupMsgCount insert to cassandra", 300), 300)
 }
 
 type MsgTransferHistoryOnlineLogic struct {
@@ -57,8 +57,8 @@ func (l *MsgTransferHistoryOnlineLogic) saveUserChat(ctx context.Context, uid st
 	msg.MsgData.Seq = uint32(seq)
 	pbSaveData := chatpb.MsgDataToDB{}
 	pbSaveData.MsgData = msg.MsgData
-	xtrace.StartFuncSpan(ctx, "MsgTransferHistoryOnlineLogic.saveUserChat.SaveUserChatMongo2", func(ctx context.Context) {
-		err = l.rep.SaveUserChatMongo2(ctx, uid, pbSaveData.MsgData.SendTime, &pbSaveData)
+	xtrace.StartFuncSpan(ctx, "MsgTransferHistoryOnlineLogic.saveUserChat.SaveUserChatCassandra2", func(ctx context.Context) {
+		err = l.rep.SaveUserChatCassandra2(ctx, uid, pbSaveData.MsgData.SendTime, &pbSaveData)
 	})
 	return err
 }
@@ -75,8 +75,8 @@ func (l *MsgTransferHistoryOnlineLogic) saveSuperGroupChat(ctx context.Context, 
 	msg.MsgData.Seq = uint32(seq)
 	pbSaveData := chatpb.MsgDataToDB{}
 	pbSaveData.MsgData = msg.MsgData
-	xtrace.StartFuncSpan(ctx, "MsgTransferHistoryOnlineLogic.saveSuperGroupChat.SaveSuperGroupChatMongo2", func(ctx context.Context) {
-		err = l.rep.SaveSuperGroupChatMongo2(ctx, groupId, pbSaveData.MsgData.SendTime, &pbSaveData)
+	xtrace.StartFuncSpan(ctx, "MsgTransferHistoryOnlineLogic.saveSuperGroupChat.SaveSuperGroupChatCassandra2", func(ctx context.Context) {
+		err = l.rep.SaveSuperGroupChatCassandra2(ctx, groupId, pbSaveData.MsgData.SendTime, &pbSaveData)
 	})
 	return err
 }
@@ -104,9 +104,9 @@ func (l *MsgTransferHistoryOnlineLogic) sendMessageToSuperGroupPush(ctx context.
 	}
 }
 
-func (l *MsgTransferHistoryOnlineLogic) ChatMs2Mongo(msg []byte, msgKey string) (err error) {
+func (l *MsgTransferHistoryOnlineLogic) ChatMs2Cassandra(msg []byte, msgKey string) (err error) {
 	msgFromMQ := chatpb.MsgDataToMQ{}
-	xtrace.StartFuncSpan(l.ctx, "MsgTransferHistoryOnlineLogic.ChatMs2Mongo.UnmarshalMsg", func(ctx context.Context) {
+	xtrace.StartFuncSpan(l.ctx, "MsgTransferHistoryOnlineLogic.ChatMs2Cassandra.UnmarshalMsg", func(ctx context.Context) {
 		err = proto.Unmarshal(msg, &msgFromMQ)
 	})
 	if err != nil {
@@ -118,12 +118,12 @@ func (l *MsgTransferHistoryOnlineLogic) ChatMs2Mongo(msg []byte, msgKey string) 
 	isSenderSync := utils.GetSwitchFromOptions(msgFromMQ.MsgData.Options, types.IsSenderSync)
 	switch msgFromMQ.MsgData.SessionType {
 	case types.SingleChatType:
-		xtrace.StartFuncSpan(l.ctx, "MsgTransferHistoryOnlineLogic.ChatMs2Mongo.SingleChat", func(ctx context.Context) {
+		xtrace.StartFuncSpan(l.ctx, "MsgTransferHistoryOnlineLogic.ChatMs2Cassandra.SingleChat", func(ctx context.Context) {
 			if isHistory {
 				err = l.saveUserChat(ctx, msgKey, &msgFromMQ)
 				if err != nil {
 					singleMsgFailedCount++
-					l.Logger.Error("single data insert to mongo err ", err.Error(), " ", msgFromMQ.String())
+					l.Logger.Error("single data insert to cassandra err ", err.Error(), " ", msgFromMQ.String())
 					return
 				}
 				singleMsgSuccessCount++
@@ -134,11 +134,11 @@ func (l *MsgTransferHistoryOnlineLogic) ChatMs2Mongo(msg []byte, msgKey string) 
 			}
 		})
 	case types.GroupChatType:
-		xtrace.StartFuncSpan(l.ctx, "MsgTransferHistoryOnlineLogic.ChatMs2Mongo.SuperGroupChat", func(ctx context.Context) {
+		xtrace.StartFuncSpan(l.ctx, "MsgTransferHistoryOnlineLogic.ChatMs2Cassandra.SuperGroupChat", func(ctx context.Context) {
 			if isHistory {
 				err = l.saveSuperGroupChat(ctx, msgFromMQ.MsgData.GroupID, &msgFromMQ)
 				if err != nil {
-					l.Logger.Error("super group data insert to mongo err ", msgFromMQ.String(), " GroupID ", msgFromMQ.MsgData.GroupID, " ", err.Error())
+					l.Logger.Error("super group data insert to cassandra err ", msgFromMQ.String(), " GroupID ", msgFromMQ.MsgData.GroupID, " ", err.Error())
 					return
 				}
 				superGroupMsgCount++
@@ -146,11 +146,11 @@ func (l *MsgTransferHistoryOnlineLogic) ChatMs2Mongo(msg []byte, msgKey string) 
 			go l.sendMessageToSuperGroupPush(ctx, &msgFromMQ, msgFromMQ.MsgData.GroupID)
 		})
 	case types.NotificationChatType:
-		xtrace.StartFuncSpan(l.ctx, "MsgTransferHistoryOnlineLogic.ChatMs2Mongo.NotificationChat", func(ctx context.Context) {
+		xtrace.StartFuncSpan(l.ctx, "MsgTransferHistoryOnlineLogic.ChatMs2Cassandra.NotificationChat", func(ctx context.Context) {
 			if isHistory {
 				err = l.saveUserChat(ctx, msgKey, &msgFromMQ)
 				if err != nil {
-					l.Logger.Error("single data insert to mongo err ", err.Error(), " ", msgFromMQ.String())
+					l.Logger.Error("single data insert to cassandra err ", err.Error(), " ", msgFromMQ.String())
 					return
 				}
 			}

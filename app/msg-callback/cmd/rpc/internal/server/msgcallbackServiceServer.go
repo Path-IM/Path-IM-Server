@@ -6,9 +6,9 @@ package server
 import (
 	"context"
 
-	"github.com/showurl/Path-IM-Server/app/msg-callback/cmd/rpc/internal/logic"
-	"github.com/showurl/Path-IM-Server/app/msg-callback/cmd/rpc/internal/svc"
-	"github.com/showurl/Path-IM-Server/app/msg-callback/cmd/rpc/pb"
+	"github.com/Path-IM/Path-IM-Server/app/msg-callback/cmd/rpc/internal/logic"
+	"github.com/Path-IM/Path-IM-Server/app/msg-callback/cmd/rpc/internal/svc"
+	"github.com/Path-IM/Path-IM-Server/app/msg-callback/cmd/rpc/pb"
 )
 
 type MsgcallbackServiceServer struct {

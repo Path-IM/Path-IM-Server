@@ -5,14 +5,14 @@ package server
 
 import (
 	"context"
+	"github.com/Path-IM/Path-IM-Server/app/msg-push/cmd/rpc/internal/logic"
+	"github.com/Path-IM/Path-IM-Server/app/msg-push/cmd/rpc/internal/svc"
+	pushpb "github.com/Path-IM/Path-IM-Server/app/msg-push/cmd/rpc/pb"
+	chatpb "github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/pb"
+	"github.com/Path-IM/Path-IM-Server/common/xkafka"
+	"github.com/Path-IM/Path-IM-Server/common/xtrace"
 	"github.com/Shopify/sarama"
 	"github.com/golang/protobuf/proto"
-	"github.com/showurl/Path-IM-Server/app/msg-push/cmd/rpc/internal/logic"
-	"github.com/showurl/Path-IM-Server/app/msg-push/cmd/rpc/internal/svc"
-	pushpb "github.com/showurl/Path-IM-Server/app/msg-push/cmd/rpc/pb"
-	chatpb "github.com/showurl/Path-IM-Server/app/msg/cmd/rpc/pb"
-	"github.com/showurl/Path-IM-Server/common/xkafka"
-	"github.com/showurl/Path-IM-Server/common/xtrace"
 	"github.com/zeromicro/go-zero/core/logx"
 	"go.opentelemetry.io/otel/attribute"
 )

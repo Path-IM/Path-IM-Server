@@ -3,14 +3,14 @@ package logic
 import (
 	"context"
 	"fmt"
+	"github.com/Path-IM/Path-IM-Server/app/msg-transfer/cmd/persistent/internal/repository"
+	"github.com/Path-IM/Path-IM-Server/app/msg-transfer/cmd/persistent/internal/svc"
+	chatpb "github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/pb"
+	"github.com/Path-IM/Path-IM-Server/common/types"
+	"github.com/Path-IM/Path-IM-Server/common/utils"
+	"github.com/Path-IM/Path-IM-Server/common/utils/statistics"
+	"github.com/Path-IM/Path-IM-Server/common/xtrace"
 	"github.com/golang/protobuf/proto"
-	"github.com/showurl/Path-IM-Server/app/msg-transfer/cmd/persistent/internal/repository"
-	"github.com/showurl/Path-IM-Server/app/msg-transfer/cmd/persistent/internal/svc"
-	chatpb "github.com/showurl/Path-IM-Server/app/msg/cmd/rpc/pb"
-	"github.com/showurl/Path-IM-Server/common/types"
-	"github.com/showurl/Path-IM-Server/common/utils"
-	"github.com/showurl/Path-IM-Server/common/utils/statistics"
-	"github.com/showurl/Path-IM-Server/common/xtrace"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 

@@ -1,12 +1,12 @@
 package logic
 
 import (
-	imuserpb "github.com/showurl/Path-IM-Server/app/im-user/cmd/rpc/pb"
-	chatpb "github.com/showurl/Path-IM-Server/app/msg/cmd/rpc/pb"
-	"github.com/showurl/Path-IM-Server/common/types"
-	"github.com/showurl/Path-IM-Server/common/utils"
-	timeUtils "github.com/showurl/Path-IM-Server/common/utils/time"
-	"github.com/showurl/Path-IM-Server/common/xorm/global"
+	imuserpb "github.com/Path-IM/Path-IM-Server/app/im-user/cmd/rpc/pb"
+	chatpb "github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/pb"
+	"github.com/Path-IM/Path-IM-Server/common/types"
+	"github.com/Path-IM/Path-IM-Server/common/utils"
+	timeUtils "github.com/Path-IM/Path-IM-Server/common/utils/time"
+	"github.com/Path-IM/Path-IM-Server/common/xorm/global"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 

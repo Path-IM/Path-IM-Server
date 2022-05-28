@@ -1,9 +1,9 @@
 package svc
 
 import (
-	"github.com/showurl/Path-IM-Server/app/msg-push/cmd/rpc/msgpushservice"
-	"github.com/showurl/Path-IM-Server/app/msg-transfer/cmd/history/internal/config"
-	"github.com/showurl/Path-IM-Server/common/xkafka"
+	"github.com/Path-IM/Path-IM-Server/app/msg-push/cmd/rpc/msgpushservice"
+	"github.com/Path-IM/Path-IM-Server/app/msg-transfer/cmd/history-mongo/internal/config"
+	"github.com/Path-IM/Path-IM-Server/common/xkafka"
 	"github.com/zeromicro/go-zero/zrpc"
 )
 

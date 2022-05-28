@@ -1,7 +1,7 @@
 package rpcsvc
 
 import (
-	"github.com/showurl/Path-IM-Server/app/msg-gateway/cmd/wsrpc/internal/rpcconfig"
+	"github.com/Path-IM/Path-IM-Server/app/msg-gateway/cmd/wsrpc/internal/rpcconfig"
 )
 
 type ServiceContext struct {

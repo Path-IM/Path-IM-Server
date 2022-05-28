@@ -3,13 +3,13 @@ package server
 import (
 	"context"
 	"errors"
+	"github.com/Path-IM/Path-IM-Server/app/msg-transfer/cmd/history-cassandra/internal/logic"
+	"github.com/Path-IM/Path-IM-Server/app/msg-transfer/cmd/history-cassandra/internal/svc"
+	chatpb "github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/pb"
+	"github.com/Path-IM/Path-IM-Server/common/xkafka"
+	"github.com/Path-IM/Path-IM-Server/common/xtrace"
 	"github.com/Shopify/sarama"
 	"github.com/golang/protobuf/proto"
-	"github.com/showurl/Path-IM-Server/app/msg-transfer/cmd/history/internal/logic"
-	"github.com/showurl/Path-IM-Server/app/msg-transfer/cmd/history/internal/svc"
-	chatpb "github.com/showurl/Path-IM-Server/app/msg/cmd/rpc/pb"
-	"github.com/showurl/Path-IM-Server/common/xkafka"
-	"github.com/showurl/Path-IM-Server/common/xtrace"
 	"github.com/zeromicro/go-zero/core/logx"
 	"go.opentelemetry.io/otel/attribute"
 	"sync"
@@ -21,12 +21,14 @@ func NewMsgTransferHistoryServer(svcCtx *svc.ServiceContext) *MsgTransferHistory
 	m.cmdCh = make(chan Cmd2Value, 10000)
 	m.w = new(sync.Mutex)
 	m.msgHandle = make(map[string]fcb)
-	m.msgHandle[svcCtx.Config.Kafka.Online.Topic] = m.ChatMs2Mongo
+	m.msgHandle[svcCtx.Config.Kafka.Online.Topic] = m.ChatMs2Cassandra
 	m.historyConsumerGroup = xkafka.NewMConsumerGroup(&xkafka.MConsumerGroupConfig{
+		//KafkaVersion:   sarama.V0_10_2_0,
 		KafkaVersion:   sarama.V0_10_2_0,
-		OffsetsInitial: sarama.OffsetNewest, IsReturnErr: false,
+		OffsetsInitial: sarama.OffsetNewest,
+		IsReturnErr:    false,
 	}, []string{svcCtx.Config.Kafka.Online.Topic},
-		svcCtx.Config.Kafka.Online.Brokers, svcCtx.Config.Kafka.Online.MsgToMongoGroupID)
+		svcCtx.Config.Kafka.Online.Brokers, svcCtx.Config.Kafka.Online.MsgToCassandraGroupID)
 	return m
 }
 
@@ -34,7 +36,8 @@ func (s *MsgTransferHistoryServer) Start() {
 	s.historyConsumerGroup.RegisterHandleAndConsumer(s)
 }
 
-func (s *MsgTransferHistoryServer) ChatMs2Mongo(msg []byte, msgKey string) error {
+func (s *MsgTransferHistoryServer) ChatMs2Cassandra(msg []byte, msgKey string) error {
+	logx.Infof("ChatMs2Cassandra msgKey:%s", msgKey)
 	msgFromMQ := chatpb.MsgDataToMQ{}
 	err := proto.Unmarshal(msg, &msgFromMQ)
 	if err != nil {
@@ -43,7 +46,7 @@ func (s *MsgTransferHistoryServer) ChatMs2Mongo(msg []byte, msgKey string) error
 	}
 	logx.Info("msgFromMQ.OperationID: ", msgFromMQ.OperationID)
 	xtrace.RunWithTrace(msgFromMQ.OperationID, func(ctx context.Context) {
-		err = logic.NewMsgTransferHistoryOnlineLogic(ctx, s.svcCtx).ChatMs2Mongo(msg, msgKey)
+		err = logic.NewMsgTransferHistoryOnlineLogic(ctx, s.svcCtx).ChatMs2Cassandra(msg, msgKey)
 	}, attribute.String("msgKey", msgKey))
 	return err
 }
@@ -53,7 +56,7 @@ func (s *MsgTransferHistoryServer) ConsumeClaim(sess sarama.ConsumerGroupSession
 		s.SetOnlineTopicStatus(OnlineTopicBusy)
 		err := s.msgHandle[msg.Topic](msg.Value, string(msg.Key))
 		if err != nil {
-			logx.Errorf("handle msg error: %v", err)
+			logx.Errorf("msgHandle error: %v", err)
 			continue
 		}
 		sess.MarkMessage(msg, "")

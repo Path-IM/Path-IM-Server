@@ -1,9 +1,9 @@
 package wssvc
 
 import (
-	"github.com/showurl/Path-IM-Server/app/im-user/cmd/rpc/imuserservice"
-	"github.com/showurl/Path-IM-Server/app/msg-gateway/cmd/wsrpc/internal/wsconfig"
-	"github.com/showurl/Path-IM-Server/app/msg/cmd/rpc/chat"
+	"github.com/Path-IM/Path-IM-Server/app/im-user/cmd/rpc/imuserservice"
+	"github.com/Path-IM/Path-IM-Server/app/msg-gateway/cmd/wsrpc/internal/wsconfig"
+	"github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/chat"
 	"github.com/zeromicro/go-zero/zrpc"
 )
 

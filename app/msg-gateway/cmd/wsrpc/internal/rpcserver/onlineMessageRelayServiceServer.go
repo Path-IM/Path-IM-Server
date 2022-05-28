@@ -5,10 +5,10 @@ package rpcserver
 
 import (
 	"context"
-	"github.com/showurl/Path-IM-Server/app/msg-gateway/cmd/wsrpc/internal/rpclogic"
-	"github.com/showurl/Path-IM-Server/app/msg-gateway/cmd/wsrpc/internal/rpcsvc"
+	"github.com/Path-IM/Path-IM-Server/app/msg-gateway/cmd/wsrpc/internal/rpclogic"
+	"github.com/Path-IM/Path-IM-Server/app/msg-gateway/cmd/wsrpc/internal/rpcsvc"
 
-	"github.com/showurl/Path-IM-Server/app/msg-gateway/cmd/wsrpc/pb"
+	"github.com/Path-IM/Path-IM-Server/app/msg-gateway/cmd/wsrpc/pb"
 )
 
 type OnlineMessageRelayServiceServer struct {

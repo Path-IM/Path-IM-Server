@@ -2,7 +2,7 @@ package xtrace
 
 import (
 	"context"
-	"github.com/showurl/Path-IM-Server/common/utils"
+	"github.com/Path-IM/Path-IM-Server/common/utils"
 	"github.com/zeromicro/go-zero/core/trace"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"

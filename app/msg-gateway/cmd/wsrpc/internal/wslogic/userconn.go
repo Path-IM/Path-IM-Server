@@ -2,8 +2,8 @@ package wslogic
 
 import (
 	"context"
+	"github.com/Path-IM/Path-IM-Server/app/msg-gateway/cmd/wsrpc/pb"
 	"github.com/gorilla/websocket"
-	"github.com/showurl/Path-IM-Server/app/msg-gateway/cmd/wsrpc/pb"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 

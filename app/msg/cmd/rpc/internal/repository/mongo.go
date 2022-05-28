@@ -2,33 +2,16 @@ package repository
 
 import (
 	"context"
+	"github.com/Path-IM/Path-IM-Server/app/msg-transfer/model"
+	"github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/pb"
+	numUtils "github.com/Path-IM/Path-IM-Server/common/utils/num"
 	"github.com/golang/protobuf/proto"
-	"github.com/showurl/Path-IM-Server/app/msg-transfer/cmd/history/model"
-	"github.com/showurl/Path-IM-Server/app/msg/cmd/rpc/pb"
-	numUtils "github.com/showurl/Path-IM-Server/common/utils/num"
 	"github.com/zeromicro/go-zero/core/logx"
 	"go.mongodb.org/mongo-driver/bson"
-	"strconv"
 	"time"
 )
 
-const singleGocMsgNum = 5000
-const superGroupGocMsgNum = 5000
-
-func indexGen(uid string, seqSuffix uint32) string {
-	return uid + ":" + strconv.FormatInt(int64(seqSuffix), 10)
-}
-
-func getSeqUid(uid string, seq uint32) string {
-	seqSuffix := seq / singleGocMsgNum
-	return indexGen(uid, seqSuffix)
-}
-func getSeqGroupId(groupId string, seq uint32) string {
-	seqSuffix := seq / superGroupGocMsgNum
-	return indexGen(groupId, seqSuffix)
-}
-
-func (r *Rep) GetMsgBySeqListMongo2(uid string, seqList []uint32) (seqMsg []*pb.MsgData, err error) {
+func (r *MongoHistory) GetMsgBySeqList(uid string, seqList []uint32) (seqMsg []*pb.MsgData, err error) {
 	var hasSeqList []uint32
 	singleCount := 0
 	ctx, _ := context.WithTimeout(context.Background(), time.Duration(r.svcCtx.Config.Mongo.DBTimeout)*time.Second)
@@ -79,7 +62,7 @@ func (r *Rep) GetMsgBySeqListMongo2(uid string, seqList []uint32) (seqMsg []*pb.
 	return seqMsg, nil
 }
 
-func (r *Rep) GetMsgBySuperGroupSeqListMongo2(groupId string, seqList []uint32) (seqMsg []*pb.MsgData, err error) {
+func (r *MongoHistory) GetMsgBySuperGroupSeqList(groupId string, seqList []uint32) (seqMsg []*pb.MsgData, err error) {
 	var hasSeqList []uint32
 	singleCount := 0
 	ctx, _ := context.WithTimeout(context.Background(), time.Duration(r.svcCtx.Config.Mongo.DBTimeout)*time.Second)
@@ -128,13 +111,4 @@ func (r *Rep) GetMsgBySuperGroupSeqListMongo2(groupId string, seqList []uint32) 
 
 	}
 	return seqMsg, nil
-}
-
-func genExceptionMessageBySeqList(seqList []uint32) (exceptionMsg []*pb.MsgData) {
-	for _, v := range seqList {
-		msg := new(pb.MsgData)
-		msg.Seq = v
-		exceptionMsg = append(exceptionMsg, msg)
-	}
-	return exceptionMsg
 }

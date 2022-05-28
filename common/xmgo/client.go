@@ -2,7 +2,7 @@ package xmgo
 
 import (
 	"context"
-	"github.com/showurl/Path-IM-Server/common/xmgo/global"
+	"github.com/Path-IM/Path-IM-Server/common/xmgo/global"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )

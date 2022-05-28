@@ -4,10 +4,10 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/showurl/Path-IM-Server/app/msg-callback/cmd/rpc/internal/config"
-	"github.com/showurl/Path-IM-Server/app/msg-callback/cmd/rpc/internal/server"
-	"github.com/showurl/Path-IM-Server/app/msg-callback/cmd/rpc/internal/svc"
-	"github.com/showurl/Path-IM-Server/app/msg-callback/cmd/rpc/pb"
+	"github.com/Path-IM/Path-IM-Server/app/msg-callback/cmd/rpc/internal/config"
+	"github.com/Path-IM/Path-IM-Server/app/msg-callback/cmd/rpc/internal/server"
+	"github.com/Path-IM/Path-IM-Server/app/msg-callback/cmd/rpc/internal/svc"
+	"github.com/Path-IM/Path-IM-Server/app/msg-callback/cmd/rpc/pb"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/service"

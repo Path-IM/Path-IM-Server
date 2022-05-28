@@ -2,10 +2,10 @@ package logic
 
 import (
 	"context"
-	"github.com/showurl/Path-IM-Server/app/msg/cmd/rpc/internal/repository"
+	"github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/internal/repository"
 
-	"github.com/showurl/Path-IM-Server/app/msg/cmd/rpc/internal/svc"
-	"github.com/showurl/Path-IM-Server/app/msg/cmd/rpc/pb"
+	"github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/internal/svc"
+	"github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/pb"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -28,7 +28,7 @@ func NewPullMessageBySeqListLogic(ctx context.Context, svcCtx *svc.ServiceContex
 
 func (l *PullMessageBySeqListLogic) PullMessageBySeqList(in *pb.WrapPullMessageBySeqListReq) (*pb.WrapPullMessageBySeqListResp, error) {
 	resp := new(pb.PullMessageBySeqListResp)
-	msgList, err := l.rep.GetMsgBySeqListMongo2(in.PullMessageBySeqListReq.UserID, in.PullMessageBySeqListReq.SeqList)
+	msgList, err := l.rep.GetMsgBySeqList(in.PullMessageBySeqListReq.UserID, in.PullMessageBySeqListReq.SeqList)
 	if err != nil {
 		l.Error("PullMessageBySeqList data error ", err.Error())
 		resp.ErrCode = 201

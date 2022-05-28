@@ -3,7 +3,7 @@ package global
 import (
 	"database/sql"
 	"database/sql/driver"
-	timeUtils "github.com/showurl/Path-IM-Server/common/utils/time"
+	timeUtils "github.com/Path-IM/Path-IM-Server/common/utils/time"
 	"time"
 )
 

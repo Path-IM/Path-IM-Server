@@ -4,7 +4,7 @@ package handler
 import (
 	"net/http"
 
-	"github.com/showurl/Path-IM-Server/app/msg-gateway/cmd/wsrpc/internal/wssvc"
+	"github.com/Path-IM/Path-IM-Server/app/msg-gateway/cmd/wsrpc/internal/wssvc"
 
 	"github.com/zeromicro/go-zero/rest"
 )

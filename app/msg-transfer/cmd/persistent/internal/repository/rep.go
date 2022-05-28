@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/showurl/Path-IM-Server/app/msg-transfer/cmd/persistent/internal/svc"
+	"github.com/Path-IM/Path-IM-Server/app/msg-transfer/cmd/persistent/internal/svc"
 )
 
 type Rep struct {

@@ -2,11 +2,11 @@ package logic
 
 import (
 	"context"
+	"github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/internal/repository"
 	"github.com/go-redis/redis/v8"
-	"github.com/showurl/Path-IM-Server/app/msg/cmd/rpc/internal/repository"
 
-	"github.com/showurl/Path-IM-Server/app/msg/cmd/rpc/internal/svc"
-	"github.com/showurl/Path-IM-Server/app/msg/cmd/rpc/pb"
+	"github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/internal/svc"
+	"github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/pb"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )

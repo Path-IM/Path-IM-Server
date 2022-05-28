@@ -2,7 +2,7 @@ package push
 
 import (
 	"context"
-	"github.com/showurl/Path-IM-Server/app/msg-push/cmd/rpc/internal/config"
+	"github.com/Path-IM/Path-IM-Server/app/msg-push/cmd/rpc/internal/config"
 	"testing"
 )
 

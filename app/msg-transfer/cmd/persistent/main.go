@@ -2,9 +2,9 @@ package main
 
 import (
 	"flag"
-	"github.com/showurl/Path-IM-Server/app/msg-transfer/cmd/persistent/internal/config"
-	"github.com/showurl/Path-IM-Server/app/msg-transfer/cmd/persistent/internal/server"
-	"github.com/showurl/Path-IM-Server/app/msg-transfer/cmd/persistent/internal/svc"
+	"github.com/Path-IM/Path-IM-Server/app/msg-transfer/cmd/persistent/internal/config"
+	"github.com/Path-IM/Path-IM-Server/app/msg-transfer/cmd/persistent/internal/server"
+	"github.com/Path-IM/Path-IM-Server/app/msg-transfer/cmd/persistent/internal/svc"
 	"github.com/zeromicro/go-zero/core/conf"
 )
 

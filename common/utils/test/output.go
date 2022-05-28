@@ -3,7 +3,7 @@ package testUtils
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/showurl/Path-IM-Server/common/fastjson"
+	"github.com/Path-IM/Path-IM-Server/common/fastjson"
 )
 
 func OutputJson(v interface{}) string {

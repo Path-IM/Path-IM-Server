@@ -3,9 +3,9 @@ package repository
 import (
 	"context"
 	"errors"
+	"github.com/Path-IM/Path-IM-Server/app/msg-transfer/model"
+	chatpb "github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/pb"
 	"github.com/golang/protobuf/proto"
-	"github.com/showurl/Path-IM-Server/app/msg-transfer/cmd/history/model"
-	chatpb "github.com/showurl/Path-IM-Server/app/msg/cmd/rpc/pb"
 	"github.com/zeromicro/go-zero/core/logx"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"

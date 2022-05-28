@@ -2,10 +2,10 @@ package logic
 
 import (
 	"context"
-	"github.com/showurl/Path-IM-Server/app/msg/cmd/rpc/internal/repository"
+	"github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/internal/repository"
 
-	"github.com/showurl/Path-IM-Server/app/msg/cmd/rpc/internal/svc"
-	"github.com/showurl/Path-IM-Server/app/msg/cmd/rpc/pb"
+	"github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/internal/svc"
+	"github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/pb"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -28,7 +28,7 @@ func NewPullMessageBySuperGroupSeqListLogic(ctx context.Context, svcCtx *svc.Ser
 
 func (l *PullMessageBySuperGroupSeqListLogic) PullMessageBySuperGroupSeqList(in *pb.PullMessageBySuperGroupSeqListReq) (*pb.WrapPullMessageBySeqListResp, error) {
 	resp := new(pb.PullMessageBySeqListResp)
-	msgList, err := l.rep.GetMsgBySuperGroupSeqListMongo2(in.GroupID, in.SeqList)
+	msgList, err := l.rep.GetMsgBySuperGroupSeqList(in.GroupID, in.SeqList)
 	if err != nil {
 		l.Error("PullMessageBySeqList data error ", err.Error())
 		resp.ErrCode = 201

@@ -1,8 +1,8 @@
 package server
 
 import (
-	"github.com/showurl/Path-IM-Server/app/msg-transfer/cmd/persistent/internal/svc"
-	"github.com/showurl/Path-IM-Server/common/xkafka"
+	"github.com/Path-IM/Path-IM-Server/app/msg-transfer/cmd/persistent/internal/svc"
+	"github.com/Path-IM/Path-IM-Server/common/xkafka"
 	"sync"
 )
 

@@ -1,10 +1,10 @@
 package wslogic
 
 import (
+	msggatewaypb "github.com/Path-IM/Path-IM-Server/app/msg-gateway/cmd/wsrpc/pb"
+	chatpb "github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/pb"
+	"github.com/Path-IM/Path-IM-Server/common/types"
 	"github.com/golang/protobuf/proto"
-	msggatewaypb "github.com/showurl/Path-IM-Server/app/msg-gateway/cmd/wsrpc/pb"
-	chatpb "github.com/showurl/Path-IM-Server/app/msg/cmd/rpc/pb"
-	"github.com/showurl/Path-IM-Server/common/types"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 

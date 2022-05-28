@@ -7,11 +7,13 @@
 
 > 不依赖`mysql`所有业务逻辑均请求业务rpc服务 
 
+> 可以使用 `cassandra` 来替代 `mongodb`
+
 ### 新增超级大群功能
 > 类似`QQ`群聊的`读扩散`模式  妈妈再也不用担心mongodb写入性能问题了
 
 ## 开源组件依赖
-- mongodb (离线消息存储)
+- mongodb or cassandra (离线消息存储 个人推荐cassandra)
 - kafka (消息队列)
 - redis (存储seq)
 - ~~etcd~~ (Path-IM-Server 不依赖etcd)
@@ -39,6 +41,7 @@
 - [x] 完成 k8s 部署 [第五天](https://github.com/Path-IM/Path-IM-Server-Demo/tree/main/deploy/k8s)
 - [x] 完成 api 文档 编写 [第六天](https://github.com/Path-IM/Path-IM-Server-Demo/tree/main/docs/api.md)
 - [x] 完成 消息持久化存储 文档 编写 [第十天](https://github.com/Path-IM/Path-IM-Server-Demo/tree/main/docs/persistent.md)
+- [x] 支持 cassandra 离线消息存储 [第十二天](https://github.com/Path-IM/Path-IM-Server-Demo/tree/main/docs/cassandra.md)
 - [ ] 完成 离线消息定期清理 
 
 # Path-IM-Client-Go
@@ -48,3 +51,6 @@
 # 其他
 ## jaeger
 ![jaeger.png](https://raw.githubusercontent.com/Path-IM/Path-IM-Docs/main/images/20220517/jaeger.png)
+## 如果选择使用mongo或cassandra
+- 1、msg-transfer中只部署`history-cassandra`服务，或`history-mongo`服务
+- 2、msg-rpc配置文件`HistoryDBType`设置为`cassandra`

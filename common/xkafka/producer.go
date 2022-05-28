@@ -2,9 +2,9 @@ package xkafka
 
 import (
 	"context"
+	"github.com/Path-IM/Path-IM-Server/common/xtrace"
 	"github.com/Shopify/sarama"
 	"github.com/golang/protobuf/proto"
-	"github.com/showurl/Path-IM-Server/common/xtrace"
 	"go.opentelemetry.io/otel/attribute"
 )
 

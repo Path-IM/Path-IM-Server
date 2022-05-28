@@ -2,9 +2,9 @@ package main
 
 import (
 	"flag"
-	"github.com/showurl/Path-IM-Server/app/msg-transfer/cmd/history/internal/config"
-	"github.com/showurl/Path-IM-Server/app/msg-transfer/cmd/history/internal/server"
-	"github.com/showurl/Path-IM-Server/app/msg-transfer/cmd/history/internal/svc"
+	"github.com/Path-IM/Path-IM-Server/app/msg-transfer/cmd/history-mongo/internal/config"
+	"github.com/Path-IM/Path-IM-Server/app/msg-transfer/cmd/history-mongo/internal/server"
+	"github.com/Path-IM/Path-IM-Server/app/msg-transfer/cmd/history-mongo/internal/svc"
 	"github.com/zeromicro/go-zero/core/conf"
 )
 

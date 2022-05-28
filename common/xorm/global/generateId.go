@@ -1,8 +1,8 @@
 package global
 
 import (
+	"github.com/Path-IM/Path-IM-Server/common/utils/encrypt"
 	"github.com/bwmarrin/snowflake"
-	"github.com/showurl/Path-IM-Server/common/utils/encrypt"
 	"math/rand"
 	"time"
 )

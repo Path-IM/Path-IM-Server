@@ -6,7 +6,7 @@ package msgpushservice
 import (
 	"context"
 
-	"github.com/showurl/Path-IM-Server/app/msg-push/cmd/rpc/pb"
+	"github.com/Path-IM/Path-IM-Server/app/msg-push/cmd/rpc/pb"
 
 	"github.com/zeromicro/go-zero/zrpc"
 	"google.golang.org/grpc"

@@ -78,3 +78,17 @@ Mongo:
   SuperGroupChatMsgCollectionName: "super_group_chat_msg"
   DBDatabase: "zeroim"
   DBTimeout: 30
+
+Cassandra:
+  Hosts:
+    - 127.0.0.1
+  Port: 9042
+  Keyspace: "zeroim"
+  Username: "cassandra"
+  Password: "cassandra"
+  Consistency: QUORUM
+  SingleChatMsgTableName: "single_chat_msg"
+  SuperGroupChatMsgTableName: "super_group_chat_msg"
+  TimeoutSeconds: 5
+
+HistoryDBType: cassandra # mongo, cassandra

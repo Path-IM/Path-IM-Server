@@ -1,7 +1,7 @@
 package svc
 
 import (
-	"github.com/showurl/Path-IM-Server/app/msg-transfer/cmd/persistent/internal/config"
+	"github.com/Path-IM/Path-IM-Server/app/msg-transfer/cmd/persistent/internal/config"
 )
 
 type ServiceContext struct {

@@ -2,16 +2,16 @@ package wslogic
 
 import (
 	"context"
+	imuserpb "github.com/Path-IM/Path-IM-Server/app/im-user/cmd/rpc/pb"
+	"github.com/Path-IM/Path-IM-Server/app/msg-gateway/cmd/wsrpc/pb"
+	"github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/chat"
+	chatpb "github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/pb"
+	"github.com/Path-IM/Path-IM-Server/common/types"
+	"github.com/Path-IM/Path-IM-Server/common/utils"
+	"github.com/Path-IM/Path-IM-Server/common/xerr"
+	"github.com/Path-IM/Path-IM-Server/common/xtrace"
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
-	imuserpb "github.com/showurl/Path-IM-Server/app/im-user/cmd/rpc/pb"
-	"github.com/showurl/Path-IM-Server/app/msg-gateway/cmd/wsrpc/pb"
-	"github.com/showurl/Path-IM-Server/app/msg/cmd/rpc/chat"
-	chatpb "github.com/showurl/Path-IM-Server/app/msg/cmd/rpc/pb"
-	"github.com/showurl/Path-IM-Server/common/types"
-	"github.com/showurl/Path-IM-Server/common/utils"
-	"github.com/showurl/Path-IM-Server/common/xerr"
-	"github.com/showurl/Path-IM-Server/common/xtrace"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 

@@ -1,8 +1,8 @@
 package config
 
 import (
-	"github.com/showurl/Path-IM-Server/common/xkafka"
-	"github.com/showurl/Path-IM-Server/common/xmgo/global"
+	"github.com/Path-IM/Path-IM-Server/common/xcql"
+	"github.com/Path-IM/Path-IM-Server/common/xkafka"
 	"github.com/zeromicro/go-zero/core/service"
 	"github.com/zeromicro/go-zero/core/stores/redis"
 	"github.com/zeromicro/go-zero/zrpc"
@@ -12,12 +12,12 @@ type Config struct {
 	service.ServiceConf
 	Kafka      KafkaConfig
 	Redis      RedisConfig
-	Mongo      MongoConfig
+	Cassandra  CassandraConfig
 	MsgPushRpc zrpc.RpcClientConf
 }
 type KafkaConfigOnline struct {
 	xkafka.ProducerConfig
-	MsgToMongoGroupID string
+	MsgToCassandraGroupID string
 }
 type KafkaConfig struct {
 	Online         KafkaConfigOnline
@@ -29,10 +29,9 @@ type RedisConfig struct {
 	Conf redis.RedisConf
 	DB   int
 }
-type MongoConfig struct {
-	global.MongoConfig
-	DBDatabase                      string
-	DBTimeout                       int
-	SingleChatMsgCollectionName     string
-	SuperGroupChatMsgCollectionName string
+type CassandraConfig struct {
+	xcql.CassandraConfig
+	DBDatabase                 string
+	SingleChatMsgTableName     string
+	SuperGroupChatMsgTableName string
 }

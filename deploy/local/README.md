@@ -16,13 +16,13 @@ go install .
 ##### arm64
 
 ```shell
-docker run --name etcd -p 2379:2379 -p 2380:2380 -d showurl/etcd-arm /usr/local/bin/etcd -advertise-client-urls http://0.0.0.0:2379 -listen-client-urls http://0.0.0.0:2379
+docker run --name etcd -p 2379:2379 -p 2380:2380 -d Path-IM/etcd-arm /usr/local/bin/etcd -advertise-client-urls http://0.0.0.0:2379 -listen-client-urls http://0.0.0.0:2379
 ```
 
 #### etcd-keeper
 
 ```shell
-docker run --name etcd-keeper -d --link etcd:etcd -p 8080:8080 showurl/etcdkeeper:v0.7.6 sh -c "/etcdkeeper/etcdkeeper || /opt/etcdkeeper/etcdkeeper.bin -h \$HOST -p \$PORT"
+docker run --name etcd-keeper -d --link etcd:etcd -p 8080:8080 Path-IM/etcdkeeper:v0.7.6 sh -c "/etcdkeeper/etcdkeeper || /opt/etcdkeeper/etcdkeeper.bin -h \$HOST -p \$PORT"
 open http://localhost:8080
 # 输入 etcd:2379
 ```
