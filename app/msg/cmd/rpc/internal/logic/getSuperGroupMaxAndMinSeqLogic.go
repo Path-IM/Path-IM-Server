@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/internal/repository"
+	"github.com/Path-IM/Path-IM-Server/common/types"
 	"github.com/go-redis/redis/v8"
 
 	"github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/internal/svc"
@@ -37,7 +38,7 @@ func (l *GetSuperGroupMaxAndMinSeqLogic) GetSuperGroupMaxAndMinSeq(in *pb.GetMax
 				err = nil
 			} else {
 				l.Error("GetSuperGroupMaxSeq err ", err)
-				resp.ErrCode = 500
+				resp.ErrCode = types.ErrCodeFailed
 				resp.ErrMsg = err.Error()
 				//return nil, err
 			}
@@ -48,7 +49,7 @@ func (l *GetSuperGroupMaxAndMinSeqLogic) GetSuperGroupMaxAndMinSeq(in *pb.GetMax
 				err = nil
 			} else {
 				l.Error("GetSuperGroupMaxSeq err ", err)
-				resp.ErrCode = 500
+				resp.ErrCode = types.ErrCodeFailed
 				resp.ErrMsg = err.Error()
 				//return nil, err
 			}

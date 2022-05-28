@@ -34,3 +34,12 @@ MsgRpc:
     - 192.168.2.77:10130
 
 VerifyTokenOnce: true
+
+SendMsgRateLimit:
+  Enable: true
+  Seconds: 1
+  Max: 10
+Redis:
+  Addr: localhost:6379
+  Pass: "123456"
+  Type: node

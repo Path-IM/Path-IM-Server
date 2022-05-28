@@ -3,6 +3,7 @@ package wslogic
 import (
 	"context"
 	"github.com/Path-IM/Path-IM-Server/app/im-user/cmd/rpc/pb"
+	"github.com/Path-IM/Path-IM-Server/app/msg-gateway/cmd/wsrpc/internal/wsrepository"
 	msggatewaypb "github.com/Path-IM/Path-IM-Server/app/msg-gateway/cmd/wsrpc/pb"
 	chatpb "github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/pb"
 	"github.com/Path-IM/Path-IM-Server/common/xtrace"
@@ -32,6 +33,7 @@ type MsggatewayLogic struct {
 	wsUpGrader   *websocket.Upgrader
 	wsConnToUser map[*UserConn]map[string]string
 	wsUserToConn map[string]map[string]*UserConn
+	rep          *wsrepository.Rep
 }
 
 var msgGatewayLogic *MsggatewayLogic
@@ -44,6 +46,7 @@ func NewMsggatewayLogic(ctx context.Context, svcCtx *wssvc.ServiceContext) *Msgg
 		Logger: logx.WithContext(ctx),
 		ctx:    ctx,
 		svcCtx: svcCtx,
+		rep:    wsrepository.NewRep(svcCtx),
 	}
 	ws.wsMaxConnNum = ws.svcCtx.Config.Websocket.MaxConnNum
 	ws.wsConnToUser = make(map[*UserConn]map[string]string)
@@ -126,7 +129,7 @@ func (l *MsggatewayLogic) readMsg(conn *UserConn, uid string, platformID string)
 			return
 		}
 		xtrace.RunWithTrace("", func(ctx context.Context) {
-			l.msgParse(ctx, conn, msg)
+			l.msgParse(ctx, conn, msg, uid, platformID)
 		}, attribute.KeyValue{
 			Key:   "uid",
 			Value: attribute.StringValue(uid),

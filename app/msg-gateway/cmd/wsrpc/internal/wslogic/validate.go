@@ -55,38 +55,38 @@ func (l *MsggatewayLogic) argsValidate(m *msggatewaypb.Req, r int32) (isPass boo
 		data := chatpb.MsgData{}
 		if err := proto.Unmarshal(m.Data, &data); err != nil {
 			logx.WithContext(l.ctx).Error("Decode Data struct  err", err.Error(), r)
-			return false, 203, err.Error(), nil
+			return false, types.ErrCodeProtoUnmarshal, err.Error(), nil
 		}
 		if err := validate.Struct(data); err != nil {
 			logx.WithContext(l.ctx).Error("data args validate  err", err.Error(), r)
-			return false, 204, err.Error(), nil
+			return false, types.ErrCodeParams, err.Error(), nil
 
 		}
-		return true, 0, "", data
+		return true, types.ErrCodeOK, "", data
 	case types.WSPullMsgBySeqList:
 		data := chatpb.PullMessageBySeqListReq{}
 		if err := proto.Unmarshal(m.Data, &data); err != nil {
 			logx.WithContext(l.ctx).Error("Decode Data struct  err", err.Error(), r)
-			return false, 203, err.Error(), nil
+			return false, types.ErrCodeProtoUnmarshal, err.Error(), nil
 		}
 		if err := validate.Struct(data); err != nil {
 			logx.WithContext(l.ctx).Error("data args validate  err", err.Error(), r)
-			return false, 204, err.Error(), nil
+			return false, types.ErrCodeParams, err.Error(), nil
 		}
-		return true, 0, "", data
+		return true, types.ErrCodeOK, "", data
 	case types.WSPullMsgByGroupSeqList:
 		data := chatpb.PullMessageBySuperGroupSeqListReq{}
 		if err := proto.Unmarshal(m.Data, &data); err != nil {
 			logx.WithContext(l.ctx).Error("Decode Data struct  err", err.Error(), r)
-			return false, 203, err.Error(), nil
+			return false, types.ErrCodeProtoUnmarshal, err.Error(), nil
 		}
 		if err := validate.Struct(data); err != nil {
 			logx.WithContext(l.ctx).Error("data args validate  err", err.Error(), r)
-			return false, 204, err.Error(), nil
+			return false, types.ErrCodeParams, err.Error(), nil
 		}
-		return true, 0, "", data
+		return true, types.ErrCodeOK, "", data
 
 	default:
 	}
-	return false, 204, "args err", nil
+	return false, types.ErrCodeParams, "args err", nil
 }

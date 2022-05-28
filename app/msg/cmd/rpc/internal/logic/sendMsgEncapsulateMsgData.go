@@ -13,7 +13,7 @@ import (
 func (l *SendMsgLogic) encapsulateMsgData(msg *chatpb.MsgData) {
 	// 生成消息id
 	msg.ServerMsgID = global.GetID()
-	msg.SendTime = timeUtils.GetCurrentTimestampByMill()
+	msg.ServerTime = timeUtils.GetCurrentTimestampByMill()
 	switch msg.ContentType {
 	case types.Text:
 		fallthrough

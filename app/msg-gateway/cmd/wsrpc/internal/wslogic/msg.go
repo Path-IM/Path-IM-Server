@@ -2,24 +2,21 @@ package wslogic
 
 import (
 	"context"
-	imuserpb "github.com/Path-IM/Path-IM-Server/app/im-user/cmd/rpc/pb"
 	"github.com/Path-IM/Path-IM-Server/app/msg-gateway/cmd/wsrpc/pb"
 	"github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/chat"
 	chatpb "github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/pb"
 	"github.com/Path-IM/Path-IM-Server/common/types"
-	"github.com/Path-IM/Path-IM-Server/common/utils"
 	"github.com/Path-IM/Path-IM-Server/common/xerr"
-	"github.com/Path-IM/Path-IM-Server/common/xtrace"
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-func (l *MsggatewayLogic) msgParse(ctx context.Context, conn *UserConn, binaryMsg []byte) {
+func (l *MsggatewayLogic) msgParse(ctx context.Context, conn *UserConn, binaryMsg []byte, uid string, platformID string) {
 	m := &pb.Req{}
 	err := proto.Unmarshal(binaryMsg, m)
 	if err != nil {
-		l.sendErrMsg(ctx, conn, 200, err.Error(), types.WSDataError, "")
+		l.sendErrMsg(ctx, conn, types.ErrCodeProtoUnmarshal, err.Error(), types.WSDataError, "")
 		err = conn.Close()
 		if err != nil {
 			logx.WithContext(ctx).Error("ws close err", err.Error())
@@ -28,36 +25,8 @@ func (l *MsggatewayLogic) msgParse(ctx context.Context, conn *UserConn, binaryMs
 	}
 	if err := validate.Struct(m); err != nil {
 		logx.WithContext(ctx).Error("ws args validate  err", err.Error())
-		l.sendErrMsg(ctx, conn, 201, err.Error(), xerr.NewErrCode(int(m.ReqIdentifier)), m.MsgIncr)
+		l.sendErrMsg(ctx, conn, types.ErrCodeParams, err.Error(), xerr.NewErrCode(int(m.ReqIdentifier)), m.MsgIncr)
 		return
-	}
-	if !l.svcCtx.Config.VerifyTokenOnce {
-		tokenInvalid := false
-		tokenInvalidMsg := ""
-		xtrace.StartFuncSpan(ctx, utils.CallerFuncName(), func(ctx context.Context) {
-			uid, platform := l.getUserUid(conn)
-			tokenResp, err1 := l.svcCtx.ImUserService.VerifyToken(ctx, &imuserpb.VerifyTokenReq{
-				Token:    m.Token,
-				Platform: platform,
-				SendID:   uid,
-			})
-			if err1 != nil {
-				tokenInvalid = true
-				tokenInvalidMsg = "server error"
-				logx.WithContext(ctx).Error("ws verify token err", err1.Error())
-				return
-			}
-			if !tokenResp.Success {
-				tokenInvalid = true
-				tokenInvalidMsg = tokenResp.ErrMsg
-				logx.WithContext(ctx).Error("ws verify token err", "token invalid")
-				return
-			}
-		})
-		if tokenInvalid {
-			l.sendErrMsg(ctx, conn, 202, tokenInvalidMsg, xerr.NewErrCode(int(m.ReqIdentifier)), m.MsgIncr)
-			return
-		}
 	}
 	switch m.ReqIdentifier {
 	case types.WSGetNewestSeq:
@@ -65,7 +34,7 @@ func (l *MsggatewayLogic) msgParse(ctx context.Context, conn *UserConn, binaryMs
 	case types.WSGetNewestGroupSeq:
 		l.getSuperGroupSeqReq(ctx, conn, m)
 	case types.WSSendMsg:
-		l.sendMsgReq(ctx, conn, m)
+		l.sendMsgReq(ctx, conn, m, uid)
 	case types.WSPullMsgBySeqList:
 		l.pullMsgBySeqListReq(ctx, conn, m)
 	case types.WSPullMsgByGroupSeqList:
@@ -122,7 +91,13 @@ func (l *MsggatewayLogic) writeMsg(conn *UserConn, a int, msg []byte) error {
 	return conn.WriteMessage(a, msg)
 }
 
-func (l *MsggatewayLogic) sendMsgReq(ctx context.Context, conn *UserConn, m *pb.Req) {
+func (l *MsggatewayLogic) sendMsgReq(ctx context.Context, conn *UserConn, m *pb.Req, uid string) {
+	// 是否开启限流
+	if l.svcCtx.Config.SendMsgRateLimit.Enable {
+		if !l.sendMsgRateLimit(ctx, conn, m, uid) {
+			return
+		}
+	}
 	sendMsgAllCount++
 	logx.WithContext(ctx).Info("Ws call success to sendMsgReq start", m.MsgIncr, m.ReqIdentifier, m.SendID, m.Data)
 	nReply := new(chatpb.SendMsgResp)
@@ -133,12 +108,12 @@ func (l *MsggatewayLogic) sendMsgReq(ctx context.Context, conn *UserConn, m *pb.
 			Token:   m.Token,
 			MsgData: &data,
 		}
-		logx.WithContext(ctx).Info("Ws call success to sendMsgReq middle", m.ReqIdentifier, m.SendID, m.MsgIncr, data)
+		logx.WithContext(ctx).Info("Ws call success to sendMsgReq middle", m.ReqIdentifier, m.SendID, m.MsgIncr, data.String())
 
 		reply, err := l.svcCtx.MsgRpc.SendMsg(ctx, &pbData)
 		if err != nil {
 			logx.WithContext(ctx).Error("UserSendMsg err ", err.Error())
-			nReply.ErrCode = 200
+			nReply.ErrCode = types.ErrCodeFailed
 			nReply.ErrMsg = err.Error()
 			l.sendMsgResp(ctx, conn, m, nReply)
 		} else {
@@ -156,7 +131,7 @@ func (l *MsggatewayLogic) sendMsgResp(ctx context.Context, conn *UserConn, m *pb
 	var mReplyData chatpb.UserSendMsgResp
 	mReplyData.ClientMsgID = pb.GetClientMsgID()
 	mReplyData.ServerMsgID = pb.GetServerMsgID()
-	mReplyData.SendTime = pb.GetSendTime()
+	mReplyData.ServerTime = pb.GetServerTime()
 	b, _ := proto.Marshal(&mReplyData)
 	mReply := Resp{
 		ReqIdentifier: int32(m.ReqIdentifier),
@@ -180,7 +155,7 @@ func (l *MsggatewayLogic) pullMsgBySeqListReq(ctx context.Context, conn *UserCon
 		reply, err := l.svcCtx.MsgRpc.PullMessageBySeqList(ctx, &chatpb.WrapPullMessageBySeqListReq{PullMessageBySeqListReq: &rpcReq})
 		if err != nil {
 			logx.WithContext(ctx).Errorf("pullMsgBySeqListReq err", err.Error())
-			nReply.ErrCode = 200
+			nReply.ErrCode = types.ErrCodeFailed
 			nReply.ErrMsg = err.Error()
 			l.pullMsgBySeqListResp(ctx, conn, m, nReply)
 		} else {
@@ -206,7 +181,7 @@ func (l *MsggatewayLogic) pullMsgBySuperGroupSeqListReq(ctx context.Context, con
 		reply, err := l.svcCtx.MsgRpc.PullMessageBySuperGroupSeqList(ctx, &rpcReq)
 		if err != nil {
 			logx.WithContext(ctx).Errorf("pullMsgBySeqListReq err", err.Error())
-			nReply.ErrCode = 200
+			nReply.ErrCode = types.ErrCodeFailed
 			nReply.ErrMsg = err.Error()
 			l.pullMsgBySuperGroupSeqListResp(ctx, conn, m, nReply)
 		} else {

@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/internal/repository"
+	"github.com/Path-IM/Path-IM-Server/common/types"
 
 	"github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/internal/svc"
 	"github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/pb"
@@ -31,7 +32,7 @@ func (l *PullMessageBySuperGroupSeqListLogic) PullMessageBySuperGroupSeqList(in 
 	msgList, err := l.rep.GetMsgBySuperGroupSeqList(in.GroupID, in.SeqList)
 	if err != nil {
 		l.Error("PullMessageBySeqList data error ", err.Error())
-		resp.ErrCode = 201
+		resp.ErrCode = types.ErrCodeFailed
 		resp.ErrMsg = err.Error()
 		return &pb.WrapPullMessageBySeqListResp{
 			PullMessageBySeqListResp: resp,
@@ -39,7 +40,7 @@ func (l *PullMessageBySuperGroupSeqListLogic) PullMessageBySuperGroupSeqList(in 
 	}
 	//respSingleMsgFormat = singleMsgHandleByUser(SingleMsgFormat, in.UserID)
 	//respGroupMsgFormat = groupMsgHandleByUser(GroupMsgFormat)
-	resp.ErrCode = 0
+	resp.ErrCode = types.ErrCodeOK
 	resp.ErrMsg = ""
 	resp.List = msgList
 	return &pb.WrapPullMessageBySeqListResp{

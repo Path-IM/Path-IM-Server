@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/internal/repository"
+	"github.com/Path-IM/Path-IM-Server/common/types"
 	"github.com/go-redis/redis/v8"
 
 	"github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/internal/svc"
@@ -36,7 +37,7 @@ func (l *GetMaxAndMinSeqLogic) GetMaxAndMinSeq(in *pb.GetMaxAndMinSeqReq) (*pb.G
 		resp.MaxSeq = 0
 	} else {
 		l.Error("getMaxSeq from redis error", in.String(), err.Error())
-		resp.ErrCode = 200
+		resp.ErrCode = types.ErrCodeFailed
 		resp.ErrMsg = "redis get err"
 		return resp, nil
 	}
@@ -47,7 +48,7 @@ func (l *GetMaxAndMinSeqLogic) GetMaxAndMinSeq(in *pb.GetMaxAndMinSeqReq) (*pb.G
 		resp.MinSeq = 0
 	} else {
 		l.Error("getMinSeq from redis error", in.String(), err.Error())
-		resp.ErrCode = 200
+		resp.ErrCode = types.ErrCodeFailed
 		resp.ErrMsg = "redis get err"
 		return resp, nil
 	}

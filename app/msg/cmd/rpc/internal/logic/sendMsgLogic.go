@@ -43,7 +43,7 @@ func (l *SendMsgLogic) SendMsg(pb *pb.SendMsgReq) (*pb.SendMsgResp, error) {
 		SendID:      pb.MsgData.SendID,
 		RecvID:      pb.MsgData.RecvID,
 		Content:     string(pb.MsgData.Content),
-		SendTime:    pb.MsgData.SendTime,
+		SendTime:    pb.MsgData.ServerTime,
 		MsgFrom:     pb.MsgData.MsgFrom,
 		ContentType: pb.MsgData.ContentType,
 		SessionType: pb.MsgData.SessionType,
@@ -93,7 +93,7 @@ func (l *SendMsgLogic) SendMsg(pb *pb.SendMsgReq) (*pb.SendMsgResp, error) {
 		if err := l.callbackAfterSendSingleMsg(pb); err != nil {
 			logx.WithContext(l.ctx).Error(utils.GetSelfFuncName(), "callbackAfterSendSingleMsg failed", err.Error())
 		}
-		return returnMsg(&replay, pb, 0, "", msgToMQSingle.MsgData.ServerMsgID, msgToMQSingle.MsgData.SendTime)
+		return returnMsg(&replay, pb, 0, "", msgToMQSingle.MsgData.ServerMsgID, msgToMQSingle.MsgData.ServerTime)
 
 	case types.GroupChatType:
 		// callback
@@ -116,7 +116,7 @@ func (l *SendMsgLogic) SendMsg(pb *pb.SendMsgReq) (*pb.SendMsgResp, error) {
 		if err := l.callbackAfterSendSuperGroupMsg(pb); err != nil {
 			logx.WithContext(l.ctx).Error(utils.GetSelfFuncName(), "callbackAfterSendSuperGroupMsg failed ", err.Error())
 		}
-		return returnMsg(&replay, pb, 0, "", msgToMQSingle.MsgData.ServerMsgID, msgToMQSingle.MsgData.SendTime)
+		return returnMsg(&replay, pb, 0, "", msgToMQSingle.MsgData.ServerMsgID, msgToMQSingle.MsgData.ServerTime)
 	case types.NotificationChatType:
 		msgToMQSingle.MsgData = pb.MsgData
 		logx.WithContext(l.ctx).Info(msgToMQSingle.OperationID, msgToMQSingle.String())
@@ -133,7 +133,7 @@ func (l *SendMsgLogic) SendMsg(pb *pb.SendMsgReq) (*pb.SendMsgResp, error) {
 				return returnMsg(&replay, pb, 201, "kafka send msg err", "", 0)
 			}
 		}
-		return returnMsg(&replay, pb, 0, "", msgToMQSingle.MsgData.ServerMsgID, msgToMQSingle.MsgData.SendTime)
+		return returnMsg(&replay, pb, 0, "", msgToMQSingle.MsgData.ServerMsgID, msgToMQSingle.MsgData.ServerTime)
 	default:
 		return returnMsg(&replay, pb, 203, "unkonwn sessionType", "", 0)
 	}
@@ -148,7 +148,7 @@ func returnMsg(replay *chatpb.SendMsgResp, pb *chatpb.SendMsgReq, errCode int32,
 	replay.ErrMsg = errMsg
 	replay.ServerMsgID = serverMsgID
 	replay.ClientMsgID = pb.MsgData.ClientMsgID
-	replay.SendTime = sendTime
+	replay.ServerTime = sendTime
 	return replay, nil
 }
 

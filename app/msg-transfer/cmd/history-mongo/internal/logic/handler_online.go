@@ -58,7 +58,7 @@ func (l *MsgTransferHistoryOnlineLogic) saveUserChat(ctx context.Context, uid st
 	pbSaveData := chatpb.MsgDataToDB{}
 	pbSaveData.MsgData = msg.MsgData
 	xtrace.StartFuncSpan(ctx, "MsgTransferHistoryOnlineLogic.saveUserChat.SaveUserChatMongo2", func(ctx context.Context) {
-		err = l.rep.SaveUserChatMongo2(ctx, uid, pbSaveData.MsgData.SendTime, &pbSaveData)
+		err = l.rep.SaveUserChatMongo2(ctx, uid, pbSaveData.MsgData.ServerTime, &pbSaveData)
 	})
 	return err
 }
@@ -76,7 +76,7 @@ func (l *MsgTransferHistoryOnlineLogic) saveSuperGroupChat(ctx context.Context, 
 	pbSaveData := chatpb.MsgDataToDB{}
 	pbSaveData.MsgData = msg.MsgData
 	xtrace.StartFuncSpan(ctx, "MsgTransferHistoryOnlineLogic.saveSuperGroupChat.SaveSuperGroupChatMongo2", func(ctx context.Context) {
-		err = l.rep.SaveSuperGroupChatMongo2(ctx, groupId, pbSaveData.MsgData.SendTime, &pbSaveData)
+		err = l.rep.SaveSuperGroupChatMongo2(ctx, groupId, pbSaveData.MsgData.ServerTime, &pbSaveData)
 	})
 	return err
 }
