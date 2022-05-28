@@ -73,20 +73,17 @@ message GetMaxAndMinSuperGroupSeqResp {
 }
 
 message SendMsgReq {
-
   string token = 1;
   string operationID = 2;
   server_api_params.MsgData msgData = 3;
-
 }
 
 message SendMsgResp {
   int32 errCode = 1;
   string errMsg = 2;
-  string serverMsgID = 4;
-  string clientMsgID = 5;
-  int64  sendTime = 6;
-
+  string serverMsgID = 3;
+  string clientMsgID = 4;
+  int64  serverTime = 5;
 }
 
 message WrapPullMessageBySeqListReq {

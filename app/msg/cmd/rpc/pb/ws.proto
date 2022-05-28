@@ -119,31 +119,31 @@ message Department {
   uint32 createTime = 7;
   uint32 subDepartmentNum = 8;
   uint32 memberNum = 9;
-  string ex        = 10;
+  string ex = 10;
 }
 
 message OrganizationUser  {
-    string userID      = 1;
-    string  nickname    = 2;
-    string   englishName = 3;
-    string  faceURL    = 4;
-    int32   gender     = 5;
-    string   mobile      = 6;
-    string telephone   = 7;
-    uint32 birth     = 8;
-    string  email    = 9;
-    uint32   createTime = 10;
-    string ex      = 11;
+  string userID = 1;
+  string  nickname = 2;
+  string   englishName = 3;
+  string  faceURL = 4;
+  int32   gender = 5;
+  string   mobile = 6;
+  string telephone = 7;
+  uint32 birth = 8;
+  string  email = 9;
+  uint32   createTime = 10;
+  string ex = 11;
 }
 
 message DepartmentMember {
-      string userID = 1;
-      string departmentID = 2;
-      int32 order = 3;
-      string position = 4;
-      int32 leader = 5;
-      int32 status = 6;
-      string ex     = 7;
+  string userID = 1;
+  string departmentID = 2;
+  int32 order = 3;
+  string position = 4;
+  int32 leader = 5;
+  int32 status = 6;
+  string ex = 7;
 }
 
 
@@ -171,7 +171,7 @@ message PullMessageBySeqListReq{
 message UserSendMsgResp {
   string serverMsgID = 1;
   string clientMsgID = 2;
-  int64  sendTime = 3;
+  int64  serverTime = 3;
 
 }
 message MsgData {
@@ -188,8 +188,8 @@ message MsgData {
   int32 contentType = 11;
   bytes content = 12;
   uint32 seq = 14;
-  int64 sendTime = 15;
-  int64 createTime = 16;
+  int64 serverTime = 15;
+  int64 clientTime = 16;
   OfflinePushInfo offlinePushInfo = 17;
   repeated string atUserIDList = 18;
   map<string, bool> options = 19;
@@ -378,7 +378,7 @@ message FriendApplicationApprovedTips{
 //FromUserID accept or reject ToUserID
 message FriendApplicationRejectedTips{
   FromToUserID fromToUserID = 1;
-   string handleMsg = 2;
+  string handleMsg = 2;
 }
 
 
@@ -415,13 +415,13 @@ message UserInfoUpdatedTips{
 
 //////////////////////conversation/////////////////////
 message ConversationUpdateTips{
- string UserID = 1;
+  string UserID = 1;
 }
 
 message ConversationSetPrivateTips{
- string recvID = 1;
- string sendID = 2;
- bool isPrivate = 3;
+  string recvID = 1;
+  string sendID = 2;
+  bool isPrivate = 3;
 }
 
 
@@ -440,19 +440,19 @@ message ResponsePagination {
 ///////////////////signal//////////////
 message SignalReq {
   oneof payload {
-      SignalInviteReq invite = 1;
-      SignalInviteInGroupReq inviteInGroup= 2;
-      SignalCancelReq  cancel = 3;
-      SignalAcceptReq accept = 4;
-      SignalHungUpReq hungUp = 5;
-      SignalRejectReq reject = 6;
+    SignalInviteReq invite = 1;
+    SignalInviteInGroupReq inviteInGroup = 2;
+    SignalCancelReq  cancel = 3;
+    SignalAcceptReq accept = 4;
+    SignalHungUpReq hungUp = 5;
+    SignalRejectReq reject = 6;
   }
 }
 
 message SignalResp {
   oneof payload {
     SignalInviteReply invite = 1;
-    SignalInviteInGroupReply inviteInGroup= 2;
+    SignalInviteInGroupReply inviteInGroup = 2;
     SignalCancelReply  cancel = 3;
     SignalAcceptReply accept = 4;
     SignalHungUpReply hungUp = 5;
@@ -461,28 +461,28 @@ message SignalResp {
 }
 
 message InvitationInfo  {
-    string inviterUserID = 1;
-    repeated string inviteeUserIDList = 2;
-    string customData = 3;
-    string  groupID = 4;
-    string roomID = 5;
-    int32 timeout = 6;
-    string mediaType = 7;
-     int32 platformID = 8;
-    int32   sessionType = 9;
+  string inviterUserID = 1;
+  repeated string inviteeUserIDList = 2;
+  string customData = 3;
+  string  groupID = 4;
+  string roomID = 5;
+  int32 timeout = 6;
+  string mediaType = 7;
+  int32 platformID = 8;
+  int32   sessionType = 9;
 }
 
 message ParticipantMetaData{
-    GroupInfo groupInfo = 1;
-    GroupMemberFullInfo groupMemberInfo = 2;
-    PublicUserInfo userInfo = 3;
+  GroupInfo groupInfo = 1;
+  GroupMemberFullInfo groupMemberInfo = 2;
+  PublicUserInfo userInfo = 3;
 }
 
 message SignalInviteReq {
-    string opUserID = 1;
-    InvitationInfo invitation = 2;
-    OfflinePushInfo offlinePushInfo  = 3;
-    ParticipantMetaData participant = 4;
+  string opUserID = 1;
+  InvitationInfo invitation = 2;
+  OfflinePushInfo offlinePushInfo = 3;
+  ParticipantMetaData participant = 4;
 
 }
 
@@ -495,7 +495,7 @@ message SignalInviteReply {
 message SignalInviteInGroupReq {
   string opUserID = 1;
   InvitationInfo invitation = 2;
-  OfflinePushInfo offlinePushInfo  = 3;
+  OfflinePushInfo offlinePushInfo = 3;
   ParticipantMetaData participant = 4;
 }
 
@@ -508,7 +508,7 @@ message SignalInviteInGroupReply {
 message SignalCancelReq {
   string opUserID = 1;
   InvitationInfo invitation = 2;
-  OfflinePushInfo offlinePushInfo  = 3;
+  OfflinePushInfo offlinePushInfo = 3;
   ParticipantMetaData participant = 4;
 }
 
@@ -519,7 +519,7 @@ message SignalCancelReply {
 message SignalAcceptReq {
   string opUserID = 1;
   InvitationInfo invitation = 2;
-  OfflinePushInfo offlinePushInfo  = 3;
+  OfflinePushInfo offlinePushInfo = 3;
   ParticipantMetaData participant = 4;
   int32 opUserPlatformID = 5;
 }
@@ -533,7 +533,7 @@ message SignalAcceptReply {
 message SignalHungUpReq {
   string opUserID = 1;
   InvitationInfo invitation = 2;
-  OfflinePushInfo offlinePushInfo  = 3;
+  OfflinePushInfo offlinePushInfo = 3;
 }
 
 message SignalHungUpReply {
@@ -544,7 +544,7 @@ message SignalHungUpReply {
 message SignalRejectReq {
   string opUserID = 1;
   InvitationInfo invitation = 2;
-  OfflinePushInfo offlinePushInfo  = 3;
+  OfflinePushInfo offlinePushInfo = 3;
   ParticipantMetaData participant = 4;
   int32 opUserPlatformID = 5;
 }
@@ -555,10 +555,10 @@ message SignalRejectReply {
 
 
 message DelMsgListReq{
-    string opUserID = 1;
-    string userID = 2;
-    repeated uint32 seqList = 3;
-    string operationID = 4;
+  string opUserID = 1;
+  string userID = 2;
+  repeated uint32 seqList = 3;
+  string operationID = 4;
 }
 
 message DelMsgListResp{
