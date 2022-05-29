@@ -1,23 +1,18 @@
 # Path-IM-Server
-基于 [Open-IM-Server](https://github.com/OpenIMSDK/Open-IM-Server) 实现的 IM 服务 
+有高度定制IM需求的开发者，可以使用这个项目。基于[Open-IM-Server](https://github.com/OpenIMSDK/Open-IM-Server) 实现的IM服务。
+普通开发者可以在[演示项目](https://github.com/Path-IM/Path-IM-Server-Demo) 基础上进行开发。
 
-## 修改部分
-### 服务注册发现
-> 使用go-zero微服务框架 开发更方便 自带`链路追踪` `服务发现` `p2c服务负载均衡`
-
-> 不依赖`mysql`所有业务逻辑均请求业务rpc服务 
-
-> 可以使用 `cassandra` 来替代 `mongodb`
-
-### 新增超级大群功能
-> 类似`QQ`群聊的`读扩散`模式  妈妈再也不用担心mongodb写入性能问题了
-
+## 优势
+- 使用go-zero微服务框架 开发更方便 自带`链路追踪`,`p2c服务负载均衡`,`熔断限流`,`自适应降载`等功能
+- 不依赖`mysql`所有业务逻辑均请求你自己的业务rpc接口 你只需实现rpc接口即可 
+- 可以使用 `cassandra` 来替代 `mongodb`
+- 类似`QQ`群聊的`读扩散`模式  妈妈再也不用担心`mongodb`/`cassandra`写入性能问题了
 ## 开源组件依赖
 - mongodb or cassandra (离线消息存储 个人推荐cassandra)
 - kafka (消息队列)
 - redis (存储seq)
-- ~~etcd~~ (Path-IM-Server 不依赖etcd)
-- ~~mysql~~ (Path-IM-Server 不依赖mysql)
+- ~~etcd~~ (不依赖etcd)
+- ~~mysql~~ (不依赖mysql)
 
 ## 系统架构图
 ![system.svg](https://raw.githubusercontent.com/Path-IM/Path-IM-Docs/main/images/20220517/Path-IM-Server-System.svg)
@@ -28,7 +23,7 @@
 ## 业务流程图
 ![flow.svg](https://raw.githubusercontent.com/Path-IM/Path-IM-Docs/main/images/20220517/Path-IM-Server-Flow.svg)
 
-# Path-IM-Server-Demo
+# 演示项目:Path-IM-Server-Demo (最好的文档就是demo)
 > 使用 `Path-IM-Server` 开发一个 `IM` 应用 
 ## 开发计划
 - [x] 完成 Path-IM-Server 的 TODO [第一天](https://github.com/Path-IM/Path-IM-Server-Demo/tree/main/docs/day01)
@@ -43,7 +38,6 @@
 - [x] 完成 消息持久化存储 文档 编写 [第十天](https://github.com/Path-IM/Path-IM-Server-Demo/tree/main/docs/persistent.md)
 - [x] 支持 cassandra 离线消息存储 [第十二天](https://github.com/Path-IM/Path-IM-Server-Demo/tree/main/docs/cassandra.md)
 - [x] go-zero periodlimit 用户发送消息限流 [第十二天](https://github.com/Path-IM/Path-IM-Server-Demo/tree/main/docs/periodlimit.md)
-- [ ] 完成 离线消息定期清理 
 
 # Path-IM-Client-Go
 [Path-IM-Client-Go](https://github.com/Path-IM/Path-IM-Client-Go.git)
@@ -54,4 +48,4 @@
 ![jaeger.png](https://raw.githubusercontent.com/Path-IM/Path-IM-Docs/main/images/20220517/jaeger.png)
 ## 如果选择使用mongo或cassandra
 - 1、msg-transfer中只部署`history-cassandra`服务，或`history-mongo`服务
-- 2、msg-rpc配置文件`HistoryDBType`设置为`cassandra`
+- 2、msg-rpc配置文件`HistoryDBType`设置为`cassandra`/`mongo`
