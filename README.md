@@ -1,6 +1,6 @@
 # Path-IM-Server
-有高度定制IM需求的开发者，可以使用这个项目。基于[Open-IM-Server](https://github.com/OpenIMSDK/Open-IM-Server) 实现的IM服务。
-普通开发者可以在[演示项目](https://github.com/Path-IM/Path-IM-Server-Demo) 基础上进行开发。
+使用go-zero框架开发的IM服务器。 有高度定制IM需求的开发者，可以使用这个项目。
+> 普通开发者可以在[演示项目](https://github.com/Path-IM/Path-IM-Server-Demo) 基础上进行开发。
 
 ## 优势
 - 使用go-zero微服务框架 开发更方便 自带`链路追踪`,`p2c服务负载均衡`,`熔断限流`,`自适应降载`等功能
@@ -49,3 +49,5 @@
 ## 如果选择使用mongo或cassandra
 - 1、msg-transfer中只部署`history-cassandra`服务，或`history-mongo`服务
 - 2、msg-rpc配置文件`HistoryDBType`设置为`cassandra`/`mongo`
+
+> 本项目设计思路源自[Open-IM-Server](https://github.com/OpenIMSDK/Open-IM-Server)
