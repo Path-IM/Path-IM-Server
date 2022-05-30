@@ -36,7 +36,7 @@ func (l *SendMsgLogic) SendMsg(pb *pb.SendMsgReq) (*pb.SendMsgResp, error) {
 	//	return returnMsg(&replay, pb, http.StatusUnauthorized, "token validate err,not authorized", "", 0)
 	l.encapsulateMsgData(pb.MsgData)
 	logx.WithContext(l.ctx).Info("this is a test MsgData ", pb.MsgData)
-	msgToMQSingle := chatpb.MsgDataToMQ{Token: pb.Token, OperationID: pb.OperationID, MsgData: pb.MsgData}
+	msgToMQSingle := chatpb.MsgDataToMQ{Token: pb.Token, MsgData: pb.MsgData}
 	//options := utils.JsonStringToMap(pbData.Options)
 	isHistory := utils.GetSwitchFromOptions(pb.MsgData.Options, types.IsHistory)
 	mReq := MsgCallBackReq{
@@ -162,10 +162,10 @@ func (l *SendMsgLogic) userRelationshipVerification(data *chatpb.SendMsgReq) (bo
 		BUserID: data.MsgData.RecvID,
 	})
 	if err != nil {
-		logx.WithContext(l.ctx).Error(data.OperationID, "GetBlackIDListFromCache rpc call failed ", err.Error())
+		logx.WithContext(l.ctx).Error("GetBlackIDListFromCache rpc call failed ", err.Error())
 	} else {
 		if ifInBlackResp.CommonResp.ErrCode != 0 {
-			logx.WithContext(l.ctx).Error(data.OperationID, "GetBlackIDListFromCache rpc logic call failed ", ifInBlackResp.String())
+			logx.WithContext(l.ctx).Error("GetBlackIDListFromCache rpc logic call failed ", ifInBlackResp.String())
 		} else {
 			if ifInBlackResp.IsInBlacklist {
 				return false, 600, "in black list"
@@ -187,10 +187,10 @@ func (l *SendMsgLogic) userRelationshipVerification(data *chatpb.SendMsgReq) (bo
 			BUserID: data.MsgData.RecvID,
 		})
 		if err != nil {
-			logx.WithContext(l.ctx).Error(data.OperationID, "GetFriendIDListFromCache rpc call failed ", err.Error())
+			logx.WithContext(l.ctx).Error("GetFriendIDListFromCache rpc call failed ", err.Error())
 		} else {
 			if ifInFriendResp.CommonResp.ErrCode != 0 {
-				logx.WithContext(l.ctx).Error(data.OperationID, "GetFriendIDListFromCache rpc logic call failed ", ifInFriendResp.String())
+				logx.WithContext(l.ctx).Error("GetFriendIDListFromCache rpc logic call failed ", ifInFriendResp.String())
 			} else {
 				if !ifInFriendResp.IsInFriendList {
 					return false, 601, "not friend"
