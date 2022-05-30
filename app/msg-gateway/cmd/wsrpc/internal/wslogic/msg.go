@@ -16,7 +16,7 @@ func (l *MsggatewayLogic) msgParse(ctx context.Context, conn *UserConn, binaryMs
 	m := &pb.Req{}
 	err := proto.Unmarshal(binaryMsg, m)
 	if err != nil {
-		l.sendErrMsg(ctx, conn, types.ErrCodeProtoUnmarshal, err.Error(), types.WSDataError, "")
+		l.sendErrMsg(ctx, conn, types.ErrCodeProtoUnmarshal, err.Error(), types.WSDataError)
 		err = conn.Close()
 		if err != nil {
 			logx.WithContext(ctx).Error("ws close err", err.Error())
@@ -25,12 +25,12 @@ func (l *MsggatewayLogic) msgParse(ctx context.Context, conn *UserConn, binaryMs
 	}
 	if err := validate.Struct(m); err != nil {
 		logx.WithContext(ctx).Error("ws args validate  err", err.Error())
-		l.sendErrMsg(ctx, conn, types.ErrCodeParams, err.Error(), xerr.NewErrCode(int(m.ReqIdentifier)), m.MsgIncr)
+		l.sendErrMsg(ctx, conn, types.ErrCodeParams, err.Error(), xerr.NewErrCode(int(m.ReqIdentifier)))
 		return
 	}
 	switch m.ReqIdentifier {
 	case types.WSGetNewestSeq:
-		l.getSeqReq(ctx, conn, m)
+		l.getSeqReq(ctx, conn, m, uid)
 	case types.WSGetNewestGroupSeq:
 		l.getSuperGroupSeqReq(ctx, conn, m)
 	case types.WSSendMsg:
@@ -43,22 +43,10 @@ func (l *MsggatewayLogic) msgParse(ctx context.Context, conn *UserConn, binaryMs
 	}
 }
 
-func (l *MsggatewayLogic) sendSignalMsgResp(ctx context.Context, conn *UserConn, errCode int32, errMsg string, m *Req) {
-	mReply := Resp{
-		ReqIdentifier: m.ReqIdentifier,
-		MsgIncr:       m.MsgIncr,
-		ErrCode:       errCode,
-		ErrMsg:        errMsg,
-		Data:          nil,
-	}
-	l.sendMsg(ctx, conn, mReply)
-}
-
-func (l *MsggatewayLogic) sendErrMsg(ctx context.Context, conn *UserConn, code int32, errMsg string, reqIdentifier *xerr.CodeError, msgIncr string) {
+func (l *MsggatewayLogic) sendErrMsg(ctx context.Context, conn *UserConn, code int32, errMsg string, reqIdentifier *xerr.CodeError) {
 	mReply := Resp{
 		ReqIdentifier: int32(reqIdentifier.GetErrCode()),
-		MsgIncr:       msgIncr,
-		ErrCode:       code,
+		ErrCode:       uint32(code),
 		ErrMsg:        errMsg,
 	}
 	l.sendMsg(ctx, conn, mReply)
@@ -67,8 +55,7 @@ func (l *MsggatewayLogic) sendErrMsg(ctx context.Context, conn *UserConn, code i
 func (l *MsggatewayLogic) sendMsg(ctx context.Context, conn *UserConn, mReply Resp) {
 	resp := &pb.Resp{
 		ReqIdentifier: uint32(mReply.ReqIdentifier),
-		MsgIncr:       mReply.MsgIncr,
-		ErrCode:       uint32(mReply.ErrCode),
+		ErrCode:       mReply.ErrCode,
 		ErrMsg:        mReply.ErrMsg,
 		Data:          mReply.Data,
 	}
@@ -99,7 +86,7 @@ func (l *MsggatewayLogic) sendMsgReq(ctx context.Context, conn *UserConn, m *pb.
 		}
 	}
 	sendMsgAllCount++
-	logx.WithContext(ctx).Info("Ws call success to sendMsgReq start", m.MsgIncr, m.ReqIdentifier, m.SendID, m.Data)
+	logx.WithContext(ctx).Info("Ws call success to sendMsgReq start", m.ReqIdentifier, m.SendID, m.Data)
 	nReply := new(chatpb.SendMsgResp)
 	isPass, errCode, errMsg, pData := l.argsValidate(m, types.WSSendMsg)
 	if isPass {
@@ -108,7 +95,7 @@ func (l *MsggatewayLogic) sendMsgReq(ctx context.Context, conn *UserConn, m *pb.
 			Token:   m.Token,
 			MsgData: &data,
 		}
-		logx.WithContext(ctx).Info("Ws call success to sendMsgReq middle", m.ReqIdentifier, m.SendID, m.MsgIncr, data.String())
+		logx.WithContext(ctx).Info("Ws call success to sendMsgReq middle", m.ReqIdentifier, m.SendID, data.String())
 
 		reply, err := l.svcCtx.MsgRpc.SendMsg(ctx, &pbData)
 		if err != nil {
@@ -135,8 +122,7 @@ func (l *MsggatewayLogic) sendMsgResp(ctx context.Context, conn *UserConn, m *pb
 	b, _ := proto.Marshal(&mReplyData)
 	mReply := Resp{
 		ReqIdentifier: int32(m.ReqIdentifier),
-		MsgIncr:       m.MsgIncr,
-		ErrCode:       pb.GetErrCode(),
+		ErrCode:       uint32(pb.GetErrCode()),
 		ErrMsg:        pb.GetErrMsg(),
 		Data:          b,
 	}
@@ -144,14 +130,14 @@ func (l *MsggatewayLogic) sendMsgResp(ctx context.Context, conn *UserConn, m *pb
 }
 
 func (l *MsggatewayLogic) pullMsgBySeqListReq(ctx context.Context, conn *UserConn, m *pb.Req) {
-	logx.WithContext(ctx).Info("Ws call success to pullMsgBySeqListReq start", m.SendID, m.ReqIdentifier, m.MsgIncr, m.Data)
+	logx.WithContext(ctx).Info("Ws call success to pullMsgBySeqListReq start", m.SendID, m.ReqIdentifier, m.Data)
 	nReply := new(chatpb.PullMessageBySeqListResp)
 	isPass, errCode, errMsg, data := l.argsValidate(m, types.WSPullMsgBySeqList)
 	if isPass {
 		rpcReq := chatpb.PullMessageBySeqListReq{}
 		rpcReq.SeqList = data.(chatpb.PullMessageBySeqListReq).SeqList
 		rpcReq.UserID = m.SendID
-		logx.WithContext(ctx).Info("Ws call success to pullMsgBySeqListReq middle", m.SendID, m.ReqIdentifier, m.MsgIncr, data.(chatpb.PullMessageBySeqListReq).SeqList)
+		logx.WithContext(ctx).Info("Ws call success to pullMsgBySeqListReq middle", m.SendID, m.ReqIdentifier, data.(chatpb.PullMessageBySeqListReq).SeqList)
 		reply, err := l.svcCtx.MsgRpc.PullMessageBySeqList(ctx, &chatpb.WrapPullMessageBySeqListReq{PullMessageBySeqListReq: &rpcReq})
 		if err != nil {
 			logx.WithContext(ctx).Errorf("pullMsgBySeqListReq err", err.Error())
@@ -170,14 +156,14 @@ func (l *MsggatewayLogic) pullMsgBySeqListReq(ctx context.Context, conn *UserCon
 }
 
 func (l *MsggatewayLogic) pullMsgBySuperGroupSeqListReq(ctx context.Context, conn *UserConn, m *pb.Req) {
-	logx.WithContext(ctx).Info("Ws call success to pullMsgBySuperGroupSeqListReq start", m.SendID, m.ReqIdentifier, m.MsgIncr, m.Data)
+	logx.WithContext(ctx).Info("Ws call success to pullMsgBySuperGroupSeqListReq start", m.SendID, m.ReqIdentifier, m.Data)
 	nReply := new(chatpb.PullMessageBySeqListResp)
 	isPass, errCode, errMsg, data := l.argsValidate(m, types.WSPullMsgByGroupSeqList)
 	if isPass {
 		rpcReq := chatpb.PullMessageBySuperGroupSeqListReq{}
 		rpcReq.SeqList = data.(chatpb.PullMessageBySuperGroupSeqListReq).SeqList
 		rpcReq.GroupID = data.(chatpb.PullMessageBySuperGroupSeqListReq).GroupID
-		logx.WithContext(ctx).Info("Ws call success to pullMsgBySeqListReq middle", m.SendID, m.ReqIdentifier, m.MsgIncr, data.(chatpb.PullMessageBySuperGroupSeqListReq).SeqList)
+		logx.WithContext(ctx).Info("Ws call success to pullMsgBySeqListReq middle", m.SendID, m.ReqIdentifier, data.(chatpb.PullMessageBySuperGroupSeqListReq).SeqList)
 		reply, err := l.svcCtx.MsgRpc.PullMessageBySuperGroupSeqList(ctx, &rpcReq)
 		if err != nil {
 			logx.WithContext(ctx).Errorf("pullMsgBySeqListReq err", err.Error())
@@ -200,12 +186,11 @@ func (l *MsggatewayLogic) pullMsgBySeqListResp(ctx context.Context, conn *UserCo
 	c, _ := proto.Marshal(pb)
 	mReply := Resp{
 		ReqIdentifier: int32(m.ReqIdentifier),
-		MsgIncr:       m.MsgIncr,
-		ErrCode:       pb.GetErrCode(),
+		ErrCode:       uint32(pb.GetErrCode()),
 		ErrMsg:        pb.GetErrMsg(),
 		Data:          c,
 	}
-	logx.WithContext(ctx).Info("pullMsgBySeqListResp all data  is ", mReply.ReqIdentifier, mReply.MsgIncr, mReply.ErrCode, mReply.ErrMsg,
+	logx.WithContext(ctx).Info("pullMsgBySeqListResp all data  is ", mReply.ReqIdentifier, mReply.ErrCode, mReply.ErrMsg,
 		len(mReply.Data))
 
 	l.sendMsg(ctx, conn, mReply)
@@ -216,12 +201,11 @@ func (l *MsggatewayLogic) pullMsgBySuperGroupSeqListResp(ctx context.Context, co
 	c, _ := proto.Marshal(pb)
 	mReply := Resp{
 		ReqIdentifier: int32(m.ReqIdentifier),
-		MsgIncr:       m.MsgIncr,
-		ErrCode:       pb.GetErrCode(),
+		ErrCode:       uint32(pb.GetErrCode()),
 		ErrMsg:        pb.GetErrMsg(),
 		Data:          c,
 	}
-	logx.WithContext(ctx).Info("pullMsgBySeqListResp all data  is ", mReply.ReqIdentifier, mReply.MsgIncr, mReply.ErrCode, mReply.ErrMsg,
+	logx.WithContext(ctx).Info("pullMsgBySeqListResp all data  is ", mReply.ReqIdentifier, mReply.ErrCode, mReply.ErrMsg,
 		len(mReply.Data))
 
 	l.sendMsg(ctx, conn, mReply)

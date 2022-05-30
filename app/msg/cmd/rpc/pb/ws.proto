@@ -187,12 +187,12 @@ message MsgData {
   int32 msgFrom = 10;
   int32 contentType = 11;
   bytes content = 12;
-  uint32 seq = 14;
-  int64 serverTime = 15;
-  int64 clientTime = 16;
-  OfflinePushInfo offlinePushInfo = 17;
-  repeated string atUserIDList = 18;
-  map<string, bool> options = 19;
+  uint32 seq = 13;
+  int64 serverTime = 14;
+  int64 clientTime = 15;
+  OfflinePushInfo offlinePushInfo = 16;
+  repeated string atUserIDList = 17;
+  map<string, bool> options = 18;
 }
 
 message OfflinePushInfo{

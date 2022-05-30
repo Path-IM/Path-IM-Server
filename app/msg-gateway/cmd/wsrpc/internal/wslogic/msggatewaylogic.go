@@ -115,7 +115,6 @@ func (l *MsggatewayLogic) readMsg(conn *UserConn, uid string, platformID string)
 		if messageType == websocket.PingMessage {
 			l.sendMsg(context.Background(), conn, Resp{
 				ReqIdentifier: 0,
-				MsgIncr:       "",
 				ErrCode:       0,
 				ErrMsg:        "",
 				Data:          []byte("pong"),
@@ -140,10 +139,10 @@ func (l *MsggatewayLogic) readMsg(conn *UserConn, uid string, platformID string)
 	}
 }
 
-func (l *MsggatewayLogic) getSeqReq(ctx context.Context, conn *UserConn, m *msggatewaypb.Req) {
+func (l *MsggatewayLogic) getSeqReq(ctx context.Context, conn *UserConn, m *msggatewaypb.Req, uid string) {
 	rpcReq := chatpb.GetMaxAndMinSeqReq{}
 	nReply := new(chatpb.GetMaxAndMinSeqResp)
-	rpcReq.UserID = m.SendID
+	rpcReq.UserID = uid
 	rpcReply, err := l.svcCtx.MsgRpc.GetMaxAndMinSeq(ctx, &rpcReq)
 	if err != nil {
 		logx.WithContext(ctx).Error("rpc call failed to getSeqReq", err, rpcReq.String())
@@ -184,7 +183,6 @@ func (l *MsggatewayLogic) getSeqResp(ctx context.Context, conn *UserConn, m *msg
 	b, _ := proto.Marshal(&mReplyData)
 	mReply := Resp{
 		ReqIdentifier: int32(m.ReqIdentifier),
-		MsgIncr:       m.MsgIncr,
 		ErrCode:       pb.GetErrCode(),
 		ErrMsg:        pb.GetErrMsg(),
 		Data:          b,
@@ -198,7 +196,6 @@ func (l *MsggatewayLogic) getSuperGroupResp(ctx context.Context, conn *UserConn,
 	b, _ := proto.Marshal(&mReplyData)
 	mReply := Resp{
 		ReqIdentifier: int32(m.ReqIdentifier),
-		MsgIncr:       m.MsgIncr,
 		ErrCode:       pb.GetErrCode(),
 		ErrMsg:        pb.GetErrMsg(),
 		Data:          b,

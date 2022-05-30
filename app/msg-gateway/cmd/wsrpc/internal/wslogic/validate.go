@@ -12,13 +12,11 @@ type Req struct {
 	ReqIdentifier int32  `json:"reqIdentifier" validate:"required"`
 	Token         string `json:"token" `
 	SendID        string `json:"sendID" validate:"required"`
-	MsgIncr       string `json:"msgIncr" validate:"required"`
 	Data          []byte `json:"data"`
 }
 type Resp struct {
 	ReqIdentifier int32  `json:"reqIdentifier"`
-	MsgIncr       string `json:"msgIncr"`
-	ErrCode       int32  `json:"errCode"`
+	ErrCode       uint32 `json:"errCode"`
 	ErrMsg        string `json:"errMsg"`
 	Data          []byte `json:"data"`
 }

@@ -53,10 +53,10 @@ message GetMaxAndMinSeqReq {
   string UserID = 1;
 }
 message GetMaxAndMinSeqResp {
-  int32 ErrCode = 1;
-  string ErrMsg = 2;
-  uint32 MaxSeq = 3;
-  uint32 MinSeq = 4;
+  uint32 MaxSeq = 1;
+  uint32 MinSeq = 2;
+  uint32 ErrCode = 3;
+  string ErrMsg = 4;
 }
 message GetMaxAndMinSuperGroupSeqReq {
   repeated string  SuperGroupIDList = 1;
@@ -67,9 +67,9 @@ message GetMaxAndMinSuperGroupSeqRespItem {
   uint32 MinSeq = 3;
 }
 message GetMaxAndMinSuperGroupSeqResp {
-  int32 ErrCode = 1;
-  string ErrMsg = 2;
-  repeated GetMaxAndMinSuperGroupSeqRespItem SuperGroupSeqList = 3;
+  repeated GetMaxAndMinSuperGroupSeqRespItem SuperGroupSeqList = 1;
+  uint32 ErrCode = 2;
+  string ErrMsg = 3;
 }
 
 message SendMsgReq {
@@ -78,11 +78,12 @@ message SendMsgReq {
 }
 
 message SendMsgResp {
-  int32 errCode = 1;
-  string errMsg = 2;
-  string serverMsgID = 3;
-  string clientMsgID = 4;
-  int64  serverTime = 5;
+  string serverMsgID = 1;
+  string clientMsgID = 2;
+  int64  serverTime = 3;
+
+  int32 ErrCode = 4;
+  string ErrMsg = 5;
 }
 
 message WrapPullMessageBySeqListReq {
