@@ -4,12 +4,12 @@ package types
 const (
 	WSGetNewestSeq          = 1001
 	WSPullMsgBySeqList      = 1002
-	WSSendMsg               = 1003
-	WSGetNewestGroupSeq     = 1004
-	WSPullMsgByGroupSeqList = 1005
+	WSGetNewestGroupSeq     = 1003
+	WSPullMsgByGroupSeqList = 1004
 
-	WSPushMsg      = 2001
-	WSGroupPushMsg = 2002
+	WSSendMsg      = 2001
+	WSPushMsg      = 2002
+	WSGroupPushMsg = 2003
 )
 
 // msg 用到的
