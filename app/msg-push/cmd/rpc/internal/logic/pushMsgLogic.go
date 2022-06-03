@@ -15,7 +15,7 @@ import (
 	numUtils "github.com/Path-IM/Path-IM-Server/common/utils/num"
 	strUtils "github.com/Path-IM/Path-IM-Server/common/utils/str"
 	"github.com/Path-IM/Path-IM-Server/common/xtrace"
-	"github.com/zeromicro/go-zero/zrpc"
+	"github.com/zeromicro/go-zero/core/mr"
 	"go.opentelemetry.io/otel/attribute"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -58,43 +58,41 @@ func (l *PushMsgLogic) PushMsg(in *pb.PushMsgReq) (*pb.PushMsgResp, error) {
 }
 
 func (l *PushMsgLogic) getAllMsgGatewayService() (services []onlinemessagerelayservice.OnlineMessageRelayService, err error) {
-	for _, endpoint := range l.svcCtx.Config.MsgGatewayRpc.Endpoints {
-		services = append(services, onlinemessagerelayservice.NewOnlineMessageRelayService(
-			zrpc.MustNewClient(zrpc.RpcClientConf{
-				Endpoints: []string{endpoint},
-				Target:    l.svcCtx.Config.MsgGatewayRpc.Target,
-				App:       l.svcCtx.Config.MsgGatewayRpc.App,
-				Token:     l.svcCtx.Config.MsgGatewayRpc.Token,
-				NonBlock:  true,
-				Timeout:   0,
-			}),
-		))
+	if l.svcCtx.Config.MsgGatewayRpcK8sTarget == "" {
+		return onlinemessagerelayservice.GetAllByEtcd(l.ctx, l.svcCtx.Config.MsgGatewayRpc, l.svcCtx.Config.MsgGatewayRpc.Key)
+	} else {
+		return onlinemessagerelayservice.GetAllByK8s(l.svcCtx.Config.MsgGatewayRpcK8sTarget)
 	}
-	return
 }
 
 func (l *PushMsgLogic) MsgToUser(pushMsg *pb.PushMsgReq) {
 	var wsResult []*gatewaypb.SingleMsgToUser
 	isOfflinePush := utils.GetSwitchFromOptions(pushMsg.MsgData.Options, types.IsOfflinePush)
+
 	services, err := l.getAllMsgGatewayService()
 	if err != nil {
 		l.Errorf("getAllMsgGatewayService error: %v", err)
 		err = nil
 	}
+	var fs []func() error
 	for index, msgClient := range services {
-		var reply *gatewaypb.OnlinePushMsgResp
-		var err error
-		xtrace.StartFuncSpan(l.ctx, "MsgToUser.OnlinePushMsg", func(ctx context.Context) {
-			reply, err = msgClient.OnlinePushMsg(ctx, &gatewaypb.OnlinePushMsgReq{MsgData: pushMsg.MsgData, PushToUserID: pushMsg.PushToUserID})
-		}, attribute.Int("index", index))
-		if err != nil {
-			l.Errorf("OnlinePushMsg error: %v", err)
-			continue
-		}
-		if reply != nil && reply.Resp != nil {
-			wsResult = append(wsResult, reply.Resp...)
-		}
+		fs = append(fs, func() error {
+			var reply *gatewaypb.OnlinePushMsgResp
+			var err error
+			xtrace.StartFuncSpan(l.ctx, "MsgToUser.OnlinePushMsg", func(ctx context.Context) {
+				reply, err = msgClient.OnlinePushMsg(ctx, &gatewaypb.OnlinePushMsgReq{MsgData: pushMsg.MsgData, PushToUserID: pushMsg.PushToUserID})
+			}, attribute.Int("index", index))
+			if err != nil {
+				l.Errorf("OnlinePushMsg error: %v", err)
+				return nil
+			}
+			if reply != nil && reply.Resp != nil {
+				wsResult = append(wsResult, reply.Resp...)
+			}
+			return nil
+		})
 	}
+	_ = mr.Finish(fs...)
 	l.Info("push_result ", wsResult, " sendData ", pushMsg.MsgData)
 	successCount++
 	if isOfflinePush && pushMsg.PushToUserID != pushMsg.MsgData.SendID {
@@ -256,39 +254,43 @@ func (l *PushMsgLogic) pushSuperGroupMsg(
 			}
 			{
 				allServiceFailed := true
+				var fs []func() error
 				for i, service := range services {
-					allPlatformIsFailed := true
-					xtrace.StartFuncSpan(l.ctx, "PushSuperGroupMsg.PushMsgToUser", func(ctx context.Context) {
-						resp, err := service.OnlinePushMsg(ctx, &gatewaypb.OnlinePushMsgReq{
-							MsgData:      in.MsgData,
-							PushToUserID: user.UserID,
-						})
-						if err != nil {
-							l.Errorf("PushMsgToUser error: %v", err)
-							return
-						}
-						if resp == nil || resp.Resp == nil {
-							l.Errorf("PushMsgToUser error: resp == nil")
-							return
-						}
-						for _, res := range resp.Resp {
-							// 是否全部平台都失败了
-							if res.ResultCode != -1 {
-								// 成功了
-								allPlatformIsFailed = false
-								break
+					fs = append(fs, func() error {
+						allPlatformIsFailed := true
+						xtrace.StartFuncSpan(l.ctx, "PushSuperGroupMsg.PushMsgToUser", func(ctx context.Context) {
+							resp, err := service.OnlinePushMsg(ctx, &gatewaypb.OnlinePushMsgReq{
+								MsgData:      in.MsgData,
+								PushToUserID: user.UserID,
+							})
+							if err != nil {
+								l.Errorf("PushMsgToUser error: %v", err)
+								return
 							}
+							if resp == nil || resp.Resp == nil {
+								l.Errorf("PushMsgToUser error: resp == nil")
+								return
+							}
+							for _, res := range resp.Resp {
+								// 是否全部平台都失败了
+								if res.ResultCode != -1 {
+									// 成功了
+									allPlatformIsFailed = false
+									break
+								}
+							}
+						},
+							attribute.Int("user.index", uIndex),
+							attribute.Int("services.index", i),
+							attribute.String("user.id", user.UserID),
+						)
+						if !allPlatformIsFailed {
+							allServiceFailed = false
 						}
-					},
-						attribute.Int("user.index", uIndex),
-						attribute.Int("services.index", i),
-						attribute.String("user.id", user.UserID),
-					)
-					if !allPlatformIsFailed {
-						allServiceFailed = false
-						break
-					}
+						return nil
+					})
 				}
+				_ = mr.Finish(fs...)
 				if allServiceFailed {
 					// 这条消息要不要离线推送
 					if isOfflinePush && in.MsgData.SendID != user.UserID {

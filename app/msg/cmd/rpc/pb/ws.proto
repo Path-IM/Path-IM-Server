@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/Path-IM/Path-IM-Server-Demo/app/msg/cmd/rpc/pb";
+option go_package = "github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/pb";
 
 package server_api_params;
 

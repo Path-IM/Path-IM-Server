@@ -115,11 +115,11 @@ func (l *MsggatewayLogic) sendMsgReq(ctx context.Context, conn *UserConn, m *pb.
 }
 
 func (l *MsggatewayLogic) sendMsgResp(ctx context.Context, conn *UserConn, m *pb.Req, pb *chat.SendMsgResp) {
-	var mReplyData chatpb.UserSendMsgResp
-	mReplyData.ClientMsgID = pb.GetClientMsgID()
-	mReplyData.ServerMsgID = pb.GetServerMsgID()
-	mReplyData.ServerTime = pb.GetServerTime()
-	b, _ := proto.Marshal(&mReplyData)
+	//var mReplyData chatpb.SendMsgResp
+	//mReplyData.ClientMsgID = pb.GetClientMsgID()
+	//mReplyData.ServerMsgID = pb.GetServerMsgID()
+	//mReplyData.ServerTime = pb.GetServerTime()
+	b, _ := proto.Marshal(pb)
 	mReply := Resp{
 		ReqIdentifier: int32(m.ReqIdentifier),
 		ErrCode:       uint32(pb.GetErrCode()),
@@ -198,6 +198,9 @@ func (l *MsggatewayLogic) pullMsgBySeqListResp(ctx context.Context, conn *UserCo
 
 func (l *MsggatewayLogic) pullMsgBySuperGroupSeqListResp(ctx context.Context, conn *UserConn, m *pb.Req, pb *chatpb.PullMessageBySeqListResp) {
 	logx.WithContext(ctx).Info("pullMsgBySuperGroupSeqListResp come  here ", pb.String())
+	for _, data := range pb.List {
+		logx.Infof("pullMsgBySuperGroupSeqListResp data is %s", data.String())
+	}
 	c, _ := proto.Marshal(pb)
 	mReply := Resp{
 		ReqIdentifier: int32(m.ReqIdentifier),

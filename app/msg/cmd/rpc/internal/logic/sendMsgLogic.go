@@ -149,6 +149,9 @@ func returnMsg(replay *chatpb.SendMsgResp, pb *chatpb.SendMsgReq, errCode int32,
 	replay.ServerMsgID = serverMsgID
 	replay.ClientMsgID = pb.MsgData.ClientMsgID
 	replay.ServerTime = sendTime
+	replay.SendID = pb.MsgData.SendID
+	replay.RecvID = pb.MsgData.RecvID
+	replay.GroupID = pb.MsgData.GroupID
 	return replay, nil
 }
 

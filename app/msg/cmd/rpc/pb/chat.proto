@@ -78,12 +78,19 @@ message SendMsgReq {
 }
 
 message SendMsgResp {
-  string serverMsgID = 1;
-  string clientMsgID = 2;
-  int64  serverTime = 3;
+  string sendID = 1;
+  string recvID = 2;
+  string groupID = 3;
+  string serverMsgID = 4;
+  string clientMsgID = 5;
+  int64 serverTime = 6;
 
-  int32 ErrCode = 4;
-  string ErrMsg = 5;
+  //  string serverMsgID = 1;
+  //  string clientMsgID = 2;
+  //  int64  serverTime = 3;
+
+  int32 ErrCode = 7;
+  string ErrMsg = 8;
 }
 
 message WrapPullMessageBySeqListReq {
