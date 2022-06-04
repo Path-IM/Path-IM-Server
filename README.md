@@ -15,14 +15,11 @@
 - ~~etcd~~ (不依赖etcd)
 - ~~mysql~~ (不依赖mysql)
 
-## 系统架构图
-![system.svg](https://raw.githubusercontent.com/Path-IM/Path-IM-Docs/main/images/20220517/Path-IM-Server-System.svg)
-
 ## 业务架构图
-![image1.svg](https://raw.githubusercontent.com/Path-IM/Path-IM-Docs/main/images/20220517/Path-IM-Server-Service.svg)
+![image1.svg](https://raw.githubusercontent.com/Path-IM/Path-IM-Docs/main/images/20220604/Path-IM-Server%20%E4%B8%9A%E5%8A%A1%E6%9E%B6%E6%9E%84%E5%9B%BE.svg)
 
 ## 业务流程图
-![flow.svg](https://raw.githubusercontent.com/Path-IM/Path-IM-Docs/main/images/20220517/Path-IM-Server-Flow.svg)
+![flow.svg](https://raw.githubusercontent.com/Path-IM/Path-IM-Docs/main/images/20220604/Path-IM-Server%E6%B6%88%E6%81%AF%E6%B5%81%E8%BD%AC%E5%9B%BE.svg)
 
 # 演示项目:Path-IM-Server (最好的文档就是demo)
 > 使用 `Path-IM-Server` 开发一个 `IM` 应用 
