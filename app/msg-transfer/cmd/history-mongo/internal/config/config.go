@@ -21,7 +21,6 @@ type KafkaConfigOnline struct {
 }
 type KafkaConfig struct {
 	Online         KafkaConfigOnline
-	Offline        xkafka.ProducerConfig
 	SinglePush     xkafka.ProducerConfig
 	SuperGroupPush xkafka.ProducerConfig
 }

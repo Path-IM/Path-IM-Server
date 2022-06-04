@@ -11,7 +11,7 @@ type Config struct {
 }
 type KafkaConfigOnline struct {
 	xkafka.ProducerConfig
-	MsgToMongoGroupID string
+	MsgPersistentGroupID string
 }
 type KafkaConfig struct {
 	Online KafkaConfigOnline

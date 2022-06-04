@@ -28,8 +28,6 @@ type RedisConfig struct {
 type CallbackConfig struct {
 	CallbackWordFilter              CallbackConfigItem
 	CallbackAtAllInSuperGroup       CallbackConfigItem
-	CallbackBeforeSendGroupMsg      CallbackConfigItem
-	CallbackAfterSendGroupMsg       CallbackConfigItem
 	CallbackBeforeSendSuperGroupMsg CallbackConfigItem
 	CallbackAfterSendSuperGroupMsg  CallbackConfigItem
 	CallbackBeforeSendSingleMsg     CallbackConfigItem

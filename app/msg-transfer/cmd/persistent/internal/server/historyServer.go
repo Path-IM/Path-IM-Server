@@ -26,7 +26,7 @@ func NewMsgTransferPersistentServer(svcCtx *svc.ServiceContext) *MsgTransferPers
 		KafkaVersion:   sarama.V0_10_2_0,
 		OffsetsInitial: sarama.OffsetNewest, IsReturnErr: false,
 	}, []string{svcCtx.Config.Kafka.Online.Topic},
-		svcCtx.Config.Kafka.Online.Brokers, svcCtx.Config.Kafka.Online.MsgToMongoGroupID)
+		svcCtx.Config.Kafka.Online.Brokers, svcCtx.Config.Kafka.Online.MsgPersistentGroupID)
 	return m
 }
 

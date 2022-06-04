@@ -15,9 +15,9 @@ type Config struct {
 	Redis            redis.RedisConf
 }
 type WebsocketConfig struct {
-	MaxConnNum int
-	TimeOut    int
-	MaxMsgLen  int
+	MaxConnNum     int
+	TimeOut        int
+	ReadBufferSize int
 }
 type RateLimitConfig struct {
 	Enable  bool

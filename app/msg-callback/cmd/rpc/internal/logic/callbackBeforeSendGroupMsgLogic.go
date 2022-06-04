@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"errors"
 
 	"github.com/Path-IM/Path-IM-Server/app/msg-callback/cmd/rpc/internal/svc"
 	"github.com/Path-IM/Path-IM-Server/app/msg-callback/cmd/rpc/pb"
@@ -24,7 +25,5 @@ func NewCallbackBeforeSendGroupMsgLogic(ctx context.Context, svcCtx *svc.Service
 }
 
 func (l *CallbackBeforeSendGroupMsgLogic) CallbackBeforeSendGroupMsg(in *pb.CallbackSendGroupMsgReq) (*pb.CommonCallbackResp, error) {
-	// todo: add your logic here and delete this line
-
-	return &pb.CommonCallbackResp{}, nil
+	return &pb.CommonCallbackResp{}, errors.New("已弃用")
 }

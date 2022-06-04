@@ -53,7 +53,7 @@ func NewMsggatewayLogic(ctx context.Context, svcCtx *wssvc.ServiceContext) *Msgg
 	ws.wsUserToConn = make(map[string]map[string]*UserConn)
 	ws.wsUpGrader = &websocket.Upgrader{
 		HandshakeTimeout: time.Duration(ws.svcCtx.Config.Websocket.TimeOut) * time.Second,
-		ReadBufferSize:   ws.svcCtx.Config.Websocket.MaxMsgLen,
+		ReadBufferSize:   ws.svcCtx.Config.Websocket.ReadBufferSize,
 		CheckOrigin:      func(r *http.Request) bool { return true },
 	}
 	msgGatewayLogic = ws

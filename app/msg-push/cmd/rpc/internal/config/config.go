@@ -8,8 +8,7 @@ import (
 
 type Config struct {
 	zrpc.RpcServerConf
-	PushType string `json:",default=jpns,options=jpns|mobpush"`
-	//MsgGatewayEtcd discov.EtcdConf
+	PushType               string `json:",default=jpns,options=jpns|mobpush"`
 	Jpns                   JpnsConf
 	MsgGatewayRpc          discov.EtcdConf
 	ImUserRpc              zrpc.RpcClientConf
