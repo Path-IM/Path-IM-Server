@@ -1,0 +1,69 @@
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: pathim
+  labels:
+    app: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      initContainers:
+        - name: disable-thp
+          image: busybox:1.29.3
+          command: ['/bin/sh','-c','echo never > /sys/kernel/mm/transparent_hugepage/enabled && sysctl -w net.core.somaxconn=1024 && sleep 1']
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: /sys
+              name: mastersys
+              readOnly: false
+      containers:
+        - name:  redis
+          image: ccr.ccs.tencentyun.com/zeroim/redis
+          ports:
+            - containerPort: 6379
+          args: ["redis-server","/usr/local/etc/redis/redis.conf"]
+          readinessProbe:
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              memory: 1Gi
+            limits:
+              memory: 1Gi
+          volumeMounts:
+            - name: config
+              mountPath: /usr/local/etc/redis/redis.conf
+              subPath: redis.conf
+            - name: data
+              mountPath: /data
+      imagePullSecrets:
+        - name: registry
+      volumes:
+        - name: config
+          configMap:
+            name: redis-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: redis-pvc
+        - name: mastersys
+          hostPath:
+            path: /sys

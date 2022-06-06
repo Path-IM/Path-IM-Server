@@ -5,11 +5,10 @@ type MsgCallBackReq struct {
 	RecvID       string `json:"recvID"`
 	Content      string `json:"content"`
 	SendTime     int64  `json:"sendTime"`
-	MsgFrom      int32  `json:"msgFrom"`
 	ContentType  int32  `json:"contentType"`
 	SessionType  int32  `json:"sessionType"`
-	PlatformID   int32  `json:"senderPlatformID"`
-	MsgID        string `json:"msgID"`
+	ClientMsgID  string `json:"clientMsgID"`
+	ServerMsgID  string `json:"serverMsgID"`
 	IsOnlineOnly bool   `json:"isOnlineOnly"`
 }
 type MsgCallBackResp struct {

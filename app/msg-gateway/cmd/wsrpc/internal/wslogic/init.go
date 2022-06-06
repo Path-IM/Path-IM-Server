@@ -9,7 +9,6 @@ var (
 	rwLock          *sync.RWMutex
 	validate        *validator.Validate
 	sendMsgAllCount uint64
-	userCount       uint64
 )
 
 func init() {

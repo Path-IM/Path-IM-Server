@@ -22,12 +22,6 @@ func NewImUserServiceServer(svcCtx *svc.ServiceContext) *ImUserServiceServer {
 	}
 }
 
-//  获取群组成员列表
-func (s *ImUserServiceServer) GetGroupMemberIDListFromCache(ctx context.Context, in *pb.GetGroupMemberIDListFromCacheReq) (*pb.GetGroupMemberIDListFromCacheResp, error) {
-	l := logic.NewGetGroupMemberIDListFromCacheLogic(ctx, s.svcCtx)
-	return l.GetGroupMemberIDListFromCache(in)
-}
-
 //  判断用户A是否在B黑名单中
 func (s *ImUserServiceServer) IfAInBBlacklist(ctx context.Context, in *pb.IfAInBBlacklistReq) (*pb.IfAInBBlacklistResp, error) {
 	l := logic.NewIfAInBBlacklistLogic(ctx, s.svcCtx)
@@ -46,14 +40,20 @@ func (s *ImUserServiceServer) GetSingleConversationRecvMsgOpts(ctx context.Conte
 	return l.GetSingleConversationRecvMsgOpts(in)
 }
 
-//  获取超级群成员列表 通过消息接收选项
-func (s *ImUserServiceServer) GetUserListFromSuperGroupWithOpt(ctx context.Context, in *pb.GetUserListFromSuperGroupWithOptReq) (*pb.GetUserListFromSuperGroupWithOptResp, error) {
-	l := logic.NewGetUserListFromSuperGroupWithOptLogic(ctx, s.svcCtx)
-	return l.GetUserListFromSuperGroupWithOpt(in)
+//  获取群成员列表 通过消息接收选项
+func (s *ImUserServiceServer) GetUserListFromGroupWithOpt(ctx context.Context, in *pb.GetUserListFromGroupWithOptReq) (*pb.GetUserListFromGroupWithOptResp, error) {
+	l := logic.NewGetUserListFromGroupWithOptLogic(ctx, s.svcCtx)
+	return l.GetUserListFromGroupWithOpt(in)
 }
 
 //  检查token
 func (s *ImUserServiceServer) VerifyToken(ctx context.Context, in *pb.VerifyTokenReq) (*pb.VerifyTokenResp, error) {
 	l := logic.NewVerifyTokenLogic(ctx, s.svcCtx)
 	return l.VerifyToken(in)
+}
+
+//  是否预览消息
+func (s *ImUserServiceServer) IfPreviewMessage(ctx context.Context, in *pb.IfPreviewMessageReq) (*pb.IfPreviewMessageResp, error) {
+	l := logic.NewIfPreviewMessageLogic(ctx, s.svcCtx)
+	return l.IfPreviewMessage(in)
 }

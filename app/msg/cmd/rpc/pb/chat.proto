@@ -1,113 +1,119 @@
 syntax = "proto3";
 option go_package = "./pb";
 
-import "ws.proto";
-
 package pbChat;
 
 
-
-message MsgDataToMQ{
-  string token = 1;
-  string operationID = 2;
-  server_api_params.MsgData msgData = 3;
+message PullMsgBySeqListReq{
+  repeated uint32 seqList = 1;
+  string userID = 2;
 }
 
+message PullMsgByGroupSeqListReq {
+  string groupID = 1;
+  repeated uint32 seqList = 2;
+}
+message PullMsgListResp {
+  repeated MsgData list = 1;
+  int32 errCode = 2;
+  string errMsg = 3;
+}
+
+message MsgData {
+  string clientMsgID = 1;
+  string serverMsgID = 2;
+  uint32 conversationType = 3;
+  string sendID = 4;
+  string receiveID = 5;
+  uint32 contentType = 6;
+  bytes content = 7;
+  repeated string atUserIDList = 8;
+  uint32 clientTime = 9;
+  uint32 serverTime = 10;
+  uint32 seq = 11;
+  OfflinePush offlinePush = 12;
+  MsgOptions msgOptions = 13;
+}
+message OfflinePush{
+  string title = 1;
+  string desc = 2;
+  string ex = 3;
+  string iOSPushSound = 4;
+  bool iOSBadgeCount = 5;
+}
+message MsgOptions{
+  bool persistent = 1;
+  bool history = 2;
+  bool unreadCount = 3;
+  bool updateConversation = 4;
+  // server端控制
+  bool needBeFriend = 5;
+  bool offlinePush = 6;
+  bool senderSync = 7;
+}
+
+message MsgDataToMQ{
+  string traceId = 1;
+  MsgData msgData = 2;
+}
 
 message MsgDataToDB {
-  server_api_params.MsgData msgData = 1;
-  string operationID = 2;
+  string traceId = 1;
+  MsgData msgData = 2;
 
 }
 message PushMsgDataToMQ{
-  string OperationID = 1;
-  server_api_params.MsgData msgData = 2;
+  string traceId = 1;
+  MsgData msgData = 2;
   string pushToUserID = 3;
 }
-message PushMsgToSuperGroupDataToMQ {
-  server_api_params.MsgData msgData = 1;
-  string superGroupID = 2;
-  string OperationID = 3;
+
+message GetMinAndMaxSeqReq {
+  string userID = 1;
 }
-//message PullMessageReq {
-//  string UserID = 1;
-//  int64 SeqBegin = 2;
-//  int64 SeqEnd = 3;
-//  string OperationID = 4;
-//}
-//
-//message PullMessageResp {
-//  int32 ErrCode = 1;
-//  string ErrMsg = 2;
-//  int64 MaxSeq = 3;
-//  int64 MinSeq = 4;
-//  repeated GatherFormat SingleUserMsg = 5;
-//  repeated GatherFormat GroupUserMsg = 6;
-//}
-//message PullMessageBySeqListReq{
-//  string UserID = 1;
-//  string OperationID = 2;
-//  repeated int64 seqList =3;
-//}
-message GetMaxAndMinSeqReq {
-  string UserID = 1;
-}
-message GetMaxAndMinSeqResp {
+
+message GetMinAndMaxSeqResp {
   uint32 MaxSeq = 1;
   uint32 MinSeq = 2;
   uint32 ErrCode = 3;
   string ErrMsg = 4;
 }
-message GetMaxAndMinSuperGroupSeqReq {
-  repeated string  SuperGroupIDList = 1;
+
+message GetMinAndMaxGroupSeqReq {
+  repeated string  groupIDList = 1;
 }
-message GetMaxAndMinSuperGroupSeqRespItem {
-  string SuperGroupID = 1;
-  uint32 MaxSeq = 2;
-  uint32 MinSeq = 3;
+
+message GetMinAndMaxGroupSeqItem {
+  string groupID = 1;
+  uint32 minSeq = 2;
+  uint32 maxSeq = 3;
 }
-message GetMaxAndMinSuperGroupSeqResp {
-  repeated GetMaxAndMinSuperGroupSeqRespItem SuperGroupSeqList = 1;
+message GetMinAndMaxGroupSeqResp {
+  repeated GetMinAndMaxGroupSeqItem groupSeqList = 1;
   uint32 ErrCode = 2;
   string ErrMsg = 3;
 }
 
 message SendMsgReq {
-  string token = 1;
-  server_api_params.MsgData msgData = 2;
+  MsgData msgData = 1;
 }
 
 message SendMsgResp {
-  string sendID = 1;
-  string recvID = 2;
-  string groupID = 3;
-  string serverMsgID = 4;
-  string clientMsgID = 5;
-  int64 serverTime = 6;
-
-  //  string serverMsgID = 1;
-  //  string clientMsgID = 2;
-  //  int64  serverTime = 3;
+  string clientMsgID = 1;
+  string serverMsgID = 2;
+  uint32 conversationType = 3;
+  string receiveID = 4;
+  uint32 contentType = 5;
+  uint32 serverTime = 6;
 
   int32 ErrCode = 7;
   string ErrMsg = 8;
 }
 
-message WrapPullMessageBySeqListReq {
-  server_api_params.PullMessageBySeqListReq PullMessageBySeqListReq = 1;
-}
-message WrapPullMessageBySeqListResp {
-  server_api_params.PullMessageBySeqListResp PullMessageBySeqListResp = 1;
-}
-
-message PullMessageBySuperGroupSeqListReq {
-  string groupID = 1;
-  repeated uint32 seqList = 2;
-}
 service Chat {
-  rpc GetMaxAndMinSeq(GetMaxAndMinSeqReq) returns(GetMaxAndMinSeqResp);
-  rpc GetSuperGroupMaxAndMinSeq(GetMaxAndMinSuperGroupSeqReq) returns(GetMaxAndMinSuperGroupSeqResp);
-  rpc PullMessageBySeqList(WrapPullMessageBySeqListReq) returns(WrapPullMessageBySeqListResp);
-  rpc PullMessageBySuperGroupSeqList(PullMessageBySuperGroupSeqListReq) returns(WrapPullMessageBySeqListResp);
+  rpc GetMaxAndMinSeq(GetMinAndMaxSeqReq) returns(GetMinAndMaxSeqResp);
+  rpc GetMinAndMaxGroupSeq(GetMinAndMaxGroupSeqReq) returns(GetMinAndMaxGroupSeqResp);
+  rpc PullMessageBySeqList(PullMsgBySeqListReq) returns(PullMsgListResp);
+  rpc PullMessageByGroupSeqList(PullMsgByGroupSeqListReq) returns(PullMsgListResp);
   rpc SendMsg(SendMsgReq) returns(SendMsgResp);
 }

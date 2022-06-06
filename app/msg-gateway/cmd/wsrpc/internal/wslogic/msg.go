@@ -6,17 +6,16 @@ import (
 	"github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/chat"
 	chatpb "github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/pb"
 	"github.com/Path-IM/Path-IM-Server/common/types"
-	"github.com/Path-IM/Path-IM-Server/common/xerr"
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
 func (l *MsggatewayLogic) msgParse(ctx context.Context, conn *UserConn, binaryMsg []byte, uid string, platformID string) {
-	m := &pb.Req{}
+	m := &pb.BodyReq{}
 	err := proto.Unmarshal(binaryMsg, m)
 	if err != nil {
-		l.sendErrMsg(ctx, conn, types.ErrCodeProtoUnmarshal, err.Error(), types.WSDataError)
+		l.sendErrMsg(ctx, conn, types.ErrCodeParams, err.Error(), uid, platformID)
 		err = conn.Close()
 		if err != nil {
 			logx.WithContext(ctx).Error("ws close err", err.Error())
@@ -25,50 +24,42 @@ func (l *MsggatewayLogic) msgParse(ctx context.Context, conn *UserConn, binaryMs
 	}
 	if err := validate.Struct(m); err != nil {
 		logx.WithContext(ctx).Error("ws args validate  err", err.Error())
-		l.sendErrMsg(ctx, conn, types.ErrCodeParams, err.Error(), xerr.NewErrCode(int(m.ReqIdentifier)))
+		l.sendErrMsg(ctx, conn, types.ErrCodeParams, err.Error(), uid, platformID)
 		return
 	}
 	switch m.ReqIdentifier {
 	case types.WSGetNewestSeq:
-		l.getSeqReq(ctx, conn, m, uid)
+		l.getSeqReq(ctx, conn, m, uid, platformID)
 	case types.WSGetNewestGroupSeq:
-		l.getSuperGroupSeqReq(ctx, conn, m)
+		l.getGroupSeqReq(ctx, conn, m, uid, platformID)
 	case types.WSSendMsg:
-		l.sendMsgReq(ctx, conn, m, uid)
+		l.sendMsgReq(ctx, conn, m, uid, platformID)
 	case types.WSPullMsgBySeqList:
-		l.pullMsgBySeqListReq(ctx, conn, m)
+		l.pullMsgBySeqListReq(ctx, conn, m, uid, platformID)
 	case types.WSPullMsgByGroupSeqList:
-		l.pullMsgBySuperGroupSeqListReq(ctx, conn, m)
+		l.pullMsgByGroupSeqListReq(ctx, conn, m, uid, platformID)
 	default:
 	}
 }
 
-func (l *MsggatewayLogic) sendErrMsg(ctx context.Context, conn *UserConn, code int32, errMsg string, reqIdentifier *xerr.CodeError) {
-	mReply := Resp{
-		ReqIdentifier: int32(reqIdentifier.GetErrCode()),
+func (l *MsggatewayLogic) sendErrMsg(ctx context.Context, conn *UserConn, code int32, errMsg string, uid string, platformID string) {
+	mReply := &pb.BodyResp{
+		ReqIdentifier: types.WSErrorMsg,
 		ErrCode:       uint32(code),
 		ErrMsg:        errMsg,
 	}
-	l.sendMsg(ctx, conn, mReply)
+	l.sendMsg(ctx, conn, mReply, uid, platformID)
 }
 
-func (l *MsggatewayLogic) sendMsg(ctx context.Context, conn *UserConn, mReply Resp) {
-	resp := &pb.Resp{
-		ReqIdentifier: uint32(mReply.ReqIdentifier),
-		ErrCode:       mReply.ErrCode,
-		ErrMsg:        mReply.ErrMsg,
-		Data:          mReply.Data,
-	}
+func (l *MsggatewayLogic) sendMsg(ctx context.Context, conn *UserConn, resp *pb.BodyResp, uid string, platformID string) {
 	b, err := proto.Marshal(resp)
 	if err != nil {
-		uid, platform := l.getUserUid(conn)
-		logx.WithContext(ctx).Error(mReply.ReqIdentifier, mReply.ErrCode, mReply.ErrMsg, "Encode Msg error", conn.RemoteAddr().String(), uid, platform, err.Error())
+		logx.WithContext(ctx).Error(resp.ReqIdentifier, " ", resp.ErrCode, " ", resp.ErrMsg, " Encode Msg error ", conn.RemoteAddr().String(), " ", uid, " ", platformID, " ", err.Error())
 		return
 	}
 	err = l.writeMsg(conn, websocket.BinaryMessage, b)
 	if err != nil {
-		uid, platform := l.getUserUid(conn)
-		logx.WithContext(ctx).Error(mReply.ReqIdentifier, mReply.ErrCode, mReply.ErrMsg, "WS WriteMsg error", conn.RemoteAddr().String(), uid, platform, err.Error())
+		logx.WithContext(ctx).Error(resp.ReqIdentifier, " ", resp.ErrCode, " ", resp.ErrMsg, " WS WriteMsg error ", conn.RemoteAddr().String(), " ", uid, " ", platformID, " ", err.Error())
 	}
 }
 
@@ -78,10 +69,10 @@ func (l *MsggatewayLogic) writeMsg(conn *UserConn, a int, msg []byte) error {
 	return conn.WriteMessage(a, msg)
 }
 
-func (l *MsggatewayLogic) sendMsgReq(ctx context.Context, conn *UserConn, m *pb.Req, uid string) {
+func (l *MsggatewayLogic) sendMsgReq(ctx context.Context, conn *UserConn, m *pb.BodyReq, uid string, platformID string) {
 	// 是否开启限流
 	if l.svcCtx.Config.SendMsgRateLimit.Enable {
-		if !l.sendMsgRateLimit(ctx, conn, m, uid) {
+		if !l.sendMsgRateLimit(ctx, conn, m, uid, platformID) {
 			return
 		}
 	}
@@ -90,126 +81,114 @@ func (l *MsggatewayLogic) sendMsgReq(ctx context.Context, conn *UserConn, m *pb.
 	nReply := new(chatpb.SendMsgResp)
 	isPass, errCode, errMsg, pData := l.argsValidate(m, types.WSSendMsg)
 	if isPass {
-		data := pData.(chatpb.MsgData)
-		pbData := chatpb.SendMsgReq{
-			Token:   m.Token,
-			MsgData: &data,
-		}
-		logx.WithContext(ctx).Info("Ws call success to sendMsgReq middle", m.ReqIdentifier, m.SendID, data.String())
+		pbData := pData.(chatpb.SendMsgReq)
+		logx.WithContext(ctx).Info("Ws call success to sendMsgReq middle", m.ReqIdentifier, m.SendID, pbData.String())
 
-		reply, err := l.svcCtx.MsgRpc.SendMsg(ctx, &pbData)
+		reply, err := l.svcCtx.MsgRpc().SendMsg(ctx, &pbData)
 		if err != nil {
 			logx.WithContext(ctx).Error("UserSendMsg err ", err.Error())
 			nReply.ErrCode = types.ErrCodeFailed
 			nReply.ErrMsg = err.Error()
-			l.sendMsgResp(ctx, conn, m, nReply)
+			l.sendMsgResp(ctx, conn, m, nReply, uid, platformID)
 		} else {
 			logx.WithContext(ctx).Info("rpc call success to sendMsgReq", reply.String())
-			l.sendMsgResp(ctx, conn, m, reply)
+			l.sendMsgResp(ctx, conn, m, reply, uid, platformID)
 		}
 	} else {
 		nReply.ErrCode = errCode
 		nReply.ErrMsg = errMsg
-		l.sendMsgResp(ctx, conn, m, nReply)
+		l.sendMsgResp(ctx, conn, m, nReply, uid, platformID)
 	}
 }
 
-func (l *MsggatewayLogic) sendMsgResp(ctx context.Context, conn *UserConn, m *pb.Req, pb *chat.SendMsgResp) {
-	//var mReplyData chatpb.SendMsgResp
-	//mReplyData.ClientMsgID = pb.GetClientMsgID()
-	//mReplyData.ServerMsgID = pb.GetServerMsgID()
-	//mReplyData.ServerTime = pb.GetServerTime()
-	b, _ := proto.Marshal(pb)
-	mReply := Resp{
-		ReqIdentifier: int32(m.ReqIdentifier),
-		ErrCode:       uint32(pb.GetErrCode()),
-		ErrMsg:        pb.GetErrMsg(),
+func (l *MsggatewayLogic) sendMsgResp(ctx context.Context, conn *UserConn, m *pb.BodyReq, resp *chat.SendMsgResp, uid string, platformID string) {
+	b, _ := proto.Marshal(resp)
+	mReply := &pb.BodyResp{
+		ReqIdentifier: m.ReqIdentifier,
+		ErrCode:       uint32(resp.ErrCode),
+		ErrMsg:        resp.ErrMsg,
 		Data:          b,
 	}
-	l.sendMsg(ctx, conn, mReply)
+	l.sendMsg(ctx, conn, mReply, uid, platformID)
 }
 
-func (l *MsggatewayLogic) pullMsgBySeqListReq(ctx context.Context, conn *UserConn, m *pb.Req) {
+func (l *MsggatewayLogic) pullMsgBySeqListReq(ctx context.Context, conn *UserConn, m *pb.BodyReq, uid string, platformID string) {
 	logx.WithContext(ctx).Info("Ws call success to pullMsgBySeqListReq start", m.SendID, m.ReqIdentifier, m.Data)
-	nReply := new(chatpb.PullMessageBySeqListResp)
+	nReply := new(chatpb.PullMsgListResp)
 	isPass, errCode, errMsg, data := l.argsValidate(m, types.WSPullMsgBySeqList)
 	if isPass {
-		rpcReq := chatpb.PullMessageBySeqListReq{}
-		rpcReq.SeqList = data.(chatpb.PullMessageBySeqListReq).SeqList
-		rpcReq.UserID = m.SendID
-		logx.WithContext(ctx).Info("Ws call success to pullMsgBySeqListReq middle", m.SendID, m.ReqIdentifier, data.(chatpb.PullMessageBySeqListReq).SeqList)
-		reply, err := l.svcCtx.MsgRpc.PullMessageBySeqList(ctx, &chatpb.WrapPullMessageBySeqListReq{PullMessageBySeqListReq: &rpcReq})
+		rpcReq := data.(chatpb.PullMsgBySeqListReq)
+		logx.WithContext(ctx).Info("Ws call success to pullMsgBySeqListReq middle", m.SendID, m.ReqIdentifier, data.(chatpb.PullMsgBySeqListReq).SeqList)
+		reply, err := l.svcCtx.MsgRpc().PullMessageBySeqList(ctx, &rpcReq)
 		if err != nil {
 			logx.WithContext(ctx).Errorf("pullMsgBySeqListReq err", err.Error())
 			nReply.ErrCode = types.ErrCodeFailed
 			nReply.ErrMsg = err.Error()
-			l.pullMsgBySeqListResp(ctx, conn, m, nReply)
+			l.pullMsgBySeqListResp(ctx, conn, m, nReply, uid, platformID)
 		} else {
 			logx.WithContext(ctx).Info("rpc call success to pullMsgBySeqListReq ", reply.String())
-			l.pullMsgBySeqListResp(ctx, conn, m, reply.PullMessageBySeqListResp)
+			l.pullMsgBySeqListResp(ctx, conn, m, reply, uid, platformID)
 		}
 	} else {
 		nReply.ErrCode = errCode
 		nReply.ErrMsg = errMsg
-		l.pullMsgBySeqListResp(ctx, conn, m, nReply)
+		l.pullMsgBySeqListResp(ctx, conn, m, nReply, uid, platformID)
 	}
 }
 
-func (l *MsggatewayLogic) pullMsgBySuperGroupSeqListReq(ctx context.Context, conn *UserConn, m *pb.Req) {
-	logx.WithContext(ctx).Info("Ws call success to pullMsgBySuperGroupSeqListReq start", m.SendID, m.ReqIdentifier, m.Data)
-	nReply := new(chatpb.PullMessageBySeqListResp)
+func (l *MsggatewayLogic) pullMsgByGroupSeqListReq(ctx context.Context, conn *UserConn, m *pb.BodyReq, uid string, platformID string) {
+	logx.WithContext(ctx).Info("Ws call success to pullMsgByGroupSeqListReq start", m.SendID, m.ReqIdentifier, m.Data)
+	nReply := new(chatpb.PullMsgListResp)
 	isPass, errCode, errMsg, data := l.argsValidate(m, types.WSPullMsgByGroupSeqList)
 	if isPass {
-		rpcReq := chatpb.PullMessageBySuperGroupSeqListReq{}
-		rpcReq.SeqList = data.(chatpb.PullMessageBySuperGroupSeqListReq).SeqList
-		rpcReq.GroupID = data.(chatpb.PullMessageBySuperGroupSeqListReq).GroupID
-		logx.WithContext(ctx).Info("Ws call success to pullMsgBySeqListReq middle", m.SendID, m.ReqIdentifier, data.(chatpb.PullMessageBySuperGroupSeqListReq).SeqList)
-		reply, err := l.svcCtx.MsgRpc.PullMessageBySuperGroupSeqList(ctx, &rpcReq)
+		rpcReq := data.(chatpb.PullMsgByGroupSeqListReq)
+		logx.WithContext(ctx).Info("Ws call success to pullMsgBySeqListReq middle", m.SendID, m.ReqIdentifier, rpcReq.SeqList)
+		reply, err := l.svcCtx.MsgRpc().PullMessageByGroupSeqList(ctx, &rpcReq)
 		if err != nil {
 			logx.WithContext(ctx).Errorf("pullMsgBySeqListReq err", err.Error())
 			nReply.ErrCode = types.ErrCodeFailed
 			nReply.ErrMsg = err.Error()
-			l.pullMsgBySuperGroupSeqListResp(ctx, conn, m, nReply)
+			l.pullMsgByGroupSeqListResp(ctx, conn, m, nReply, uid, platformID)
 		} else {
 			logx.WithContext(ctx).Info("rpc call success to pullMsgBySeqListReq ", reply.String())
-			l.pullMsgBySuperGroupSeqListResp(ctx, conn, m, reply.PullMessageBySeqListResp)
+			l.pullMsgByGroupSeqListResp(ctx, conn, m, reply, uid, platformID)
 		}
 	} else {
 		nReply.ErrCode = errCode
 		nReply.ErrMsg = errMsg
-		l.pullMsgBySuperGroupSeqListResp(ctx, conn, m, nReply)
+		l.pullMsgByGroupSeqListResp(ctx, conn, m, nReply, uid, platformID)
 	}
 }
 
-func (l *MsggatewayLogic) pullMsgBySeqListResp(ctx context.Context, conn *UserConn, m *pb.Req, pb *chatpb.PullMessageBySeqListResp) {
-	logx.WithContext(ctx).Info("pullMsgBySeqListResp come  here ", pb.String())
-	c, _ := proto.Marshal(pb)
-	mReply := Resp{
-		ReqIdentifier: int32(m.ReqIdentifier),
-		ErrCode:       uint32(pb.GetErrCode()),
-		ErrMsg:        pb.GetErrMsg(),
+func (l *MsggatewayLogic) pullMsgBySeqListResp(ctx context.Context, conn *UserConn, m *pb.BodyReq, resp *chatpb.PullMsgListResp, uid string, platformID string) {
+	logx.WithContext(ctx).Info("pullMsgBySeqListResp come  here ", resp.String())
+	c, _ := proto.Marshal(resp)
+	mReply := &pb.BodyResp{
+		ReqIdentifier: m.ReqIdentifier,
+		ErrCode:       uint32(resp.ErrCode),
+		ErrMsg:        resp.ErrMsg,
 		Data:          c,
 	}
 	logx.WithContext(ctx).Info("pullMsgBySeqListResp all data  is ", mReply.ReqIdentifier, mReply.ErrCode, mReply.ErrMsg,
 		len(mReply.Data))
 
-	l.sendMsg(ctx, conn, mReply)
+	l.sendMsg(ctx, conn, mReply, uid, platformID)
 }
 
-func (l *MsggatewayLogic) pullMsgBySuperGroupSeqListResp(ctx context.Context, conn *UserConn, m *pb.Req, pb *chatpb.PullMessageBySeqListResp) {
-	logx.WithContext(ctx).Info("pullMsgBySuperGroupSeqListResp come  here ", pb.String())
-	for _, data := range pb.List {
-		logx.Infof("pullMsgBySuperGroupSeqListResp data is %s", data.String())
+func (l *MsggatewayLogic) pullMsgByGroupSeqListResp(ctx context.Context, conn *UserConn, m *pb.BodyReq, resp *chatpb.PullMsgListResp, uid string, platformID string) {
+	logx.WithContext(ctx).Info("pullMsgByGroupSeqListResp come  here ", resp.String())
+	for _, data := range resp.List {
+		logx.Infof("pullMsgByGroupSeqListResp data is %s", data.String())
 	}
-	c, _ := proto.Marshal(pb)
-	mReply := Resp{
-		ReqIdentifier: int32(m.ReqIdentifier),
-		ErrCode:       uint32(pb.GetErrCode()),
-		ErrMsg:        pb.GetErrMsg(),
+	c, _ := proto.Marshal(resp)
+	mReply := &pb.BodyResp{
+		ReqIdentifier: m.ReqIdentifier,
+		ErrCode:       uint32(resp.ErrCode),
+		ErrMsg:        resp.ErrMsg,
 		Data:          c,
 	}
 	logx.WithContext(ctx).Info("pullMsgBySeqListResp all data  is ", mReply.ReqIdentifier, mReply.ErrCode, mReply.ErrMsg,
 		len(mReply.Data))
 
-	l.sendMsg(ctx, conn, mReply)
+	l.sendMsg(ctx, conn, mReply, uid, platformID)
 }

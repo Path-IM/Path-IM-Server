@@ -10,16 +10,14 @@ const (
 	WSSendMsg      = 2001
 	WSPushMsg      = 2002
 	WSGroupPushMsg = 2003
+
+	WSErrorMsg = 3001
 )
 
 // msg 用到的
 const (
-	SingleChatType       = 1
-	GroupChatType        = 2
-	NotificationChatType = 3
-
-	OnlineStatus  = "online"
-	OfflineStatus = "offline"
+	SingleChatType = 1
+	GroupChatType  = 2
 )
 
 const (
@@ -29,11 +27,11 @@ const (
 // options
 const (
 	//OptionsKey
-	IsHistory                  = "history"
-	IsPersistent               = "persistent"
-	IsOfflinePush              = "offlinePush"
-	IsUnreadCount              = "unreadCount"
-	IsConversationUpdate       = "conversationUpdate"
-	IsSenderSync               = "senderSync"
-	IsSenderConversationUpdate = "senderConversationUpdate"
+	IsHistory          = "IsHistory"          // 存储到 mongodb/cassandra
+	IsPersistent       = "IsPersistent"       // 存储到 持久层
+	UnreadCount        = "UnreadCount"        // 用户离线了是否也推送
+	UpdateConversation = "UpdateConversation" // 更新会话
+	NeedBeFriend       = "NeedBeFriend"       // 是否需要成为好友
+	IsOfflinePush      = "IsOfflinePush"      // 是否离线推送
+	IsSenderSync       = "IsSenderSync"       // 是否需要同步给发送者
 )

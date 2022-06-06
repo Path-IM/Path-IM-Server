@@ -1,0 +1,107 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cassandra
+  namespace: pathim
+spec:
+  podManagementPolicy: OrderedReady
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: cassandra
+  serviceName: cassandra
+  template:
+    metadata:
+      labels:
+        app: cassandra
+    spec:
+      containers:
+        - image: "cassandra:4.0.4"
+          envFrom:
+            - configMapRef:
+                name: cassandra-configmap
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.hostIP
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+            - name: CASSANDRA_BROADCAST_ADDRESS
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+            - name: CASSANDRA_SEEDS
+              valueFrom:
+                configMapKeyRef:
+                  name: cassandra-configmap
+                  key: CASSANDRA_SEEDS
+          ports:
+            - name: p7000
+              protocol: TCP
+              containerPort: 7000
+            - name: p9042
+              protocol: TCP
+              containerPort: 9042
+          imagePullPolicy: IfNotPresent
+          name: cassandra
+          readinessProbe:
+            tcpSocket:
+              port: 7000
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 7000
+            initialDelaySeconds: 25
+            periodSeconds: 20
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 3072Mi
+            requests:
+              cpu: 10m
+              memory: 512Mi
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/cassandra
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+  updateStrategy:
+    rollingUpdate:
+      partition: 0
+    type: RollingUpdate
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+---

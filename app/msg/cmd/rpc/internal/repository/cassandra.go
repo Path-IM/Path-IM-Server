@@ -72,7 +72,7 @@ func (r *CassandraHistory) GetMsgBySeqList(uid string, seqList []uint32) (seqMsg
 	return seqMsg, nil
 }
 
-func (r *CassandraHistory) GetMsgBySuperGroupSeqList(groupId string, seqList []uint32) (seqMsg []*pb.MsgData, err error) {
+func (r *CassandraHistory) GetMsgByGroupSeqList(groupId string, seqList []uint32) (seqMsg []*pb.MsgData, err error) {
 	var hasSeqList []uint32
 	singleCount := 0
 	ctx, _ := context.WithTimeout(context.Background(), time.Duration(r.svcCtx.Config.Cassandra.TimeoutSecond)*time.Second)
@@ -95,7 +95,7 @@ func (r *CassandraHistory) GetMsgBySuperGroupSeqList(groupId string, seqList []u
 		if err = r.CassandraClient.Query(fmt.Sprintf(
 			`SELECT groupid, msgs FROM %s.%s WHERE groupid = ?`,
 			r.svcCtx.Config.Cassandra.Keyspace,
-			r.svcCtx.Config.Cassandra.SuperGroupChatMsgTableName,
+			r.svcCtx.Config.Cassandra.GroupChatMsgTableName,
 		), seqUid).WithContext(ctx).Scan(&sChat.Groupid, &sChat.Msgs); err != nil {
 			logx.Error("findone groupid failed:", err.Error())
 			continue

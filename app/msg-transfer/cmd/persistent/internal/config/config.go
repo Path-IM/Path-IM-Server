@@ -7,12 +7,9 @@ import (
 
 type Config struct {
 	service.ServiceConf
-	Kafka KafkaConfig
+	Kafka StorageConsumer
 }
-type KafkaConfigOnline struct {
+type StorageConsumer struct {
 	xkafka.ProducerConfig
 	MsgPersistentGroupID string
-}
-type KafkaConfig struct {
-	Online KafkaConfigOnline
 }

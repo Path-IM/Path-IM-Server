@@ -55,7 +55,7 @@ func (r *Rep) CheckTable() {
 		logx.Errorf("create user chat table error: %s", err)
 		panic(err)
 	}
-	cql2 := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s.%s (groupid varchar, msgs list< frozen< map<bigint, blob> > >, PRIMARY KEY (groupid))", r.svcCtx.Config.Cassandra.Keyspace, r.svcCtx.Config.Cassandra.SuperGroupChatMsgTableName)
+	cql2 := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s.%s (groupid varchar, msgs list< frozen< map<bigint, blob> > >, PRIMARY KEY (groupid))", r.svcCtx.Config.Cassandra.Keyspace, r.svcCtx.Config.Cassandra.GroupChatMsgTableName)
 	logx.Infof("cql2: %s", cql2)
 	if err := r.CassandraClient.Query(cql2).Exec(); err != nil {
 		logx.Errorf("create user chat table error: %s", err)

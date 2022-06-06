@@ -50,7 +50,7 @@ message IfAInBFriendListResp {
 }
 message GetSingleConversationRecvMsgOptsReq {
   string userID = 1;
-  string conversationID = 2;
+  string senderUserID = 2;
 }
 enum RecvMsgOpt {
   ReceiveMessage = 0;
@@ -61,8 +61,8 @@ message GetSingleConversationRecvMsgOptsResp {
   CommonResp commonResp = 1;
   RecvMsgOpt opts = 2;
 }
-message GetUserListFromSuperGroupWithOptReq {
-  string superGroupID = 1;
+message GetUserListFromGroupWithOptReq {
+  string groupID = 1;
   repeated RecvMsgOpt opts = 2;
   repeated string userIDList = 3;
 }
@@ -70,7 +70,7 @@ message UserIDOpt {
   string userID = 1;
   RecvMsgOpt opts = 2;
 }
-message GetUserListFromSuperGroupWithOptResp {
+message GetUserListFromGroupWithOptResp {
   CommonResp commonResp = 1;
   repeated UserIDOpt UserIDOptList = 2;
 }
@@ -85,18 +85,28 @@ message VerifyTokenResp {
   bool success = 2;
   string errMsg = 3;
 }
+message IfPreviewMessageReq {
+  string senderID = 1;
+  string receiverID = 2;
+  string groupID = 3;
+}
+message IfPreviewMessageResp {
+  CommonResp commonResp = 1;
+  bool ifPreview = 2;
+  string replaceTitle = 3;
+}
 
 service imUserService{
-  // 获取群组成员列表
-  rpc GetGroupMemberIDListFromCache(GetGroupMemberIDListFromCacheReq) returns (GetGroupMemberIDListFromCacheResp);
   // 判断用户A是否在B黑名单中
   rpc IfAInBBlacklist(IfAInBBlacklistReq) returns (IfAInBBlacklistResp);
   // 判断用户A是否在B好友列表中
   rpc IfAInBFriendList(IfAInBFriendListReq) returns (IfAInBFriendListResp);
   // 获取单聊会话的消息接收选项
   rpc GetSingleConversationRecvMsgOpts(GetSingleConversationRecvMsgOptsReq) returns (GetSingleConversationRecvMsgOptsResp);
-  // 获取超级群成员列表 通过消息接收选项
-  rpc GetUserListFromSuperGroupWithOpt(GetUserListFromSuperGroupWithOptReq) returns (GetUserListFromSuperGroupWithOptResp);
+  // 获取群成员列表 通过消息接收选项
+  rpc GetUserListFromGroupWithOpt(GetUserListFromGroupWithOptReq) returns (GetUserListFromGroupWithOptResp);
   // 检查token
   rpc VerifyToken(VerifyTokenReq) returns (VerifyTokenResp);
+  // 是否预览消息
+  rpc IfPreviewMessage(IfPreviewMessageReq) returns (IfPreviewMessageResp);
 }

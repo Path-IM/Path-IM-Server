@@ -62,11 +62,11 @@ func (r *MongoHistory) GetMsgBySeqList(uid string, seqList []uint32) (seqMsg []*
 	return seqMsg, nil
 }
 
-func (r *MongoHistory) GetMsgBySuperGroupSeqList(groupId string, seqList []uint32) (seqMsg []*pb.MsgData, err error) {
+func (r *MongoHistory) GetMsgByGroupSeqList(groupId string, seqList []uint32) (seqMsg []*pb.MsgData, err error) {
 	var hasSeqList []uint32
 	singleCount := 0
 	ctx, _ := context.WithTimeout(context.Background(), time.Duration(r.svcCtx.Config.Mongo.DBTimeout)*time.Second)
-	c := r.MongoClient.Database(r.svcCtx.Config.Mongo.DBDatabase).Collection(r.svcCtx.Config.Mongo.SuperGroupChatMsgCollectionName)
+	c := r.MongoClient.Database(r.svcCtx.Config.Mongo.DBDatabase).Collection(r.svcCtx.Config.Mongo.GroupChatMsgCollectionName)
 	m := func(groupId string, seqList []uint32) map[string][]uint32 {
 		t := make(map[string][]uint32)
 		for i := 0; i < len(seqList); i++ {

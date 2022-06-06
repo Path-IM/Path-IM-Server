@@ -9,24 +9,16 @@ enum CallbackCommand {
   AfterSendSingleMsg = 2;
   BeforeSendGroupMsg = 3;
   AfterSendGroupMsg = 4;
-  BeforeSendSuperGroupMsg = 5;
-  AfterSendSuperGroupMsg = 6;
-  WordFilter = 7;
-  AtAllInSuperGroup = 8;
 }
 message CommonCallbackReq {
   string SendID = 1;
   CallbackCommand CallbackCommand = 2;
   string ServerMsgID = 3;
   string ClientMsgID = 4;
-  int32 SenderPlatformID = 6;
-  string SenderNickname = 7;
-  int32 SessionType = 8;
-  int32 MsgFrom = 9;
-  int32 ContentType = 10;
-  int32 Status = 11;
-  int64 CreateTime = 12;
-  string Content = 13;
+  int32 ConversationType = 5;
+  int32 ContentType = 6;
+  int64 CreateTime = 7;
+  bytes Content = 8;
 }
 enum ActionCode {
   Forbidden = 0;
@@ -40,39 +32,19 @@ message CommonCallbackResp {
   ErrCode ErrCode = 2;
   string ErrMsg = 3;
 }
+
 message CallbackSendGroupMsgReq {
   CommonCallbackReq CommonCallbackReq = 1;
   string GroupID = 2;
-}
-message CallbackSendSuperGroupMsgReq {
-  CommonCallbackReq CommonCallbackReq = 1;
-  string SuperGroupID = 2;
 }
 message CallbackSendSingleMsgReq {
   CommonCallbackReq CommonCallbackReq = 1;
   string RecvID = 2;
 }
-message CallbackWordFilterReq {
-  CommonCallbackReq CommonCallbackReq = 1;
-}
-message CallbackWordFilterResp {
-  CommonCallbackResp CommonCallbackResp = 1;
-  string ReplaceContent = 2;
-}
-message CallbackAtAllInSuperGroupReq {
-  CommonCallbackReq CommonCallbackReq = 1;
-  string SuperGroupID = 2;
-}
-message CallbackAtAllInSuperGroupResp {
-  CommonCallbackResp CommonCallbackResp = 1;
-}
+
 service msgcallbackService {
   rpc CallbackBeforeSendGroupMsg(CallbackSendGroupMsgReq) returns (CommonCallbackResp);
   rpc CallbackAfterSendGroupMsg(CallbackSendGroupMsgReq) returns (CommonCallbackResp);
-  rpc CallbackBeforeSendSuperGroupMsg(CallbackSendSuperGroupMsgReq) returns (CommonCallbackResp);
-  rpc CallbackAfterSendSuperGroupMsg(CallbackSendSuperGroupMsgReq) returns (CommonCallbackResp);
   rpc CallbackBeforeSendSingleMsg(CallbackSendSingleMsgReq) returns (CommonCallbackResp);
   rpc CallbackAfterSendSingleMsg(CallbackSendSingleMsgReq) returns (CommonCallbackResp);
-  rpc CallbackWordFilter(CallbackWordFilterReq) returns (CallbackWordFilterResp);
-  rpc CallbackAtAllInSuperGroup(CallbackAtAllInSuperGroupReq) returns (CallbackAtAllInSuperGroupResp);
 }

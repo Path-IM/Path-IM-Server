@@ -1,0 +1,70 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: etc-msg-rpc
+  namespace: pathim
+data:
+  chat.yaml: |-
+    Name: msg-rpc
+    ListenOn: :8080
+    Log:
+      ServiceName: msg-rpc
+      Level: info
+    Prometheus:
+      Host: 0.0.0.0
+      Port: 80
+      Path: /metrics
+    Telemetry:
+      Name: msg-rpc
+      Endpoint: http://101.43.214.203:14268/api/traces
+      Sampler: 1.0
+      Batcher: jaeger
+    ImUserRpc:
+      Target: "k8s://pathim/imuser-rpc-svc:8080"
+    MsgCallbackRpc:
+      Target: "k8s://pathim/msgcallback-rpc-svc:8080"
+    MessageVerify:
+      FriendVerify: true # 只有好友可以发送消息
+    Callback:
+      CallbackBeforeSendGroupMsg:
+        Enable: true # 开启群消息发送前回调
+        ContinueOnError: true # 开启群消息发送前回调时，如果出错，是否继续发送
+      CallbackAfterSendGroupMsg:
+        Enable: true # 开启群消息发送后回调
+        ContinueOnError: true # 无意义
+      CallbackBeforeSendSingleMsg:
+        Enable: true # 开启私聊消息发送前回调
+        ContinueOnError: true # 开启私聊消息发送前回调时，如果出错，是否继续发送
+      CallbackAfterSendSingleMsg:
+        Enable: true # 开启私聊消息发送后回调
+        ContinueOnError: true # 无意义
+    Kafka:
+      Brokers:
+        - 101.43.214.203:9092
+      Topic: im_msg
+    RedisConfig:
+      Conf:
+        Host: redis:6379
+        Pass: "123456"
+        Type: node
+      DB: 0
+    # mongodb://[username:password@]host1[:port1][,...hostN[:portN]][/[database][?options]]
+    Mongo:
+      Uri: mongodb://mongo/admin
+      SingleChatMsgCollectionName: "single_chat_msg"
+      GroupChatMsgCollectionName: "group_chat_msg"
+      DBDatabase: "pathim"
+      DBTimeout: 30
+    Cassandra:
+      Hosts:
+        - cassandra-0.cassandra.pathim.svc.cluster.local
+      Port: 9042
+      Keyspace: "pathim"
+      Username: "cassandra"
+      Password: "cassandra"
+      Consistency: QUORUM
+      SingleChatMsgTableName: "single_chat_msg"
+      GroupChatMsgTableName: "group_chat_msg"
+      TimeoutSecond: 5
+    HistoryDBType: cassandra # mongo, cassandra

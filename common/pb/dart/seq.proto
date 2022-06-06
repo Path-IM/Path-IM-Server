@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package pb;
+
+message GetMinAndMaxSeqReq {
+}
+
+message GetMinAndMaxSeqResp {
+  uint32 minSeq = 1;
+  uint32 maxSeq = 2;
+}
+
+message GetMinAndMaxGroupSeqReq {
+  repeated string groupIDList = 1;
+}
+
+message GetMinAndMaxGroupSeqResp {
+  repeated GetMinAndMaxGroupSeqItem groupSeqList = 1;
+}
+
+message GetMinAndMaxGroupSeqItem {
+  string groupID = 1;
+  uint32 minSeq = 2;
+  uint32 maxSeq = 3;
+}

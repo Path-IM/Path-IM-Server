@@ -5,7 +5,7 @@ Port: 17778
 Websocket:
   MaxConnNum: 10000
   TimeOut: 10
-  MaxMsgLen: 4096
+  ReadBufferSize: 4096
 
 Log:
   ServiceName: msggateway-ws
@@ -27,19 +27,17 @@ Telemetry:
 #rpc service
 ImUserRpc:
   Endpoints:
-    - 192.168.2.77:10240
+    - 127.0.0.1:10010
 
 MsgRpc:
   Endpoints:
-    - 192.168.2.77:10130
-
-VerifyTokenOnce: true
+    - 127.0.0.1:10020
 
 SendMsgRateLimit:
   Enable: true
   Seconds: 1
-  Max: 10
+  Quota: 1000
 Redis:
-  Addr: localhost:6379
+  Host: localhost:6379
   Pass: "123456"
   Type: node

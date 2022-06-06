@@ -15,15 +15,14 @@ type Config struct {
 	Cassandra  CassandraConfig
 	MsgPushRpc zrpc.RpcClientConf
 }
-type KafkaConfigOnline struct {
+type StorageConsumer struct {
 	xkafka.ProducerConfig
-	MsgToCassandraGroupID string
+	MsgToHistoryGroupID string
 }
 type KafkaConfig struct {
-	Online         KafkaConfigOnline
-	Offline        xkafka.ProducerConfig
-	SinglePush     xkafka.ProducerConfig
-	SuperGroupPush xkafka.ProducerConfig
+	StorageConsumer StorageConsumer
+	SinglePush      xkafka.ProducerConfig
+	GroupPush       xkafka.ProducerConfig
 }
 type RedisConfig struct {
 	Conf redis.RedisConf
@@ -31,7 +30,6 @@ type RedisConfig struct {
 }
 type CassandraConfig struct {
 	xcql.CassandraConfig
-	DBDatabase                 string
-	SingleChatMsgTableName     string
-	SuperGroupChatMsgTableName string
+	SingleChatMsgTableName string
+	GroupChatMsgTableName  string
 }

@@ -18,30 +18,32 @@ type (
 	GetGroupMemberIDListFromCacheResp    = pb.GetGroupMemberIDListFromCacheResp
 	GetSingleConversationRecvMsgOptsReq  = pb.GetSingleConversationRecvMsgOptsReq
 	GetSingleConversationRecvMsgOptsResp = pb.GetSingleConversationRecvMsgOptsResp
-	GetUserListFromSuperGroupWithOptReq  = pb.GetUserListFromSuperGroupWithOptReq
-	GetUserListFromSuperGroupWithOptResp = pb.GetUserListFromSuperGroupWithOptResp
+	GetUserListFromGroupWithOptReq       = pb.GetUserListFromGroupWithOptReq
+	GetUserListFromGroupWithOptResp      = pb.GetUserListFromGroupWithOptResp
 	IfAInBBlacklistReq                   = pb.IfAInBBlacklistReq
 	IfAInBBlacklistResp                  = pb.IfAInBBlacklistResp
 	IfAInBFriendListReq                  = pb.IfAInBFriendListReq
 	IfAInBFriendListResp                 = pb.IfAInBFriendListResp
+	IfPreviewMessageReq                  = pb.IfPreviewMessageReq
+	IfPreviewMessageResp                 = pb.IfPreviewMessageResp
 	UserIDOpt                            = pb.UserIDOpt
 	UserInfo                             = pb.UserInfo
 	VerifyTokenReq                       = pb.VerifyTokenReq
 	VerifyTokenResp                      = pb.VerifyTokenResp
 
 	ImUserService interface {
-		//  获取群组成员列表
-		GetGroupMemberIDListFromCache(ctx context.Context, in *GetGroupMemberIDListFromCacheReq, opts ...grpc.CallOption) (*GetGroupMemberIDListFromCacheResp, error)
 		//  判断用户A是否在B黑名单中
 		IfAInBBlacklist(ctx context.Context, in *IfAInBBlacklistReq, opts ...grpc.CallOption) (*IfAInBBlacklistResp, error)
 		//  判断用户A是否在B好友列表中
 		IfAInBFriendList(ctx context.Context, in *IfAInBFriendListReq, opts ...grpc.CallOption) (*IfAInBFriendListResp, error)
 		//  获取单聊会话的消息接收选项
 		GetSingleConversationRecvMsgOpts(ctx context.Context, in *GetSingleConversationRecvMsgOptsReq, opts ...grpc.CallOption) (*GetSingleConversationRecvMsgOptsResp, error)
-		//  获取超级群成员列表 通过消息接收选项
-		GetUserListFromSuperGroupWithOpt(ctx context.Context, in *GetUserListFromSuperGroupWithOptReq, opts ...grpc.CallOption) (*GetUserListFromSuperGroupWithOptResp, error)
+		//  获取群成员列表 通过消息接收选项
+		GetUserListFromGroupWithOpt(ctx context.Context, in *GetUserListFromGroupWithOptReq, opts ...grpc.CallOption) (*GetUserListFromGroupWithOptResp, error)
 		//  检查token
 		VerifyToken(ctx context.Context, in *VerifyTokenReq, opts ...grpc.CallOption) (*VerifyTokenResp, error)
+		//  是否预览消息
+		IfPreviewMessage(ctx context.Context, in *IfPreviewMessageReq, opts ...grpc.CallOption) (*IfPreviewMessageResp, error)
 	}
 
 	defaultImUserService struct {
@@ -53,12 +55,6 @@ func NewImUserService(cli zrpc.Client) ImUserService {
 	return &defaultImUserService{
 		cli: cli,
 	}
-}
-
-//  获取群组成员列表
-func (m *defaultImUserService) GetGroupMemberIDListFromCache(ctx context.Context, in *GetGroupMemberIDListFromCacheReq, opts ...grpc.CallOption) (*GetGroupMemberIDListFromCacheResp, error) {
-	client := pb.NewImUserServiceClient(m.cli.Conn())
-	return client.GetGroupMemberIDListFromCache(ctx, in, opts...)
 }
 
 //  判断用户A是否在B黑名单中
@@ -79,14 +75,20 @@ func (m *defaultImUserService) GetSingleConversationRecvMsgOpts(ctx context.Cont
 	return client.GetSingleConversationRecvMsgOpts(ctx, in, opts...)
 }
 
-//  获取超级群成员列表 通过消息接收选项
-func (m *defaultImUserService) GetUserListFromSuperGroupWithOpt(ctx context.Context, in *GetUserListFromSuperGroupWithOptReq, opts ...grpc.CallOption) (*GetUserListFromSuperGroupWithOptResp, error) {
+//  获取群成员列表 通过消息接收选项
+func (m *defaultImUserService) GetUserListFromGroupWithOpt(ctx context.Context, in *GetUserListFromGroupWithOptReq, opts ...grpc.CallOption) (*GetUserListFromGroupWithOptResp, error) {
 	client := pb.NewImUserServiceClient(m.cli.Conn())
-	return client.GetUserListFromSuperGroupWithOpt(ctx, in, opts...)
+	return client.GetUserListFromGroupWithOpt(ctx, in, opts...)
 }
 
 //  检查token
 func (m *defaultImUserService) VerifyToken(ctx context.Context, in *VerifyTokenReq, opts ...grpc.CallOption) (*VerifyTokenResp, error) {
 	client := pb.NewImUserServiceClient(m.cli.Conn())
 	return client.VerifyToken(ctx, in, opts...)
+}
+
+//  是否预览消息
+func (m *defaultImUserService) IfPreviewMessage(ctx context.Context, in *IfPreviewMessageReq, opts ...grpc.CallOption) (*IfPreviewMessageResp, error) {
+	client := pb.NewImUserServiceClient(m.cli.Conn())
+	return client.IfPreviewMessage(ctx, in, opts...)
 }

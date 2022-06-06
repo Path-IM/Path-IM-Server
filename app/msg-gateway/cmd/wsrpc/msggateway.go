@@ -16,11 +16,13 @@ import (
 	"github.com/zeromicro/go-zero/zrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"net/http"
 	"time"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/rest"
 )
+import _ "net/http/pprof"
 
 var wsConfigFile = flag.String("w", "etc/msggateway-ws.yaml", "ws config file")
 var rpcConfigFile = flag.String("r", "etc/msggateway-rpc.yaml", "rpc config file")
@@ -41,7 +43,7 @@ func ws() {
 	go func() {
 		time.Sleep(time.Second * 3)
 		_, _, err := websocket.DefaultDialer.Dial(
-			fmt.Sprintf("ws://127.0.0.1:%d?token=test-token&sendID=-1&platformID=Linux", wsConfig.Port),
+			fmt.Sprintf("ws://127.0.0.1:%d?token=test-token&userID=-1&platform=Linux", wsConfig.Port),
 			nil)
 		if err != nil {
 			panic("自检程序失败:" + err.Error())
@@ -72,6 +74,9 @@ func rpc() {
 }
 
 func main() {
+	go func() {
+		http.ListenAndServe("0.0.0.0:13170", nil)
+	}()
 	go ws()
 	logx.Info("ws 启动成功 等待1秒启动 rpc")
 	time.Sleep(time.Second)

@@ -22,10 +22,10 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ChatClient interface {
-	GetMaxAndMinSeq(ctx context.Context, in *GetMaxAndMinSeqReq, opts ...grpc.CallOption) (*GetMaxAndMinSeqResp, error)
-	GetSuperGroupMaxAndMinSeq(ctx context.Context, in *GetMaxAndMinSuperGroupSeqReq, opts ...grpc.CallOption) (*GetMaxAndMinSuperGroupSeqResp, error)
-	PullMessageBySeqList(ctx context.Context, in *WrapPullMessageBySeqListReq, opts ...grpc.CallOption) (*WrapPullMessageBySeqListResp, error)
-	PullMessageBySuperGroupSeqList(ctx context.Context, in *PullMessageBySuperGroupSeqListReq, opts ...grpc.CallOption) (*WrapPullMessageBySeqListResp, error)
+	GetMaxAndMinSeq(ctx context.Context, in *GetMinAndMaxSeqReq, opts ...grpc.CallOption) (*GetMinAndMaxSeqResp, error)
+	GetMinAndMaxGroupSeq(ctx context.Context, in *GetMinAndMaxGroupSeqReq, opts ...grpc.CallOption) (*GetMinAndMaxGroupSeqResp, error)
+	PullMessageBySeqList(ctx context.Context, in *PullMsgBySeqListReq, opts ...grpc.CallOption) (*PullMsgListResp, error)
+	PullMessageByGroupSeqList(ctx context.Context, in *PullMsgByGroupSeqListReq, opts ...grpc.CallOption) (*PullMsgListResp, error)
 	SendMsg(ctx context.Context, in *SendMsgReq, opts ...grpc.CallOption) (*SendMsgResp, error)
 }
 
@@ -37,8 +37,8 @@ func NewChatClient(cc grpc.ClientConnInterface) ChatClient {
 	return &chatClient{cc}
 }
 
-func (c *chatClient) GetMaxAndMinSeq(ctx context.Context, in *GetMaxAndMinSeqReq, opts ...grpc.CallOption) (*GetMaxAndMinSeqResp, error) {
-	out := new(GetMaxAndMinSeqResp)
+func (c *chatClient) GetMaxAndMinSeq(ctx context.Context, in *GetMinAndMaxSeqReq, opts ...grpc.CallOption) (*GetMinAndMaxSeqResp, error) {
+	out := new(GetMinAndMaxSeqResp)
 	err := c.cc.Invoke(ctx, "/pbChat.Chat/GetMaxAndMinSeq", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -46,17 +46,17 @@ func (c *chatClient) GetMaxAndMinSeq(ctx context.Context, in *GetMaxAndMinSeqReq
 	return out, nil
 }
 
-func (c *chatClient) GetSuperGroupMaxAndMinSeq(ctx context.Context, in *GetMaxAndMinSuperGroupSeqReq, opts ...grpc.CallOption) (*GetMaxAndMinSuperGroupSeqResp, error) {
-	out := new(GetMaxAndMinSuperGroupSeqResp)
-	err := c.cc.Invoke(ctx, "/pbChat.Chat/GetSuperGroupMaxAndMinSeq", in, out, opts...)
+func (c *chatClient) GetMinAndMaxGroupSeq(ctx context.Context, in *GetMinAndMaxGroupSeqReq, opts ...grpc.CallOption) (*GetMinAndMaxGroupSeqResp, error) {
+	out := new(GetMinAndMaxGroupSeqResp)
+	err := c.cc.Invoke(ctx, "/pbChat.Chat/GetMinAndMaxGroupSeq", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *chatClient) PullMessageBySeqList(ctx context.Context, in *WrapPullMessageBySeqListReq, opts ...grpc.CallOption) (*WrapPullMessageBySeqListResp, error) {
-	out := new(WrapPullMessageBySeqListResp)
+func (c *chatClient) PullMessageBySeqList(ctx context.Context, in *PullMsgBySeqListReq, opts ...grpc.CallOption) (*PullMsgListResp, error) {
+	out := new(PullMsgListResp)
 	err := c.cc.Invoke(ctx, "/pbChat.Chat/PullMessageBySeqList", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -64,9 +64,9 @@ func (c *chatClient) PullMessageBySeqList(ctx context.Context, in *WrapPullMessa
 	return out, nil
 }
 
-func (c *chatClient) PullMessageBySuperGroupSeqList(ctx context.Context, in *PullMessageBySuperGroupSeqListReq, opts ...grpc.CallOption) (*WrapPullMessageBySeqListResp, error) {
-	out := new(WrapPullMessageBySeqListResp)
-	err := c.cc.Invoke(ctx, "/pbChat.Chat/PullMessageBySuperGroupSeqList", in, out, opts...)
+func (c *chatClient) PullMessageByGroupSeqList(ctx context.Context, in *PullMsgByGroupSeqListReq, opts ...grpc.CallOption) (*PullMsgListResp, error) {
+	out := new(PullMsgListResp)
+	err := c.cc.Invoke(ctx, "/pbChat.Chat/PullMessageByGroupSeqList", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -86,10 +86,10 @@ func (c *chatClient) SendMsg(ctx context.Context, in *SendMsgReq, opts ...grpc.C
 // All implementations must embed UnimplementedChatServer
 // for forward compatibility
 type ChatServer interface {
-	GetMaxAndMinSeq(context.Context, *GetMaxAndMinSeqReq) (*GetMaxAndMinSeqResp, error)
-	GetSuperGroupMaxAndMinSeq(context.Context, *GetMaxAndMinSuperGroupSeqReq) (*GetMaxAndMinSuperGroupSeqResp, error)
-	PullMessageBySeqList(context.Context, *WrapPullMessageBySeqListReq) (*WrapPullMessageBySeqListResp, error)
-	PullMessageBySuperGroupSeqList(context.Context, *PullMessageBySuperGroupSeqListReq) (*WrapPullMessageBySeqListResp, error)
+	GetMaxAndMinSeq(context.Context, *GetMinAndMaxSeqReq) (*GetMinAndMaxSeqResp, error)
+	GetMinAndMaxGroupSeq(context.Context, *GetMinAndMaxGroupSeqReq) (*GetMinAndMaxGroupSeqResp, error)
+	PullMessageBySeqList(context.Context, *PullMsgBySeqListReq) (*PullMsgListResp, error)
+	PullMessageByGroupSeqList(context.Context, *PullMsgByGroupSeqListReq) (*PullMsgListResp, error)
 	SendMsg(context.Context, *SendMsgReq) (*SendMsgResp, error)
 	mustEmbedUnimplementedChatServer()
 }
@@ -98,17 +98,17 @@ type ChatServer interface {
 type UnimplementedChatServer struct {
 }
 
-func (UnimplementedChatServer) GetMaxAndMinSeq(context.Context, *GetMaxAndMinSeqReq) (*GetMaxAndMinSeqResp, error) {
+func (UnimplementedChatServer) GetMaxAndMinSeq(context.Context, *GetMinAndMaxSeqReq) (*GetMinAndMaxSeqResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMaxAndMinSeq not implemented")
 }
-func (UnimplementedChatServer) GetSuperGroupMaxAndMinSeq(context.Context, *GetMaxAndMinSuperGroupSeqReq) (*GetMaxAndMinSuperGroupSeqResp, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetSuperGroupMaxAndMinSeq not implemented")
+func (UnimplementedChatServer) GetMinAndMaxGroupSeq(context.Context, *GetMinAndMaxGroupSeqReq) (*GetMinAndMaxGroupSeqResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMinAndMaxGroupSeq not implemented")
 }
-func (UnimplementedChatServer) PullMessageBySeqList(context.Context, *WrapPullMessageBySeqListReq) (*WrapPullMessageBySeqListResp, error) {
+func (UnimplementedChatServer) PullMessageBySeqList(context.Context, *PullMsgBySeqListReq) (*PullMsgListResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PullMessageBySeqList not implemented")
 }
-func (UnimplementedChatServer) PullMessageBySuperGroupSeqList(context.Context, *PullMessageBySuperGroupSeqListReq) (*WrapPullMessageBySeqListResp, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PullMessageBySuperGroupSeqList not implemented")
+func (UnimplementedChatServer) PullMessageByGroupSeqList(context.Context, *PullMsgByGroupSeqListReq) (*PullMsgListResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PullMessageByGroupSeqList not implemented")
 }
 func (UnimplementedChatServer) SendMsg(context.Context, *SendMsgReq) (*SendMsgResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendMsg not implemented")
@@ -127,7 +127,7 @@ func RegisterChatServer(s grpc.ServiceRegistrar, srv ChatServer) {
 }
 
 func _Chat_GetMaxAndMinSeq_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetMaxAndMinSeqReq)
+	in := new(GetMinAndMaxSeqReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -139,31 +139,31 @@ func _Chat_GetMaxAndMinSeq_Handler(srv interface{}, ctx context.Context, dec fun
 		FullMethod: "/pbChat.Chat/GetMaxAndMinSeq",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServer).GetMaxAndMinSeq(ctx, req.(*GetMaxAndMinSeqReq))
+		return srv.(ChatServer).GetMaxAndMinSeq(ctx, req.(*GetMinAndMaxSeqReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Chat_GetSuperGroupMaxAndMinSeq_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetMaxAndMinSuperGroupSeqReq)
+func _Chat_GetMinAndMaxGroupSeq_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMinAndMaxGroupSeqReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ChatServer).GetSuperGroupMaxAndMinSeq(ctx, in)
+		return srv.(ChatServer).GetMinAndMaxGroupSeq(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/pbChat.Chat/GetSuperGroupMaxAndMinSeq",
+		FullMethod: "/pbChat.Chat/GetMinAndMaxGroupSeq",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServer).GetSuperGroupMaxAndMinSeq(ctx, req.(*GetMaxAndMinSuperGroupSeqReq))
+		return srv.(ChatServer).GetMinAndMaxGroupSeq(ctx, req.(*GetMinAndMaxGroupSeqReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Chat_PullMessageBySeqList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WrapPullMessageBySeqListReq)
+	in := new(PullMsgBySeqListReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -175,25 +175,25 @@ func _Chat_PullMessageBySeqList_Handler(srv interface{}, ctx context.Context, de
 		FullMethod: "/pbChat.Chat/PullMessageBySeqList",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServer).PullMessageBySeqList(ctx, req.(*WrapPullMessageBySeqListReq))
+		return srv.(ChatServer).PullMessageBySeqList(ctx, req.(*PullMsgBySeqListReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Chat_PullMessageBySuperGroupSeqList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PullMessageBySuperGroupSeqListReq)
+func _Chat_PullMessageByGroupSeqList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PullMsgByGroupSeqListReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ChatServer).PullMessageBySuperGroupSeqList(ctx, in)
+		return srv.(ChatServer).PullMessageByGroupSeqList(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/pbChat.Chat/PullMessageBySuperGroupSeqList",
+		FullMethod: "/pbChat.Chat/PullMessageByGroupSeqList",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServer).PullMessageBySuperGroupSeqList(ctx, req.(*PullMessageBySuperGroupSeqListReq))
+		return srv.(ChatServer).PullMessageByGroupSeqList(ctx, req.(*PullMsgByGroupSeqListReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -228,16 +228,16 @@ var Chat_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Chat_GetMaxAndMinSeq_Handler,
 		},
 		{
-			MethodName: "GetSuperGroupMaxAndMinSeq",
-			Handler:    _Chat_GetSuperGroupMaxAndMinSeq_Handler,
+			MethodName: "GetMinAndMaxGroupSeq",
+			Handler:    _Chat_GetMinAndMaxGroupSeq_Handler,
 		},
 		{
 			MethodName: "PullMessageBySeqList",
 			Handler:    _Chat_PullMessageBySeqList_Handler,
 		},
 		{
-			MethodName: "PullMessageBySuperGroupSeqList",
-			Handler:    _Chat_PullMessageBySuperGroupSeqList_Handler,
+			MethodName: "PullMessageByGroupSeqList",
+			Handler:    _Chat_PullMessageByGroupSeqList_Handler,
 		},
 		{
 			MethodName: "SendMsg",

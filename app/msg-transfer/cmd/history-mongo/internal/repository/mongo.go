@@ -58,9 +58,9 @@ func (r *Rep) SaveUserChatMongo2(spanCtx context.Context, uid string, sendTime i
 	return nil
 }
 
-func (r *Rep) SaveSuperGroupChatMongo2(spanCtx context.Context, groupId string, sendTime int64, m *chatpb.MsgDataToDB) error {
+func (r *Rep) SaveGroupChatMongo(spanCtx context.Context, groupId string, sendTime int64, m *chatpb.MsgDataToDB) error {
 	ctx, _ := context.WithTimeout(context.Background(), time.Duration(r.svcCtx.Config.Mongo.DBTimeout)*time.Second)
-	c := r.MongoClient.Database(r.svcCtx.Config.Mongo.DBDatabase).Collection(r.svcCtx.Config.Mongo.SuperGroupChatMsgCollectionName)
+	c := r.MongoClient.Database(r.svcCtx.Config.Mongo.DBDatabase).Collection(r.svcCtx.Config.Mongo.GroupChatMsgCollectionName)
 	seqGroupId := getSeqGroupId(groupId, m.MsgData.Seq)
 	filter := bson.M{"groupid": seqGroupId}
 	var err error
@@ -73,7 +73,7 @@ func (r *Rep) SaveSuperGroupChatMongo2(spanCtx context.Context, groupId string, 
 	err = c.FindOneAndUpdate(ctx, filter, bson.M{"$push": bson.M{"msg": sMsg}}).Err()
 	if err != nil {
 		if !errors.Is(err, mongo.ErrNoDocuments) {
-			logx.WithContext(spanCtx).Errorf("SaveSuperGroupChatMongo2 error: %s", err.Error())
+			logx.WithContext(spanCtx).Errorf("SaveGroupChatMongo error: %s", err.Error())
 			return err
 		}
 		sChat := model.GroupChat{}

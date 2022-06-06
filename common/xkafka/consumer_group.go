@@ -10,6 +10,31 @@ type MConsumerGroup struct {
 	groupID string
 	topics  []string
 }
+type msgConsumer interface {
+	HandleMsg(value []byte, key []byte, topic string, partition int32, offset int64, msg *sarama.ConsumerMessage) error
+}
+type consumer struct {
+	msgConsumer
+}
+
+func (c consumer) Setup(session sarama.ConsumerGroupSession) error {
+	return nil
+}
+
+func (c consumer) Cleanup(session sarama.ConsumerGroupSession) error {
+	return nil
+}
+
+func (c consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
+	for msg := range claim.Messages() {
+		if err := c.HandleMsg(msg.Value, msg.Key, msg.Topic, msg.Partition, msg.Offset, msg); err != nil {
+			return err
+		} else {
+			session.MarkMessage(msg, "")
+		}
+	}
+	return nil
+}
 
 type MConsumerGroupConfig struct {
 	KafkaVersion   sarama.KafkaVersion
@@ -22,6 +47,8 @@ func NewMConsumerGroup(consumerConfig *MConsumerGroupConfig, topics, addr []stri
 	config.Version = consumerConfig.KafkaVersion
 	config.Consumer.Offsets.Initial = consumerConfig.OffsetsInitial
 	config.Consumer.Return.Errors = consumerConfig.IsReturnErr
+	config.Consumer.Offsets.Retry.Max = 99
+	config.Consumer.Offsets.AutoCommit.Enable = true
 	client, err := sarama.NewClient(addr, config)
 	if err != nil {
 		panic(err.Error())
@@ -36,10 +63,10 @@ func NewMConsumerGroup(consumerConfig *MConsumerGroupConfig, topics, addr []stri
 		topics,
 	}
 }
-func (mc *MConsumerGroup) RegisterHandleAndConsumer(handler sarama.ConsumerGroupHandler) {
-	ctx := context.Background()
+func (mc *MConsumerGroup) RegisterHandleAndConsumer(handler msgConsumer) {
 	for {
-		err := mc.ConsumerGroup.Consume(ctx, mc.topics, handler)
+		err := mc.Consume(context.Background(),
+			mc.topics, consumer{handler})
 		if err != nil {
 			panic(err.Error())
 		}

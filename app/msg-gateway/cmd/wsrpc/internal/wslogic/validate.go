@@ -47,10 +47,10 @@ type SeqListData struct {
 	SeqList []int64 `mapstructure:"seqList" validate:"required"`
 }
 
-func (l *MsggatewayLogic) argsValidate(m *msggatewaypb.Req, r int32) (isPass bool, errCode int32, errMsg string, returnData interface{}) {
+func (l *MsggatewayLogic) argsValidate(m *msggatewaypb.BodyReq, r int32) (isPass bool, errCode int32, errMsg string, returnData interface{}) {
 	switch r {
 	case types.WSSendMsg:
-		data := chatpb.MsgData{}
+		data := chatpb.SendMsgReq{}
 		if err := proto.Unmarshal(m.Data, &data); err != nil {
 			logx.WithContext(l.ctx).Error("Decode Data struct  err", err.Error(), r)
 			return false, types.ErrCodeProtoUnmarshal, err.Error(), nil
@@ -62,7 +62,7 @@ func (l *MsggatewayLogic) argsValidate(m *msggatewaypb.Req, r int32) (isPass boo
 		}
 		return true, types.ErrCodeOK, "", data
 	case types.WSPullMsgBySeqList:
-		data := chatpb.PullMessageBySeqListReq{}
+		data := chatpb.PullMsgBySeqListReq{}
 		if err := proto.Unmarshal(m.Data, &data); err != nil {
 			logx.WithContext(l.ctx).Error("Decode Data struct  err", err.Error(), r)
 			return false, types.ErrCodeProtoUnmarshal, err.Error(), nil
@@ -73,7 +73,7 @@ func (l *MsggatewayLogic) argsValidate(m *msggatewaypb.Req, r int32) (isPass boo
 		}
 		return true, types.ErrCodeOK, "", data
 	case types.WSPullMsgByGroupSeqList:
-		data := chatpb.PullMessageBySuperGroupSeqListReq{}
+		data := chatpb.PullMsgByGroupSeqListReq{}
 		if err := proto.Unmarshal(m.Data, &data); err != nil {
 			logx.WithContext(l.ctx).Error("Decode Data struct  err", err.Error(), r)
 			return false, types.ErrCodeProtoUnmarshal, err.Error(), nil

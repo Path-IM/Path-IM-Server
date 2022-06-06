@@ -10,7 +10,7 @@ import (
 
 type Config struct {
 	zrpc.RpcServerConf
-	Kafka          KafkaConfig
+	Kafka          xkafka.ProducerConfig
 	Callback       CallbackConfig
 	MessageVerify  MessageVerifyConfig
 	ImUserRpc      zrpc.RpcClientConf
@@ -26,12 +26,10 @@ type RedisConfig struct {
 	DB   int
 }
 type CallbackConfig struct {
-	CallbackWordFilter              CallbackConfigItem
-	CallbackAtAllInSuperGroup       CallbackConfigItem
-	CallbackBeforeSendSuperGroupMsg CallbackConfigItem
-	CallbackAfterSendSuperGroupMsg  CallbackConfigItem
-	CallbackBeforeSendSingleMsg     CallbackConfigItem
-	CallbackAfterSendSingleMsg      CallbackConfigItem
+	CallbackBeforeSendGroupMsg  CallbackConfigItem
+	CallbackAfterSendGroupMsg   CallbackConfigItem
+	CallbackBeforeSendSingleMsg CallbackConfigItem
+	CallbackAfterSendSingleMsg  CallbackConfigItem
 }
 type CallbackConfigItem struct {
 	Enable          bool
@@ -40,20 +38,16 @@ type CallbackConfigItem struct {
 type MessageVerifyConfig struct {
 	FriendVerify bool // 只有好友才能发送消息
 }
-type KafkaConfig struct {
-	Online  xkafka.ProducerConfig
-	Offline xkafka.ProducerConfig
-}
 
 type MongoConfig struct {
 	global.MongoConfig
-	DBDatabase                      string
-	DBTimeout                       int
-	SingleChatMsgCollectionName     string
-	SuperGroupChatMsgCollectionName string
+	DBDatabase                  string
+	DBTimeout                   int
+	SingleChatMsgCollectionName string
+	GroupChatMsgCollectionName  string
 }
 type CassandraConfig struct {
 	xcql.CassandraConfig
-	SingleChatMsgTableName     string
-	SuperGroupChatMsgTableName string
+	SingleChatMsgTableName string
+	GroupChatMsgTableName  string
 }

@@ -8,6 +8,8 @@ import (
 	chatpb "github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/pb"
 	"github.com/Path-IM/Path-IM-Server/common/types"
 	"github.com/Path-IM/Path-IM-Server/common/utils"
+	timeUtils "github.com/Path-IM/Path-IM-Server/common/utils/time"
+	"github.com/Path-IM/Path-IM-Server/common/xorm/global"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -32,115 +34,78 @@ func (l *SendMsgLogic) SendMsg(pb *pb.SendMsgReq) (*pb.SendMsgResp, error) {
 	if !flag {
 		return returnMsg(&replay, pb, errCode, errMsg, "", 0)
 	}
-	//if !utils.VerifyToken(pb.Token, pb.SendID) {
-	//	return returnMsg(&replay, pb, http.StatusUnauthorized, "token validate err,not authorized", "", 0)
-	l.encapsulateMsgData(pb.MsgData)
-	logx.WithContext(l.ctx).Info("this is a test MsgData ", pb.MsgData)
-	msgToMQSingle := chatpb.MsgDataToMQ{Token: pb.Token, MsgData: pb.MsgData}
-	//options := utils.JsonStringToMap(pbData.Options)
-	isHistory := utils.GetSwitchFromOptions(pb.MsgData.Options, types.IsHistory)
-	mReq := MsgCallBackReq{
-		SendID:      pb.MsgData.SendID,
-		RecvID:      pb.MsgData.RecvID,
-		Content:     string(pb.MsgData.Content),
-		SendTime:    pb.MsgData.ServerTime,
-		MsgFrom:     pb.MsgData.MsgFrom,
-		ContentType: pb.MsgData.ContentType,
-		SessionType: pb.MsgData.SessionType,
-		PlatformID:  pb.MsgData.SenderPlatformID,
-		MsgID:       pb.MsgData.ClientMsgID,
+	// 消息预处理
+	{
+		// 生成消息id
+		pb.MsgData.ServerMsgID = global.GetID()
+		pb.MsgData.ServerTime = uint32(timeUtils.GetCurrentTimestampByMill())
+		// 修改消息options
+		l.encapsulateMsgData(pb.MsgData)
+		logx.WithContext(l.ctx).Info("this is a test MsgData ", pb.MsgData)
 	}
-	if !isHistory {
-		mReq.IsOnlineOnly = true
-	}
-
-	// callback
-	canSend, err := l.callbackWordFilter(pb)
-	if err != nil {
-		logx.WithContext(l.ctx).Error(utils.GetSelfFuncName(), "callbackWordFilter failed", err.Error(), pb.MsgData)
-	}
-	if !canSend {
-		return returnMsg(&replay, pb, 201, "callbackWordFilter result stop rpc and return", "", 0)
-	}
-	switch pb.MsgData.SessionType {
+	msgToMQSingle := chatpb.MsgDataToMQ{MsgData: pb.MsgData}
+	switch pb.MsgData.ConversationType {
 	case types.SingleChatType:
 		// callback
-		canSend, err := l.callbackBeforeSendSingleMsg(pb)
-		if err != nil {
-			logx.WithContext(l.ctx).Error(utils.GetSelfFuncName(), "callbackBeforeSendSingleMsg failed", err.Error())
+		{
+			canSend, err := l.callbackBeforeSendSingleMsg(pb)
+			if err != nil {
+				logx.WithContext(l.ctx).Error(utils.GetSelfFuncName(), "callbackBeforeSendSingleMsg failed", err.Error())
+			}
+			if !canSend {
+				return returnMsg(&replay, pb, types.ErrCodeFailed, "callbackBeforeSendSingleMsg result stop rpc and return", "", 0)
+			}
 		}
-		if !canSend {
-			return returnMsg(&replay, pb, 201, "callbackBeforeSendSingleMsg result stop rpc and return", "", 0)
-		}
-		isSend := l.modifyMessageByUserMessageReceiveOpt(pb.MsgData.RecvID, pb.MsgData.SendID, types.SingleChatType, pb)
+		isSend := l.modifyMessageByUserMessageReceiveOpt(pb.MsgData.ReceiveID, pb.MsgData.SendID, types.SingleChatType, pb)
 		if isSend {
 			msgToMQSingle.MsgData = pb.MsgData
 			logx.WithContext(l.ctx).Info(msgToMQSingle.String())
-			err1 := l.sendMsgToKafka(&msgToMQSingle, msgToMQSingle.MsgData.RecvID, types.OnlineStatus)
+			err1 := l.sendMsgToKafka(&msgToMQSingle, msgToMQSingle.MsgData.ReceiveID)
 			if err1 != nil {
-				logx.WithContext(l.ctx).Error(msgToMQSingle.OperationID, "kafka send msg err:RecvID ", msgToMQSingle.MsgData.RecvID, msgToMQSingle.String())
-				return returnMsg(&replay, pb, 201, "kafka send msg err ", "", 0)
+				logx.WithContext(l.ctx).Error(msgToMQSingle.TraceId, "kafka send msg err:RecvID ", msgToMQSingle.MsgData.ReceiveID, msgToMQSingle.String())
+				return returnMsg(&replay, pb, types.ErrCodeFailed, "kafka send msg err ", "", 0)
 			}
 		}
-		if msgToMQSingle.MsgData.SendID != msgToMQSingle.MsgData.RecvID { //Filter messages sent to yourself
-			err2 := l.sendMsgToKafka(&msgToMQSingle, msgToMQSingle.MsgData.SendID, types.OnlineStatus)
+		if msgToMQSingle.MsgData.SendID != msgToMQSingle.MsgData.ReceiveID { //Filter messages sent to yourself
+			err2 := l.sendMsgToKafka(&msgToMQSingle, msgToMQSingle.MsgData.SendID)
 			if err2 != nil {
-				logx.WithContext(l.ctx).Error(msgToMQSingle.OperationID, "kafka send msg err:SendID ", msgToMQSingle.MsgData.SendID, msgToMQSingle.String())
-				return returnMsg(&replay, pb, 201, "kafka send msg err ", "", 0)
+				logx.WithContext(l.ctx).Error(msgToMQSingle.TraceId, "kafka send msg err:SendID ", msgToMQSingle.MsgData.SendID, msgToMQSingle.String())
+				return returnMsg(&replay, pb, types.ErrCodeFailed, "kafka send msg err ", "", 0)
 			}
 		}
 		// callback
 		if err := l.callbackAfterSendSingleMsg(pb); err != nil {
 			logx.WithContext(l.ctx).Error(utils.GetSelfFuncName(), "callbackAfterSendSingleMsg failed", err.Error())
 		}
-		return returnMsg(&replay, pb, 0, "", msgToMQSingle.MsgData.ServerMsgID, msgToMQSingle.MsgData.ServerTime)
+		return returnMsg(&replay, pb, 0, "", msgToMQSingle.MsgData.ServerMsgID, int64(msgToMQSingle.MsgData.ServerTime))
 
 	case types.GroupChatType:
 		// callback
-		canSend, err := l.callbackBeforeSendSuperGroupMsg(pb)
-		if err != nil {
-			logx.WithContext(l.ctx).Error(utils.GetSelfFuncName(), "callbackBeforeSendSuperGroupMsg failed ", err.Error())
-		}
-		if !canSend {
-			return returnMsg(&replay, pb, 201, "callbackBeforeSendSuperGroupMsg result stop rpc and return", " ", 0)
+		{
+			canSend, err := l.callbackBeforeSendGroupMsg(pb)
+			if err != nil {
+				logx.WithContext(l.ctx).Error(utils.GetSelfFuncName(), "callbackBeforeSendGroupMsg failed ", err.Error())
+			}
+			if !canSend {
+				return returnMsg(&replay, pb, types.ErrCodeFailed, "callbackBeforeSendGroupMsg result stop rpc and return", " ", 0)
+			}
 		}
 		// 读扩散
 		msgToMQSingle.MsgData = pb.MsgData
 		logx.WithContext(l.ctx).Info(msgToMQSingle.String())
-		err1 := l.sendMsgToKafka(&msgToMQSingle, msgToMQSingle.MsgData.GroupID, types.OnlineStatus)
+		err1 := l.sendMsgToKafka(&msgToMQSingle, msgToMQSingle.MsgData.ReceiveID)
 		if err1 != nil {
-			logx.WithContext(l.ctx).Error(msgToMQSingle.OperationID, "kafka send msg err:GroupID ", msgToMQSingle.MsgData.GroupID, msgToMQSingle.String())
-			return returnMsg(&replay, pb, 201, "kafka send msg err ", "", 0)
+			logx.WithContext(l.ctx).Error(msgToMQSingle.TraceId, " kafka send msg err:GroupID ", msgToMQSingle.MsgData.ReceiveID, msgToMQSingle.String())
+			return returnMsg(&replay, pb, types.ErrCodeFailed, "kafka send msg err", "", 0)
 		}
 		// callback
-		if err := l.callbackAfterSendSuperGroupMsg(pb); err != nil {
-			logx.WithContext(l.ctx).Error(utils.GetSelfFuncName(), "callbackAfterSendSuperGroupMsg failed ", err.Error())
+		if err := l.callbackAfterSendGroupMsg(pb); err != nil {
+			logx.WithContext(l.ctx).Error(utils.GetSelfFuncName(), "callbackAfterSendGroupMsg failed ", err.Error())
 		}
-		return returnMsg(&replay, pb, 0, "", msgToMQSingle.MsgData.ServerMsgID, msgToMQSingle.MsgData.ServerTime)
-	case types.NotificationChatType:
-		msgToMQSingle.MsgData = pb.MsgData
-		logx.WithContext(l.ctx).Info(msgToMQSingle.OperationID, msgToMQSingle.String())
-		err1 := l.sendMsgToKafka(&msgToMQSingle, msgToMQSingle.MsgData.RecvID, types.OnlineStatus)
-		if err1 != nil {
-			logx.WithContext(l.ctx).Error(msgToMQSingle.OperationID, "kafka send msg err:RecvID", msgToMQSingle.MsgData.RecvID, msgToMQSingle.String())
-			return returnMsg(&replay, pb, 201, "kafka send msg err", "", 0)
-		}
-
-		if msgToMQSingle.MsgData.SendID != msgToMQSingle.MsgData.RecvID { //Filter messages sent to yourself
-			err2 := l.sendMsgToKafka(&msgToMQSingle, msgToMQSingle.MsgData.SendID, types.OnlineStatus)
-			if err2 != nil {
-				logx.WithContext(l.ctx).Error(msgToMQSingle.OperationID, "kafka send msg err:SendID", msgToMQSingle.MsgData.SendID, msgToMQSingle.String())
-				return returnMsg(&replay, pb, 201, "kafka send msg err", "", 0)
-			}
-		}
-		return returnMsg(&replay, pb, 0, "", msgToMQSingle.MsgData.ServerMsgID, msgToMQSingle.MsgData.ServerTime)
+		return returnMsg(&replay, pb, 0, "", msgToMQSingle.MsgData.ServerMsgID, int64(msgToMQSingle.MsgData.ServerTime))
 	default:
-		return returnMsg(&replay, pb, 203, "unkonwn sessionType", "", 0)
+		return returnMsg(&replay, pb, types.ErrCodeFailed, "unkonwn sessionType", "", 0)
 	}
-}
-
-func (l *SendMsgLogic) getOnlineAndOfflineUserIDList(list []string) (online []string, offline []string) {
-	return list, nil
 }
 
 func returnMsg(replay *chatpb.SendMsgResp, pb *chatpb.SendMsgReq, errCode int32, errMsg, serverMsgID string, sendTime int64) (*chatpb.SendMsgResp, error) {
@@ -148,21 +113,21 @@ func returnMsg(replay *chatpb.SendMsgResp, pb *chatpb.SendMsgReq, errCode int32,
 	replay.ErrMsg = errMsg
 	replay.ServerMsgID = serverMsgID
 	replay.ClientMsgID = pb.MsgData.ClientMsgID
-	replay.ServerTime = sendTime
-	replay.SendID = pb.MsgData.SendID
-	replay.RecvID = pb.MsgData.RecvID
-	replay.GroupID = pb.MsgData.GroupID
+	replay.ServerTime = uint32(sendTime)
+	replay.ReceiveID = pb.MsgData.ReceiveID
+	replay.ContentType = pb.MsgData.ContentType
+	replay.ConversationType = pb.MsgData.ConversationType
 	return replay, nil
 }
 
 func (l *SendMsgLogic) userRelationshipVerification(data *chatpb.SendMsgReq) (bool, int32, string) {
-	if data.MsgData.SessionType == types.GroupChatType {
+	if data.MsgData.ConversationType == types.GroupChatType {
 		return true, 0, ""
 	}
 	// 是不是拉黑了
 	ifInBlackResp, err := l.svcCtx.ImUser.IfAInBBlacklist(l.ctx, &imuserpb.IfAInBBlacklistReq{
 		AUserID: data.MsgData.SendID,
-		BUserID: data.MsgData.RecvID,
+		BUserID: data.MsgData.ReceiveID,
 	})
 	if err != nil {
 		logx.WithContext(l.ctx).Error("GetBlackIDListFromCache rpc call failed ", err.Error())
@@ -176,18 +141,14 @@ func (l *SendMsgLogic) userRelationshipVerification(data *chatpb.SendMsgReq) (bo
 		}
 	}
 	if l.svcCtx.Config.MessageVerify.FriendVerify {
-		needFriend := true
-		switch data.MsgData.ContentType {
-		case types.NotificationUser2User:
-			needFriend = false
-		}
+		needFriend := utils.GetSwitchFromOptions(data.MsgData.MsgOptions, types.NeedBeFriend)
 		if !needFriend {
 			return true, 0, ""
 		}
 		// 是不是好友
 		ifInFriendResp, err := l.svcCtx.ImUser.IfAInBFriendList(l.ctx, &imuserpb.IfAInBFriendListReq{
 			AUserID: data.MsgData.SendID,
-			BUserID: data.MsgData.RecvID,
+			BUserID: data.MsgData.ReceiveID,
 		})
 		if err != nil {
 			logx.WithContext(l.ctx).Error("GetFriendIDListFromCache rpc call failed ", err.Error())
@@ -196,12 +157,38 @@ func (l *SendMsgLogic) userRelationshipVerification(data *chatpb.SendMsgReq) (bo
 				logx.WithContext(l.ctx).Error("GetFriendIDListFromCache rpc logic call failed ", ifInFriendResp.String())
 			} else {
 				if !ifInFriendResp.IsInFriendList {
-					return false, 601, "not friend"
+					return false, types.ErrCodeFailed, "not friend"
 				}
 			}
 		}
 		return true, 0, ""
 	} else {
 		return true, 0, ""
+	}
+}
+
+func (l *SendMsgLogic) modifyMessageByUserMessageReceiveOpt(userID, sourceID string, sessionType int, pb *chatpb.SendMsgReq) bool {
+	// 用户设置了消息接收选项
+	req := &imuserpb.GetSingleConversationRecvMsgOptsReq{
+		UserID:       userID,
+		SenderUserID: sourceID,
+	}
+	resp, err := l.svcCtx.ImUser.GetSingleConversationRecvMsgOpts(l.ctx, req)
+	if err != nil {
+		logx.WithContext(l.ctx).Error("GetSingleConversationMsgOpt from redis err ", pb.String(), " ", err.Error())
+		return true
+	} else if resp.CommonResp.ErrCode != 0 {
+		return true
+	} else {
+		switch resp.Opts {
+		case imuserpb.RecvMsgOpt_NotReceiveMessage:
+			return false
+		case imuserpb.RecvMsgOpt_ReceiveNotNotifyMessage:
+			if pb.MsgData.MsgOptions == nil {
+				pb.MsgData.MsgOptions = &chatpb.MsgOptions{}
+			}
+			utils.SetSwitchFromOptions(pb.MsgData.MsgOptions, types.IsOfflinePush, false)
+		}
+		return true
 	}
 }

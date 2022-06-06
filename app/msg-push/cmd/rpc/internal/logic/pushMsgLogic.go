@@ -9,7 +9,6 @@ import (
 	"github.com/Path-IM/Path-IM-Server/app/msg-push/cmd/rpc/internal/svc"
 	"github.com/Path-IM/Path-IM-Server/app/msg-push/cmd/rpc/pb"
 	chatpb "github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/pb"
-	"github.com/Path-IM/Path-IM-Server/common/fastjson"
 	"github.com/Path-IM/Path-IM-Server/common/types"
 	"github.com/Path-IM/Path-IM-Server/common/utils"
 	numUtils "github.com/Path-IM/Path-IM-Server/common/utils/num"
@@ -20,18 +19,6 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
-
-type OpenIMContent struct {
-	SessionType int    `json:"sessionType"`
-	From        string `json:"from"`
-	To          string `json:"to"`
-	Seq         uint32 `json:"seq"`
-}
-type AtContent struct {
-	Text       string   `json:"text"`
-	AtUserList []string `json:"atUserList"`
-	IsAtSelf   bool     `json:"isAtSelf"`
-}
 
 var (
 	successCount = uint64(0)
@@ -58,16 +45,18 @@ func (l *PushMsgLogic) PushMsg(in *pb.PushMsgReq) (*pb.PushMsgResp, error) {
 }
 
 func (l *PushMsgLogic) getAllMsgGatewayService() (services []onlinemessagerelayservice.OnlineMessageRelayService, err error) {
-	if l.svcCtx.Config.MsgGatewayRpcK8sTarget == "" {
-		return onlinemessagerelayservice.GetAllByEtcd(l.ctx, l.svcCtx.Config.MsgGatewayRpc, l.svcCtx.Config.MsgGatewayRpc.Key)
-	} else {
+	if l.svcCtx.Config.MsgGatewayRpcEtcd != nil {
+		return onlinemessagerelayservice.GetAllByEtcd(l.ctx, *l.svcCtx.Config.MsgGatewayRpcEtcd, l.svcCtx.Config.MsgGatewayRpcEtcd.Key)
+	} else if l.svcCtx.Config.MsgGatewayRpcK8sTarget != "" {
 		return onlinemessagerelayservice.GetAllByK8s(l.svcCtx.Config.MsgGatewayRpcK8sTarget)
+	} else {
+		return onlinemessagerelayservice.GetAllByEndpoints(l.ctx, l.svcCtx.Config.MsgGatewayRpcEndpoints)
 	}
 }
 
 func (l *PushMsgLogic) MsgToUser(pushMsg *pb.PushMsgReq) {
 	var wsResult []*gatewaypb.SingleMsgToUser
-	isOfflinePush := utils.GetSwitchFromOptions(pushMsg.MsgData.Options, types.IsOfflinePush)
+	isOfflinePush := utils.GetSwitchFromOptions(pushMsg.MsgData.MsgOptions, types.IsOfflinePush)
 
 	services, err := l.getAllMsgGatewayService()
 	if err != nil {
@@ -101,47 +90,26 @@ func (l *PushMsgLogic) MsgToUser(pushMsg *pb.PushMsgReq) {
 				continue
 			}
 			if numUtils.IsContainInt32(v.RecvPlatFormID, pushTerminal) {
-				//Use offline push messaging
 				var UIDList []string
 				UIDList = append(UIDList, v.RecvID)
-				customContent := OpenIMContent{
-					SessionType: int(pushMsg.MsgData.SessionType),
-					From:        pushMsg.MsgData.SendID,
-					To:          pushMsg.MsgData.RecvID,
-					Seq:         pushMsg.MsgData.Seq,
-				}
-				bCustomContent, _ := json.Marshal(customContent)
+				bCustomContent, _ := json.Marshal(pushMsg.MsgData.OfflinePush)
 				jsonCustomContent := string(bCustomContent)
-				var content string
-				if pushMsg.MsgData.OfflinePushInfo != nil {
-					content = pushMsg.MsgData.OfflinePushInfo.Title
-
+				title := pushMsg.MsgData.OfflinePush.Title
+				// 判断接受者是否开启了预览消息
+				message, err := l.svcCtx.ImUserService.IfPreviewMessage(l.ctx, &imuserpb.IfPreviewMessageReq{
+					SenderID:   pushMsg.MsgData.SendID,
+					ReceiverID: pushMsg.PushToUserID,
+				})
+				if err != nil || message.CommonResp == nil || message.CommonResp.ErrCode != 0 {
+					l.Errorf("IfPreviewMessage error: %v", err)
+					title = l.svcCtx.Config.OfflinePushDefaultTitle
 				} else {
-					switch pushMsg.MsgData.ContentType {
-					case types.Text:
-						content = types.ContentType2PushContent[types.Text]
-						if pushMsg.MsgData.AtUserIDList != nil {
-							if strUtils.IsContain(v.RecvID, pushMsg.MsgData.AtUserIDList) {
-								content = "[有人@你]" + types.ContentType2PushContent[types.Common]
-							} else {
-								content = types.ContentType2PushContent[types.GroupMsg]
-							}
-						}
-					case types.Picture:
-						content = types.ContentType2PushContent[types.Picture]
-					case types.Voice:
-						content = types.ContentType2PushContent[types.Voice]
-					case types.Video:
-						content = types.ContentType2PushContent[types.Video]
-					case types.File:
-						content = types.ContentType2PushContent[types.File]
-					default:
-						content = types.ContentType2PushContent[types.Common]
+					if message.CommonResp.ErrCode == 0 && !message.IfPreview {
+						title = message.ReplaceTitle
 					}
 				}
-				var err error
 				xtrace.StartFuncSpan(l.ctx, "MsgToUser.OfflinePushMsg", func(ctx context.Context) {
-					_, err = l.svcCtx.GetOfflinePusher().Push(ctx, UIDList, content, jsonCustomContent)
+					_, err = l.svcCtx.GetOfflinePusher().Push(ctx, UIDList, title, jsonCustomContent)
 				})
 				if err != nil {
 					l.Error("offline push error ", pushMsg.String(), err.Error())
@@ -152,26 +120,24 @@ func (l *PushMsgLogic) MsgToUser(pushMsg *pb.PushMsgReq) {
 	}
 }
 
-func (l *PushMsgLogic) PushSuperGroupMsg(in *chatpb.PushMsgToSuperGroupDataToMQ) (*pb.PushMsgResp, error) {
-	isOfflinePush := utils.GetSwitchFromOptions(in.MsgData.Options, types.IsOfflinePush)
+func (l *PushMsgLogic) PushGroupMsg(in *chatpb.PushMsgDataToMQ) (*pb.PushMsgResp, error) {
+	isOfflinePush := utils.GetSwitchFromOptions(in.MsgData.MsgOptions, types.IsOfflinePush)
 
-	a := AtContent{}
 	tagAll := false
 	// 如果艾特人了
 	if in.MsgData.AtUserIDList != nil {
 		tagAll = strUtils.IsContain(types.AtAllString, in.MsgData.AtUserIDList)
-		_ = fastjson.Unmarshal(in.MsgData.Content, &a)
 	}
 	// 被艾特的人 先去获取被艾特的人是否屏蔽了群消息
-	var atUsers *imuserpb.GetUserListFromSuperGroupWithOptResp
+	var atUsers *imuserpb.GetUserListFromGroupWithOptResp
 	atPushUserChan := make(chan string, 1)
 	go l.listenAtPushUserChan(atPushUserChan, in)
 	var err error
 	if tagAll {
-		xtrace.StartFuncSpan(l.ctx, "PushSuperGroupMsg.GetUserListFromSuperGroupWithOpt", func(ctx context.Context) {
+		xtrace.StartFuncSpan(l.ctx, "PushGroupMsg.GetUserListFromGroupWithOpt", func(ctx context.Context) {
 			// 我们去查询这个群的所有接收消息通知的用户
-			atUsers, err = l.svcCtx.ImUserService.GetUserListFromSuperGroupWithOpt(l.ctx, &imuserpb.GetUserListFromSuperGroupWithOptReq{
-				SuperGroupID: in.SuperGroupID,
+			atUsers, err = l.svcCtx.ImUserService.GetUserListFromGroupWithOpt(l.ctx, &imuserpb.GetUserListFromGroupWithOptReq{
+				GroupID: in.MsgData.ReceiveID,
 				Opts: []imuserpb.RecvMsgOpt{
 					imuserpb.RecvMsgOpt_ReceiveMessage,
 					imuserpb.RecvMsgOpt_ReceiveNotNotifyMessage,
@@ -179,47 +145,47 @@ func (l *PushMsgLogic) PushSuperGroupMsg(in *chatpb.PushMsgToSuperGroupDataToMQ)
 			})
 		})
 		if err == nil {
-			l.pushSuperGroupMsg(in, atUsers, nil, isOfflinePush, atPushUserChan)
+			l.pushGroupMsg(in, atUsers, nil, isOfflinePush, atPushUserChan)
 		} else {
-			logx.WithContext(l.ctx).Error("GetUserListFromSuperGroupWithOpt failed, err: ", err)
+			logx.WithContext(l.ctx).Error("GetUserListFromGroupWithOpt failed, err: ", err)
 			err = nil
 		}
-	} else if len(a.AtUserList) > 0 {
-		xtrace.StartFuncSpan(l.ctx, "PushSuperGroupMsg.GetUserListFromSuperGroupWithOpt", func(ctx context.Context) {
+	} else if len(in.MsgData.AtUserIDList) > 0 {
+		xtrace.StartFuncSpan(l.ctx, "PushGroupMsg.GetUserListFromGroupWithOpt", func(ctx context.Context) {
 			// 我们去查询这个群的所有接收消息通知的用户
-			atUsers, err = l.svcCtx.ImUserService.GetUserListFromSuperGroupWithOpt(l.ctx, &imuserpb.GetUserListFromSuperGroupWithOptReq{
-				SuperGroupID: in.SuperGroupID,
+			atUsers, err = l.svcCtx.ImUserService.GetUserListFromGroupWithOpt(l.ctx, &imuserpb.GetUserListFromGroupWithOptReq{
+				GroupID: in.MsgData.ReceiveID,
 				Opts: []imuserpb.RecvMsgOpt{
 					imuserpb.RecvMsgOpt_ReceiveNotNotifyMessage,
 				},
-				UserIDList: a.AtUserList,
+				UserIDList: in.MsgData.AtUserIDList,
 			})
 		})
 		if err == nil {
-			var verifyAtUsers = &imuserpb.GetUserListFromSuperGroupWithOptResp{
+			var verifyAtUsers = &imuserpb.GetUserListFromGroupWithOptResp{
 				CommonResp:    &imuserpb.CommonResp{},
 				UserIDOptList: nil,
 			}
 			for _, opt := range atUsers.UserIDOptList {
-				if strUtils.IsContain(opt.UserID, a.AtUserList) {
+				if strUtils.IsContain(opt.UserID, in.MsgData.AtUserIDList) {
 					verifyAtUsers.UserIDOptList = append(verifyAtUsers.UserIDOptList, opt)
 				}
 			}
-			l.pushSuperGroupMsg(in, verifyAtUsers, nil, isOfflinePush, atPushUserChan)
+			l.pushGroupMsg(in, verifyAtUsers, nil, isOfflinePush, atPushUserChan)
 		} else {
-			logx.WithContext(l.ctx).Error("GetUserListFromSuperGroupWithOpt failed, err: ", err)
+			logx.WithContext(l.ctx).Error("GetUserListFromGroupWithOpt failed, err: ", err)
 			err = nil
 		}
 	}
 	if tagAll {
 		return &pb.PushMsgResp{ResultCode: 0}, nil
 	}
-	var allUsers *imuserpb.GetUserListFromSuperGroupWithOptResp
+	var allUsers *imuserpb.GetUserListFromGroupWithOptResp
 	offlinePushUserChan := make(chan string, 1)
-	xtrace.StartFuncSpan(l.ctx, "PushSuperGroupMsg.GetUserListFromSuperGroupWithOpt", func(ctx context.Context) {
+	xtrace.StartFuncSpan(l.ctx, "PushGroupMsg.GetUserListFromGroupWithOpt", func(ctx context.Context) {
 		// 我们去查询这个群的所有接收消息通知的用户
-		allUsers, err = l.svcCtx.ImUserService.GetUserListFromSuperGroupWithOpt(l.ctx, &imuserpb.GetUserListFromSuperGroupWithOptReq{
-			SuperGroupID: in.SuperGroupID,
+		allUsers, err = l.svcCtx.ImUserService.GetUserListFromGroupWithOpt(l.ctx, &imuserpb.GetUserListFromGroupWithOptReq{
+			GroupID: in.MsgData.ReceiveID,
 			Opts: []imuserpb.RecvMsgOpt{
 				imuserpb.RecvMsgOpt_ReceiveMessage,
 			},
@@ -231,13 +197,13 @@ func (l *PushMsgLogic) PushSuperGroupMsg(in *chatpb.PushMsgToSuperGroupDataToMQ)
 	l.Info("allUsers.UserIDOptList:", allUsers.UserIDOptList)
 
 	go l.listenOfflinePushUserChan(offlinePushUserChan, in)
-	l.pushSuperGroupMsg(in, allUsers, a.AtUserList, isOfflinePush, offlinePushUserChan)
+	l.pushGroupMsg(in, allUsers, in.MsgData.AtUserIDList, isOfflinePush, offlinePushUserChan)
 	return &pb.PushMsgResp{ResultCode: 0}, nil
 }
 
-func (l *PushMsgLogic) pushSuperGroupMsg(
-	in *chatpb.PushMsgToSuperGroupDataToMQ,
-	users *imuserpb.GetUserListFromSuperGroupWithOptResp,
+func (l *PushMsgLogic) pushGroupMsg(
+	in *chatpb.PushMsgDataToMQ,
+	users *imuserpb.GetUserListFromGroupWithOptResp,
 	atList []string,
 	isOfflinePush bool,
 	offlinePushUserChan chan string,
@@ -258,7 +224,7 @@ func (l *PushMsgLogic) pushSuperGroupMsg(
 				for i, service := range services {
 					fs = append(fs, func() error {
 						allPlatformIsFailed := true
-						xtrace.StartFuncSpan(l.ctx, "PushSuperGroupMsg.PushMsgToUser", func(ctx context.Context) {
+						xtrace.StartFuncSpan(l.ctx, "PushGroupMsg.PushMsgToUser", func(ctx context.Context) {
 							resp, err := service.OnlinePushMsg(ctx, &gatewaypb.OnlinePushMsgReq{
 								MsgData:      in.MsgData,
 								PushToUserID: user.UserID,
@@ -304,7 +270,7 @@ func (l *PushMsgLogic) pushSuperGroupMsg(
 
 func (l *PushMsgLogic) listenOfflinePushUserChan(
 	userChan chan string,
-	pushMsg *chatpb.PushMsgToSuperGroupDataToMQ,
+	pushMsg *chatpb.PushMsgDataToMQ,
 ) {
 	var uids []string
 	for uid := range userChan {
@@ -315,40 +281,25 @@ func (l *PushMsgLogic) listenOfflinePushUserChan(
 		uids = append(uids, uid)
 	}
 	logx.WithContext(l.ctx).Info("开始进行离线推送:", uids)
-	customContent := OpenIMContent{
-		SessionType: int(pushMsg.MsgData.SessionType),
-		From:        pushMsg.MsgData.SendID,
-		To:          pushMsg.MsgData.RecvID,
-		Seq:         pushMsg.MsgData.Seq,
-	}
-	bCustomContent, _ := json.Marshal(customContent)
+	bCustomContent, _ := json.Marshal(pushMsg.MsgData.OfflinePush)
 	jsonCustomContent := string(bCustomContent)
-	var content string
-	if pushMsg.MsgData.OfflinePushInfo != nil {
-		content = pushMsg.MsgData.OfflinePushInfo.Title
-
+	title := pushMsg.MsgData.OfflinePush.Title
+	// 判断接受者是否开启了预览消息
+	message, err := l.svcCtx.ImUserService.IfPreviewMessage(l.ctx, &imuserpb.IfPreviewMessageReq{
+		SenderID:   pushMsg.MsgData.SendID,
+		ReceiverID: pushMsg.PushToUserID,
+		GroupID:    pushMsg.MsgData.ReceiveID,
+	})
+	if err != nil || message.CommonResp == nil || message.CommonResp.ErrCode != 0 {
+		l.Errorf("IfPreviewMessage error: %v", err)
+		title = l.svcCtx.Config.OfflinePushDefaultTitle
 	} else {
-		switch pushMsg.MsgData.ContentType {
-		case types.Text:
-			content = types.ContentType2PushContent[types.Text]
-			if pushMsg.MsgData.AtUserIDList != nil {
-				content = types.ContentType2PushContent[types.GroupMsg]
-			}
-		case types.Picture:
-			content = types.ContentType2PushContent[types.Picture]
-		case types.Voice:
-			content = types.ContentType2PushContent[types.Voice]
-		case types.Video:
-			content = types.ContentType2PushContent[types.Video]
-		case types.File:
-			content = types.ContentType2PushContent[types.File]
-		default:
-			content = types.ContentType2PushContent[types.Common]
+		if message.CommonResp.ErrCode == 0 && !message.IfPreview {
+			title = message.ReplaceTitle
 		}
 	}
-	var err error
 	xtrace.StartFuncSpan(l.ctx, "MsgToUser.OfflinePushMsg", func(ctx context.Context) {
-		_, err = l.svcCtx.GetOfflinePusher().Push(ctx, uids, content, jsonCustomContent)
+		_, err = l.svcCtx.GetOfflinePusher().Push(ctx, uids, title, jsonCustomContent)
 	})
 	if err != nil {
 		l.Error("offline push error ", pushMsg.String(), err.Error())
@@ -357,7 +308,7 @@ func (l *PushMsgLogic) listenOfflinePushUserChan(
 
 func (l *PushMsgLogic) listenAtPushUserChan(
 	userChan chan string,
-	pushMsg *chatpb.PushMsgToSuperGroupDataToMQ,
+	pushMsg *chatpb.PushMsgDataToMQ,
 ) {
 	var uids []string
 	for uid := range userChan {
@@ -368,25 +319,25 @@ func (l *PushMsgLogic) listenAtPushUserChan(
 		uids = append(uids, uid)
 	}
 	logx.WithContext(l.ctx).Info("开始进行at离线推送:", uids)
-	customContent := OpenIMContent{
-		SessionType: int(pushMsg.MsgData.SessionType),
-		From:        pushMsg.MsgData.SendID,
-		To:          pushMsg.MsgData.RecvID,
-		Seq:         pushMsg.MsgData.Seq,
-	}
-	bCustomContent, _ := json.Marshal(customContent)
+	bCustomContent, _ := json.Marshal(pushMsg.MsgData.OfflinePush)
 	jsonCustomContent := string(bCustomContent)
-	var content string
-	if pushMsg.MsgData.OfflinePushInfo != nil {
-		content = pushMsg.MsgData.OfflinePushInfo.Title
+	title := pushMsg.MsgData.OfflinePush.Title
+	// 判断接受者是否开启了预览消息
+	message, err := l.svcCtx.ImUserService.IfPreviewMessage(l.ctx, &imuserpb.IfPreviewMessageReq{
+		SenderID:   pushMsg.MsgData.SendID,
+		ReceiverID: pushMsg.PushToUserID,
+		GroupID:    pushMsg.MsgData.ReceiveID,
+	})
+	if err != nil || message.CommonResp == nil || message.CommonResp.ErrCode != 0 {
+		l.Errorf("IfPreviewMessage error: %v", err)
+		title = l.svcCtx.Config.OfflinePushDefaultTitle
 	} else {
-		a := AtContent{}
-		_ = fastjson.Unmarshal(pushMsg.MsgData.Content, &a)
-		content = types.ContentType2PushContent[types.GroupMsg]
+		if message.CommonResp.ErrCode == 0 && !message.IfPreview {
+			title = message.ReplaceTitle
+		}
 	}
-	var err error
 	xtrace.StartFuncSpan(l.ctx, "MsgToUser.OfflinePushMsg", func(ctx context.Context) {
-		_, err = l.svcCtx.GetOfflinePusher().Push(ctx, uids, content, jsonCustomContent)
+		_, err = l.svcCtx.GetOfflinePusher().Push(ctx, uids, title, jsonCustomContent)
 	})
 	if err != nil {
 		l.Error("offline push error ", pushMsg.String(), err.Error())

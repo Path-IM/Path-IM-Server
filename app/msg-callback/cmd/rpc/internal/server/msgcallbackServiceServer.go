@@ -32,16 +32,6 @@ func (s *MsgcallbackServiceServer) CallbackAfterSendGroupMsg(ctx context.Context
 	return l.CallbackAfterSendGroupMsg(in)
 }
 
-func (s *MsgcallbackServiceServer) CallbackBeforeSendSuperGroupMsg(ctx context.Context, in *pb.CallbackSendSuperGroupMsgReq) (*pb.CommonCallbackResp, error) {
-	l := logic.NewCallbackBeforeSendSuperGroupMsgLogic(ctx, s.svcCtx)
-	return l.CallbackBeforeSendSuperGroupMsg(in)
-}
-
-func (s *MsgcallbackServiceServer) CallbackAfterSendSuperGroupMsg(ctx context.Context, in *pb.CallbackSendSuperGroupMsgReq) (*pb.CommonCallbackResp, error) {
-	l := logic.NewCallbackAfterSendSuperGroupMsgLogic(ctx, s.svcCtx)
-	return l.CallbackAfterSendSuperGroupMsg(in)
-}
-
 func (s *MsgcallbackServiceServer) CallbackBeforeSendSingleMsg(ctx context.Context, in *pb.CallbackSendSingleMsgReq) (*pb.CommonCallbackResp, error) {
 	l := logic.NewCallbackBeforeSendSingleMsgLogic(ctx, s.svcCtx)
 	return l.CallbackBeforeSendSingleMsg(in)
@@ -50,14 +40,4 @@ func (s *MsgcallbackServiceServer) CallbackBeforeSendSingleMsg(ctx context.Conte
 func (s *MsgcallbackServiceServer) CallbackAfterSendSingleMsg(ctx context.Context, in *pb.CallbackSendSingleMsgReq) (*pb.CommonCallbackResp, error) {
 	l := logic.NewCallbackAfterSendSingleMsgLogic(ctx, s.svcCtx)
 	return l.CallbackAfterSendSingleMsg(in)
-}
-
-func (s *MsgcallbackServiceServer) CallbackWordFilter(ctx context.Context, in *pb.CallbackWordFilterReq) (*pb.CallbackWordFilterResp, error) {
-	l := logic.NewCallbackWordFilterLogic(ctx, s.svcCtx)
-	return l.CallbackWordFilter(in)
-}
-
-func (s *MsgcallbackServiceServer) CallbackAtAllInSuperGroup(ctx context.Context, in *pb.CallbackAtAllInSuperGroupReq) (*pb.CallbackAtAllInSuperGroupResp, error) {
-	l := logic.NewCallbackAtAllInSuperGroupLogic(ctx, s.svcCtx)
-	return l.CallbackAtAllInSuperGroup(in)
 }

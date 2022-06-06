@@ -2,9 +2,9 @@
 package types
 
 type Request struct {
-	Token      string `form:"token"`
-	SendID     string `form:"sendID"`
-	PlatformID string `form:"platformID"`
+	Token    string `form:"token"`
+	UserID   string `form:"userID"`
+	Platform string `form:"platform"`
 }
 type Response struct {
 	Uid     string

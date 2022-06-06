@@ -24,12 +24,8 @@ const _ = grpc.SupportPackageIsVersion7
 type MsgcallbackServiceClient interface {
 	CallbackBeforeSendGroupMsg(ctx context.Context, in *CallbackSendGroupMsgReq, opts ...grpc.CallOption) (*CommonCallbackResp, error)
 	CallbackAfterSendGroupMsg(ctx context.Context, in *CallbackSendGroupMsgReq, opts ...grpc.CallOption) (*CommonCallbackResp, error)
-	CallbackBeforeSendSuperGroupMsg(ctx context.Context, in *CallbackSendSuperGroupMsgReq, opts ...grpc.CallOption) (*CommonCallbackResp, error)
-	CallbackAfterSendSuperGroupMsg(ctx context.Context, in *CallbackSendSuperGroupMsgReq, opts ...grpc.CallOption) (*CommonCallbackResp, error)
 	CallbackBeforeSendSingleMsg(ctx context.Context, in *CallbackSendSingleMsgReq, opts ...grpc.CallOption) (*CommonCallbackResp, error)
 	CallbackAfterSendSingleMsg(ctx context.Context, in *CallbackSendSingleMsgReq, opts ...grpc.CallOption) (*CommonCallbackResp, error)
-	CallbackWordFilter(ctx context.Context, in *CallbackWordFilterReq, opts ...grpc.CallOption) (*CallbackWordFilterResp, error)
-	CallbackAtAllInSuperGroup(ctx context.Context, in *CallbackAtAllInSuperGroupReq, opts ...grpc.CallOption) (*CallbackAtAllInSuperGroupResp, error)
 }
 
 type msgcallbackServiceClient struct {
@@ -58,24 +54,6 @@ func (c *msgcallbackServiceClient) CallbackAfterSendGroupMsg(ctx context.Context
 	return out, nil
 }
 
-func (c *msgcallbackServiceClient) CallbackBeforeSendSuperGroupMsg(ctx context.Context, in *CallbackSendSuperGroupMsgReq, opts ...grpc.CallOption) (*CommonCallbackResp, error) {
-	out := new(CommonCallbackResp)
-	err := c.cc.Invoke(ctx, "/pb.msgcallbackService/CallbackBeforeSendSuperGroupMsg", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *msgcallbackServiceClient) CallbackAfterSendSuperGroupMsg(ctx context.Context, in *CallbackSendSuperGroupMsgReq, opts ...grpc.CallOption) (*CommonCallbackResp, error) {
-	out := new(CommonCallbackResp)
-	err := c.cc.Invoke(ctx, "/pb.msgcallbackService/CallbackAfterSendSuperGroupMsg", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *msgcallbackServiceClient) CallbackBeforeSendSingleMsg(ctx context.Context, in *CallbackSendSingleMsgReq, opts ...grpc.CallOption) (*CommonCallbackResp, error) {
 	out := new(CommonCallbackResp)
 	err := c.cc.Invoke(ctx, "/pb.msgcallbackService/CallbackBeforeSendSingleMsg", in, out, opts...)
@@ -94,36 +72,14 @@ func (c *msgcallbackServiceClient) CallbackAfterSendSingleMsg(ctx context.Contex
 	return out, nil
 }
 
-func (c *msgcallbackServiceClient) CallbackWordFilter(ctx context.Context, in *CallbackWordFilterReq, opts ...grpc.CallOption) (*CallbackWordFilterResp, error) {
-	out := new(CallbackWordFilterResp)
-	err := c.cc.Invoke(ctx, "/pb.msgcallbackService/CallbackWordFilter", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *msgcallbackServiceClient) CallbackAtAllInSuperGroup(ctx context.Context, in *CallbackAtAllInSuperGroupReq, opts ...grpc.CallOption) (*CallbackAtAllInSuperGroupResp, error) {
-	out := new(CallbackAtAllInSuperGroupResp)
-	err := c.cc.Invoke(ctx, "/pb.msgcallbackService/CallbackAtAllInSuperGroup", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // MsgcallbackServiceServer is the server API for MsgcallbackService service.
 // All implementations must embed UnimplementedMsgcallbackServiceServer
 // for forward compatibility
 type MsgcallbackServiceServer interface {
 	CallbackBeforeSendGroupMsg(context.Context, *CallbackSendGroupMsgReq) (*CommonCallbackResp, error)
 	CallbackAfterSendGroupMsg(context.Context, *CallbackSendGroupMsgReq) (*CommonCallbackResp, error)
-	CallbackBeforeSendSuperGroupMsg(context.Context, *CallbackSendSuperGroupMsgReq) (*CommonCallbackResp, error)
-	CallbackAfterSendSuperGroupMsg(context.Context, *CallbackSendSuperGroupMsgReq) (*CommonCallbackResp, error)
 	CallbackBeforeSendSingleMsg(context.Context, *CallbackSendSingleMsgReq) (*CommonCallbackResp, error)
 	CallbackAfterSendSingleMsg(context.Context, *CallbackSendSingleMsgReq) (*CommonCallbackResp, error)
-	CallbackWordFilter(context.Context, *CallbackWordFilterReq) (*CallbackWordFilterResp, error)
-	CallbackAtAllInSuperGroup(context.Context, *CallbackAtAllInSuperGroupReq) (*CallbackAtAllInSuperGroupResp, error)
 	mustEmbedUnimplementedMsgcallbackServiceServer()
 }
 
@@ -137,23 +93,11 @@ func (UnimplementedMsgcallbackServiceServer) CallbackBeforeSendGroupMsg(context.
 func (UnimplementedMsgcallbackServiceServer) CallbackAfterSendGroupMsg(context.Context, *CallbackSendGroupMsgReq) (*CommonCallbackResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CallbackAfterSendGroupMsg not implemented")
 }
-func (UnimplementedMsgcallbackServiceServer) CallbackBeforeSendSuperGroupMsg(context.Context, *CallbackSendSuperGroupMsgReq) (*CommonCallbackResp, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CallbackBeforeSendSuperGroupMsg not implemented")
-}
-func (UnimplementedMsgcallbackServiceServer) CallbackAfterSendSuperGroupMsg(context.Context, *CallbackSendSuperGroupMsgReq) (*CommonCallbackResp, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CallbackAfterSendSuperGroupMsg not implemented")
-}
 func (UnimplementedMsgcallbackServiceServer) CallbackBeforeSendSingleMsg(context.Context, *CallbackSendSingleMsgReq) (*CommonCallbackResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CallbackBeforeSendSingleMsg not implemented")
 }
 func (UnimplementedMsgcallbackServiceServer) CallbackAfterSendSingleMsg(context.Context, *CallbackSendSingleMsgReq) (*CommonCallbackResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CallbackAfterSendSingleMsg not implemented")
-}
-func (UnimplementedMsgcallbackServiceServer) CallbackWordFilter(context.Context, *CallbackWordFilterReq) (*CallbackWordFilterResp, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CallbackWordFilter not implemented")
-}
-func (UnimplementedMsgcallbackServiceServer) CallbackAtAllInSuperGroup(context.Context, *CallbackAtAllInSuperGroupReq) (*CallbackAtAllInSuperGroupResp, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CallbackAtAllInSuperGroup not implemented")
 }
 func (UnimplementedMsgcallbackServiceServer) mustEmbedUnimplementedMsgcallbackServiceServer() {}
 
@@ -204,42 +148,6 @@ func _MsgcallbackService_CallbackAfterSendGroupMsg_Handler(srv interface{}, ctx 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _MsgcallbackService_CallbackBeforeSendSuperGroupMsg_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CallbackSendSuperGroupMsgReq)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgcallbackServiceServer).CallbackBeforeSendSuperGroupMsg(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pb.msgcallbackService/CallbackBeforeSendSuperGroupMsg",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgcallbackServiceServer).CallbackBeforeSendSuperGroupMsg(ctx, req.(*CallbackSendSuperGroupMsgReq))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _MsgcallbackService_CallbackAfterSendSuperGroupMsg_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CallbackSendSuperGroupMsgReq)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgcallbackServiceServer).CallbackAfterSendSuperGroupMsg(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pb.msgcallbackService/CallbackAfterSendSuperGroupMsg",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgcallbackServiceServer).CallbackAfterSendSuperGroupMsg(ctx, req.(*CallbackSendSuperGroupMsgReq))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _MsgcallbackService_CallbackBeforeSendSingleMsg_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CallbackSendSingleMsgReq)
 	if err := dec(in); err != nil {
@@ -276,42 +184,6 @@ func _MsgcallbackService_CallbackAfterSendSingleMsg_Handler(srv interface{}, ctx
 	return interceptor(ctx, in, info, handler)
 }
 
-func _MsgcallbackService_CallbackWordFilter_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CallbackWordFilterReq)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgcallbackServiceServer).CallbackWordFilter(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pb.msgcallbackService/CallbackWordFilter",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgcallbackServiceServer).CallbackWordFilter(ctx, req.(*CallbackWordFilterReq))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _MsgcallbackService_CallbackAtAllInSuperGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CallbackAtAllInSuperGroupReq)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgcallbackServiceServer).CallbackAtAllInSuperGroup(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pb.msgcallbackService/CallbackAtAllInSuperGroup",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgcallbackServiceServer).CallbackAtAllInSuperGroup(ctx, req.(*CallbackAtAllInSuperGroupReq))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // MsgcallbackService_ServiceDesc is the grpc.ServiceDesc for MsgcallbackService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -328,28 +200,12 @@ var MsgcallbackService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _MsgcallbackService_CallbackAfterSendGroupMsg_Handler,
 		},
 		{
-			MethodName: "CallbackBeforeSendSuperGroupMsg",
-			Handler:    _MsgcallbackService_CallbackBeforeSendSuperGroupMsg_Handler,
-		},
-		{
-			MethodName: "CallbackAfterSendSuperGroupMsg",
-			Handler:    _MsgcallbackService_CallbackAfterSendSuperGroupMsg_Handler,
-		},
-		{
 			MethodName: "CallbackBeforeSendSingleMsg",
 			Handler:    _MsgcallbackService_CallbackBeforeSendSingleMsg_Handler,
 		},
 		{
 			MethodName: "CallbackAfterSendSingleMsg",
 			Handler:    _MsgcallbackService_CallbackAfterSendSingleMsg_Handler,
-		},
-		{
-			MethodName: "CallbackWordFilter",
-			Handler:    _MsgcallbackService_CallbackWordFilter_Handler,
-		},
-		{
-			MethodName: "CallbackAtAllInSuperGroup",
-			Handler:    _MsgcallbackService_CallbackAtAllInSuperGroup_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

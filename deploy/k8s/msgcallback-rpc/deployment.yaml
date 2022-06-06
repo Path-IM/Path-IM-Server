@@ -1,0 +1,140 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: msgcallback-rpc
+  namespace: pathim
+  labels:
+    app: msgcallback-rpc
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: msgcallback-rpc
+  template:
+    metadata:
+      labels:
+        app: msgcallback-rpc
+    spec:
+      serviceAccountName: find-endpoints
+      containers:
+        - name: msgcallback-rpc
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.hostIP
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+          envFrom:
+            - configMapRef:
+                name: pathim-configmap
+          image: "ccr.ccs.tencentyun.com/zeroim/msgcallback-rpc:20220606180610"
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh","-c","sleep 5"]
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 60Mi
+            limits:
+              cpu: 100m
+              memory: 60Mi
+          volumeMounts:
+            - name: timezone
+              mountPath: /etc/localtime
+            - name: etc
+              mountPath: /app/etc/msgcallback.yaml
+              subPath: msgcallback.yaml
+      imagePullSecrets:
+        - name: registry
+      volumes:
+        - name: etc
+          configMap:
+            name: etc-msgcallback-rpc
+        - name: timezone
+          hostPath:
+            path: /usr/share/zoneinfo/Asia/Shanghai
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: msgcallback-rpc-svc
+  namespace: pathim
+spec:
+  ports:
+    - port: 8080
+  selector:
+    app: msgcallback-rpc
+
+---
+
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: msgcallback-rpc-hpa-c
+  namespace: pathim
+  labels:
+    app: msgcallback-rpc-hpa-c
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: msgcallback-rpc
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        targetAverageUtilization: 80
+
+---
+
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: msgcallback-rpc-hpa-m
+  namespace: pathim
+  labels:
+    app: msgcallback-rpc-hpa-m
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: msgcallback-rpc
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: memory
+        targetAverageUtilization: 80

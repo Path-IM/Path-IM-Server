@@ -32,10 +32,10 @@ func (l *OnlinePushMsgLogic) OnlinePushMsg(in *pb.OnlinePushMsgReq) (*pb.OnlineP
 	var resp []*pb.SingleMsgToUser
 	msgBytes, _ := proto.Marshal(in.MsgData)
 	reqIdentifier := types.WSPushMsg
-	if in.MsgData.SessionType == types.GroupChatType {
+	if in.MsgData.ConversationType == types.GroupChatType {
 		reqIdentifier = types.WSGroupPushMsg
 	}
-	mReply := &pb.Resp{
+	mReply := &pb.BodyResp{
 		ReqIdentifier: uint32(reqIdentifier),
 		Data:          msgBytes,
 	}

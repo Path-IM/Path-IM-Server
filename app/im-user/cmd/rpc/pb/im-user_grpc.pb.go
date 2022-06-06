@@ -22,18 +22,18 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ImUserServiceClient interface {
-	// 获取群组成员列表
-	GetGroupMemberIDListFromCache(ctx context.Context, in *GetGroupMemberIDListFromCacheReq, opts ...grpc.CallOption) (*GetGroupMemberIDListFromCacheResp, error)
 	// 判断用户A是否在B黑名单中
 	IfAInBBlacklist(ctx context.Context, in *IfAInBBlacklistReq, opts ...grpc.CallOption) (*IfAInBBlacklistResp, error)
 	// 判断用户A是否在B好友列表中
 	IfAInBFriendList(ctx context.Context, in *IfAInBFriendListReq, opts ...grpc.CallOption) (*IfAInBFriendListResp, error)
 	// 获取单聊会话的消息接收选项
 	GetSingleConversationRecvMsgOpts(ctx context.Context, in *GetSingleConversationRecvMsgOptsReq, opts ...grpc.CallOption) (*GetSingleConversationRecvMsgOptsResp, error)
-	// 获取超级群成员列表 通过消息接收选项
-	GetUserListFromSuperGroupWithOpt(ctx context.Context, in *GetUserListFromSuperGroupWithOptReq, opts ...grpc.CallOption) (*GetUserListFromSuperGroupWithOptResp, error)
+	// 获取群成员列表 通过消息接收选项
+	GetUserListFromGroupWithOpt(ctx context.Context, in *GetUserListFromGroupWithOptReq, opts ...grpc.CallOption) (*GetUserListFromGroupWithOptResp, error)
 	// 检查token
 	VerifyToken(ctx context.Context, in *VerifyTokenReq, opts ...grpc.CallOption) (*VerifyTokenResp, error)
+	// 是否预览消息
+	IfPreviewMessage(ctx context.Context, in *IfPreviewMessageReq, opts ...grpc.CallOption) (*IfPreviewMessageResp, error)
 }
 
 type imUserServiceClient struct {
@@ -42,15 +42,6 @@ type imUserServiceClient struct {
 
 func NewImUserServiceClient(cc grpc.ClientConnInterface) ImUserServiceClient {
 	return &imUserServiceClient{cc}
-}
-
-func (c *imUserServiceClient) GetGroupMemberIDListFromCache(ctx context.Context, in *GetGroupMemberIDListFromCacheReq, opts ...grpc.CallOption) (*GetGroupMemberIDListFromCacheResp, error) {
-	out := new(GetGroupMemberIDListFromCacheResp)
-	err := c.cc.Invoke(ctx, "/imuser.imUserService/GetGroupMemberIDListFromCache", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *imUserServiceClient) IfAInBBlacklist(ctx context.Context, in *IfAInBBlacklistReq, opts ...grpc.CallOption) (*IfAInBBlacklistResp, error) {
@@ -80,9 +71,9 @@ func (c *imUserServiceClient) GetSingleConversationRecvMsgOpts(ctx context.Conte
 	return out, nil
 }
 
-func (c *imUserServiceClient) GetUserListFromSuperGroupWithOpt(ctx context.Context, in *GetUserListFromSuperGroupWithOptReq, opts ...grpc.CallOption) (*GetUserListFromSuperGroupWithOptResp, error) {
-	out := new(GetUserListFromSuperGroupWithOptResp)
-	err := c.cc.Invoke(ctx, "/imuser.imUserService/GetUserListFromSuperGroupWithOpt", in, out, opts...)
+func (c *imUserServiceClient) GetUserListFromGroupWithOpt(ctx context.Context, in *GetUserListFromGroupWithOptReq, opts ...grpc.CallOption) (*GetUserListFromGroupWithOptResp, error) {
+	out := new(GetUserListFromGroupWithOptResp)
+	err := c.cc.Invoke(ctx, "/imuser.imUserService/GetUserListFromGroupWithOpt", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -98,22 +89,31 @@ func (c *imUserServiceClient) VerifyToken(ctx context.Context, in *VerifyTokenRe
 	return out, nil
 }
 
+func (c *imUserServiceClient) IfPreviewMessage(ctx context.Context, in *IfPreviewMessageReq, opts ...grpc.CallOption) (*IfPreviewMessageResp, error) {
+	out := new(IfPreviewMessageResp)
+	err := c.cc.Invoke(ctx, "/imuser.imUserService/IfPreviewMessage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ImUserServiceServer is the server API for ImUserService service.
 // All implementations must embed UnimplementedImUserServiceServer
 // for forward compatibility
 type ImUserServiceServer interface {
-	// 获取群组成员列表
-	GetGroupMemberIDListFromCache(context.Context, *GetGroupMemberIDListFromCacheReq) (*GetGroupMemberIDListFromCacheResp, error)
 	// 判断用户A是否在B黑名单中
 	IfAInBBlacklist(context.Context, *IfAInBBlacklistReq) (*IfAInBBlacklistResp, error)
 	// 判断用户A是否在B好友列表中
 	IfAInBFriendList(context.Context, *IfAInBFriendListReq) (*IfAInBFriendListResp, error)
 	// 获取单聊会话的消息接收选项
 	GetSingleConversationRecvMsgOpts(context.Context, *GetSingleConversationRecvMsgOptsReq) (*GetSingleConversationRecvMsgOptsResp, error)
-	// 获取超级群成员列表 通过消息接收选项
-	GetUserListFromSuperGroupWithOpt(context.Context, *GetUserListFromSuperGroupWithOptReq) (*GetUserListFromSuperGroupWithOptResp, error)
+	// 获取群成员列表 通过消息接收选项
+	GetUserListFromGroupWithOpt(context.Context, *GetUserListFromGroupWithOptReq) (*GetUserListFromGroupWithOptResp, error)
 	// 检查token
 	VerifyToken(context.Context, *VerifyTokenReq) (*VerifyTokenResp, error)
+	// 是否预览消息
+	IfPreviewMessage(context.Context, *IfPreviewMessageReq) (*IfPreviewMessageResp, error)
 	mustEmbedUnimplementedImUserServiceServer()
 }
 
@@ -121,9 +121,6 @@ type ImUserServiceServer interface {
 type UnimplementedImUserServiceServer struct {
 }
 
-func (UnimplementedImUserServiceServer) GetGroupMemberIDListFromCache(context.Context, *GetGroupMemberIDListFromCacheReq) (*GetGroupMemberIDListFromCacheResp, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetGroupMemberIDListFromCache not implemented")
-}
 func (UnimplementedImUserServiceServer) IfAInBBlacklist(context.Context, *IfAInBBlacklistReq) (*IfAInBBlacklistResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IfAInBBlacklist not implemented")
 }
@@ -133,11 +130,14 @@ func (UnimplementedImUserServiceServer) IfAInBFriendList(context.Context, *IfAIn
 func (UnimplementedImUserServiceServer) GetSingleConversationRecvMsgOpts(context.Context, *GetSingleConversationRecvMsgOptsReq) (*GetSingleConversationRecvMsgOptsResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSingleConversationRecvMsgOpts not implemented")
 }
-func (UnimplementedImUserServiceServer) GetUserListFromSuperGroupWithOpt(context.Context, *GetUserListFromSuperGroupWithOptReq) (*GetUserListFromSuperGroupWithOptResp, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUserListFromSuperGroupWithOpt not implemented")
+func (UnimplementedImUserServiceServer) GetUserListFromGroupWithOpt(context.Context, *GetUserListFromGroupWithOptReq) (*GetUserListFromGroupWithOptResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserListFromGroupWithOpt not implemented")
 }
 func (UnimplementedImUserServiceServer) VerifyToken(context.Context, *VerifyTokenReq) (*VerifyTokenResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method VerifyToken not implemented")
+}
+func (UnimplementedImUserServiceServer) IfPreviewMessage(context.Context, *IfPreviewMessageReq) (*IfPreviewMessageResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IfPreviewMessage not implemented")
 }
 func (UnimplementedImUserServiceServer) mustEmbedUnimplementedImUserServiceServer() {}
 
@@ -150,24 +150,6 @@ type UnsafeImUserServiceServer interface {
 
 func RegisterImUserServiceServer(s grpc.ServiceRegistrar, srv ImUserServiceServer) {
 	s.RegisterService(&ImUserService_ServiceDesc, srv)
-}
-
-func _ImUserService_GetGroupMemberIDListFromCache_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetGroupMemberIDListFromCacheReq)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ImUserServiceServer).GetGroupMemberIDListFromCache(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/imuser.imUserService/GetGroupMemberIDListFromCache",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ImUserServiceServer).GetGroupMemberIDListFromCache(ctx, req.(*GetGroupMemberIDListFromCacheReq))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _ImUserService_IfAInBBlacklist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -224,20 +206,20 @@ func _ImUserService_GetSingleConversationRecvMsgOpts_Handler(srv interface{}, ct
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ImUserService_GetUserListFromSuperGroupWithOpt_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetUserListFromSuperGroupWithOptReq)
+func _ImUserService_GetUserListFromGroupWithOpt_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserListFromGroupWithOptReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ImUserServiceServer).GetUserListFromSuperGroupWithOpt(ctx, in)
+		return srv.(ImUserServiceServer).GetUserListFromGroupWithOpt(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/imuser.imUserService/GetUserListFromSuperGroupWithOpt",
+		FullMethod: "/imuser.imUserService/GetUserListFromGroupWithOpt",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ImUserServiceServer).GetUserListFromSuperGroupWithOpt(ctx, req.(*GetUserListFromSuperGroupWithOptReq))
+		return srv.(ImUserServiceServer).GetUserListFromGroupWithOpt(ctx, req.(*GetUserListFromGroupWithOptReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -260,6 +242,24 @@ func _ImUserService_VerifyToken_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ImUserService_IfPreviewMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IfPreviewMessageReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ImUserServiceServer).IfPreviewMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/imuser.imUserService/IfPreviewMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ImUserServiceServer).IfPreviewMessage(ctx, req.(*IfPreviewMessageReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ImUserService_ServiceDesc is the grpc.ServiceDesc for ImUserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -267,10 +267,6 @@ var ImUserService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "imuser.imUserService",
 	HandlerType: (*ImUserServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "GetGroupMemberIDListFromCache",
-			Handler:    _ImUserService_GetGroupMemberIDListFromCache_Handler,
-		},
 		{
 			MethodName: "IfAInBBlacklist",
 			Handler:    _ImUserService_IfAInBBlacklist_Handler,
@@ -284,12 +280,16 @@ var ImUserService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ImUserService_GetSingleConversationRecvMsgOpts_Handler,
 		},
 		{
-			MethodName: "GetUserListFromSuperGroupWithOpt",
-			Handler:    _ImUserService_GetUserListFromSuperGroupWithOpt_Handler,
+			MethodName: "GetUserListFromGroupWithOpt",
+			Handler:    _ImUserService_GetUserListFromGroupWithOpt_Handler,
 		},
 		{
 			MethodName: "VerifyToken",
 			Handler:    _ImUserService_VerifyToken_Handler,
+		},
+		{
+			MethodName: "IfPreviewMessage",
+			Handler:    _ImUserService_IfPreviewMessage_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

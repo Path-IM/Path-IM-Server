@@ -8,17 +8,17 @@ import (
 )
 
 type ServiceContext struct {
-	Config                 config.Config
-	SinglePushProducer     *xkafka.Producer
-	SuperGroupPushProducer *xkafka.Producer
-	MsgPush                msgpushservice.MsgPushService
+	Config             config.Config
+	SinglePushProducer *xkafka.Producer
+	GroupPushProducer  *xkafka.Producer
+	MsgPush            msgpushservice.MsgPushService
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
 	return &ServiceContext{
-		Config:                 c,
-		SinglePushProducer:     xkafka.MustNewProducer(c.Kafka.SinglePush),
-		SuperGroupPushProducer: xkafka.MustNewProducer(c.Kafka.SuperGroupPush),
-		MsgPush:                msgpushservice.NewMsgPushService(zrpc.MustNewClient(c.MsgPushRpc)),
+		Config:             c,
+		SinglePushProducer: xkafka.MustNewProducer(c.Kafka.SinglePush),
+		GroupPushProducer:  xkafka.MustNewProducer(c.Kafka.GroupPush),
+		MsgPush:            msgpushservice.NewMsgPushService(zrpc.MustNewClient(c.MsgPushRpc)),
 	}
 }

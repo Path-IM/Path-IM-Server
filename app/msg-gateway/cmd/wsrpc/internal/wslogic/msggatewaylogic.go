@@ -16,6 +16,7 @@ import (
 
 	"github.com/Path-IM/Path-IM-Server/app/msg-gateway/cmd/wsrpc/internal/types"
 	"github.com/Path-IM/Path-IM-Server/app/msg-gateway/cmd/wsrpc/internal/wssvc"
+	commonTypes "github.com/Path-IM/Path-IM-Server/common/types"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -61,12 +62,12 @@ func NewMsggatewayLogic(ctx context.Context, svcCtx *wssvc.ServiceContext) *Msgg
 }
 
 func (l *MsggatewayLogic) Msggateway(req *types.Request) (*types.Response, bool) {
-	if len(req.Token) != 0 && len(req.SendID) != 0 && len(req.PlatformID) != 0 {
+	if len(req.Token) != 0 && len(req.UserID) != 0 && len(req.Platform) != 0 {
 		// 调用rpc验证token
-		resp, err := l.svcCtx.ImUserService.VerifyToken(l.ctx, &pb.VerifyTokenReq{
+		resp, err := l.svcCtx.ImUserService().VerifyToken(l.ctx, &pb.VerifyTokenReq{
 			Token:    req.Token,
-			Platform: req.PlatformID,
-			SendID:   req.SendID,
+			Platform: req.Platform,
+			SendID:   req.UserID,
 		})
 		if err != nil {
 			logx.WithContext(l.ctx).Errorf("调用 VerifyToken 失败, err: %s", err.Error())
@@ -103,9 +104,8 @@ func (l *MsggatewayLogic) WsUpgrade(uid string, req *types.Request, w http.Respo
 		return err
 	}
 	newConn := &UserConn{conn, new(sync.Mutex)}
-	userCount++
-	l.addUserConn(uid, req.PlatformID, newConn, req.Token)
-	go l.readMsg(newConn, uid, req.PlatformID)
+	l.addUserConn(uid, req.Platform, newConn, req.Token)
+	go l.readMsg(newConn, uid, req.Platform)
 	return nil
 }
 
@@ -113,17 +113,16 @@ func (l *MsggatewayLogic) readMsg(conn *UserConn, uid string, platformID string)
 	for {
 		messageType, msg, err := conn.ReadMessage()
 		if messageType == websocket.PingMessage {
-			l.sendMsg(context.Background(), conn, Resp{
+			l.sendMsg(context.Background(), conn, &msggatewaypb.BodyResp{
 				ReqIdentifier: 0,
 				ErrCode:       0,
 				ErrMsg:        "",
 				Data:          []byte("pong"),
-			})
+			}, uid, platformID)
 		}
 		if err != nil {
 			uid, platform := l.getUserUid(conn)
 			logx.Error("WS ReadMsg error ", " userIP ", conn.RemoteAddr().String(), " userUid ", uid, " platform ", platform, " error ", err.Error())
-			userCount--
 			l.delUserConn(conn)
 			return
 		}
@@ -139,66 +138,61 @@ func (l *MsggatewayLogic) readMsg(conn *UserConn, uid string, platformID string)
 	}
 }
 
-func (l *MsggatewayLogic) getSeqReq(ctx context.Context, conn *UserConn, m *msggatewaypb.Req, uid string) {
-	rpcReq := chatpb.GetMaxAndMinSeqReq{}
-	nReply := new(chatpb.GetMaxAndMinSeqResp)
+func (l *MsggatewayLogic) getSeqReq(ctx context.Context, conn *UserConn, m *msggatewaypb.BodyReq, uid string, platformID string) {
+	rpcReq := chatpb.GetMinAndMaxSeqReq{}
+	nReply := new(chatpb.GetMinAndMaxSeqResp)
 	rpcReq.UserID = uid
-	rpcReply, err := l.svcCtx.MsgRpc.GetMaxAndMinSeq(ctx, &rpcReq)
+	rpcReply, err := l.svcCtx.MsgRpc().GetMaxAndMinSeq(ctx, &rpcReq)
 	if err != nil {
 		logx.WithContext(ctx).Error("rpc call failed to getSeqReq", err, rpcReq.String())
-		nReply.ErrCode = 500
+		nReply.ErrCode = commonTypes.ErrCodeFailed
 		nReply.ErrMsg = err.Error()
-		l.getSeqResp(ctx, conn, m, nReply)
+		l.getSeqResp(ctx, conn, m, nReply, uid, platformID)
 	} else {
 		logx.WithContext(ctx).Info("rpc call success to getSeqReq", rpcReply.String())
-		l.getSeqResp(ctx, conn, m, rpcReply)
+		l.getSeqResp(ctx, conn, m, rpcReply, uid, platformID)
 	}
 }
-func (l *MsggatewayLogic) getSuperGroupSeqReq(ctx context.Context, conn *UserConn, m *msggatewaypb.Req) {
-	rpcReq := &chatpb.GetMaxAndMinSuperGroupSeqReq{}
+func (l *MsggatewayLogic) getGroupSeqReq(ctx context.Context, conn *UserConn, m *msggatewaypb.BodyReq, uid string, platformID string) {
+	rpcReq := &chatpb.GetMinAndMaxGroupSeqReq{}
 	err := proto.Unmarshal(m.Data, rpcReq)
-	nReply := new(chatpb.GetMaxAndMinSuperGroupSeqResp)
+	nReply := new(chatpb.GetMinAndMaxGroupSeqResp)
 	if err != nil {
 		logx.WithContext(ctx).Error("proto.Unmarshal failed ", err)
-		nReply.ErrCode = 300
+		nReply.ErrCode = commonTypes.ErrCodeParams
 		nReply.ErrMsg = "param verify failed"
-		l.getSuperGroupResp(ctx, conn, m, nReply)
+		l.getGroupResp(ctx, conn, m, nReply, uid, platformID)
 	}
-	rpcReply, err := l.svcCtx.MsgRpc.GetSuperGroupMaxAndMinSeq(ctx, rpcReq)
+	rpcReply, err := l.svcCtx.MsgRpc().GetMinAndMaxGroupSeq(ctx, rpcReq)
 	if err != nil {
 		logx.WithContext(ctx).Error("rpc call failed to getSeqReq", err, rpcReq.String())
-		nReply.ErrCode = 500
+		nReply.ErrCode = commonTypes.ErrCodeFailed
 		nReply.ErrMsg = err.Error()
-		l.getSuperGroupResp(ctx, conn, m, nReply)
+		l.getGroupResp(ctx, conn, m, nReply, uid, platformID)
 	} else {
 		logx.WithContext(ctx).Info("rpc call success to getSeqReq", rpcReply.String())
-		l.getSuperGroupResp(ctx, conn, m, rpcReply)
+		l.getGroupResp(ctx, conn, m, rpcReply, uid, platformID)
 	}
 }
 
-func (l *MsggatewayLogic) getSeqResp(ctx context.Context, conn *UserConn, m *msggatewaypb.Req, pb *chatpb.GetMaxAndMinSeqResp) {
-	var mReplyData chatpb.GetMaxAndMinSeqResp
-	mReplyData.MaxSeq = pb.GetMaxSeq()
-	mReplyData.MinSeq = pb.GetMinSeq()
-	b, _ := proto.Marshal(&mReplyData)
-	mReply := Resp{
-		ReqIdentifier: int32(m.ReqIdentifier),
-		ErrCode:       pb.GetErrCode(),
-		ErrMsg:        pb.GetErrMsg(),
+func (l *MsggatewayLogic) getSeqResp(ctx context.Context, conn *UserConn, m *msggatewaypb.BodyReq, resp *chatpb.GetMinAndMaxSeqResp, uid string, platformID string) {
+	b, _ := proto.Marshal(resp)
+	mReply := &msggatewaypb.BodyResp{
+		ReqIdentifier: m.ReqIdentifier,
+		ErrCode:       resp.ErrCode,
+		ErrMsg:        resp.ErrMsg,
 		Data:          b,
 	}
-	l.sendMsg(ctx, conn, mReply)
+	l.sendMsg(ctx, conn, mReply, uid, platformID)
 }
 
-func (l *MsggatewayLogic) getSuperGroupResp(ctx context.Context, conn *UserConn, m *msggatewaypb.Req, pb *chatpb.GetMaxAndMinSuperGroupSeqResp) {
-	var mReplyData chatpb.GetMaxAndMinSuperGroupSeqResp
-	mReplyData.SuperGroupSeqList = pb.GetSuperGroupSeqList()
-	b, _ := proto.Marshal(&mReplyData)
-	mReply := Resp{
-		ReqIdentifier: int32(m.ReqIdentifier),
-		ErrCode:       pb.GetErrCode(),
-		ErrMsg:        pb.GetErrMsg(),
+func (l *MsggatewayLogic) getGroupResp(ctx context.Context, conn *UserConn, m *msggatewaypb.BodyReq, resp *chatpb.GetMinAndMaxGroupSeqResp, uid string, platformID string) {
+	b, _ := proto.Marshal(resp)
+	mReply := &msggatewaypb.BodyResp{
+		ReqIdentifier: m.ReqIdentifier,
+		ErrCode:       resp.ErrCode,
+		ErrMsg:        resp.ErrMsg,
 		Data:          b,
 	}
-	l.sendMsg(ctx, conn, mReply)
+	l.sendMsg(ctx, conn, mReply, uid, platformID)
 }

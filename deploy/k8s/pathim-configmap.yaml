@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pathim-configmap
+  namespace: pathim
+data:
+  K1: V1

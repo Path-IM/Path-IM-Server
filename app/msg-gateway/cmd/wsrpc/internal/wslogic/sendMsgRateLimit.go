@@ -10,7 +10,7 @@ import (
 )
 
 // 发消息频率限制
-func (l *MsggatewayLogic) sendMsgRateLimit(ctx context.Context, conn *UserConn, m *msggatewaypb.Req, uid string) bool {
+func (l *MsggatewayLogic) sendMsgRateLimit(ctx context.Context, conn *UserConn, m *msggatewaypb.BodyReq, uid string, platformID string) bool {
 	takeRes, err := l.rep.SendMsgPeriodLimit.Take(uid)
 	if err != nil {
 		logx.WithContext(ctx).Errorf("sendMsgRateLimit take error: %v", err)
@@ -18,26 +18,26 @@ func (l *MsggatewayLogic) sendMsgRateLimit(ctx context.Context, conn *UserConn, 
 	}
 	switch takeRes {
 	case limit.OverQuota:
-		l.sendMsgRateLimitOverQuota(ctx, conn, m, uid)
+		l.sendMsgRateLimitOverQuota(ctx, conn, m, uid, platformID)
 		return false
 	case limit.Allowed:
 		return true
 	case limit.HitQuota:
-		l.sendMsgRateLimitHitQuota(ctx, conn, m, uid)
+		l.sendMsgRateLimitHitQuota(ctx, conn, m, uid, platformID)
 		return false
 	default:
 		return true
 	}
 }
 
-func (l *MsggatewayLogic) sendMsgRateLimitOverQuota(ctx context.Context, conn *UserConn, m *msggatewaypb.Req, uid string) {
+func (l *MsggatewayLogic) sendMsgRateLimitOverQuota(ctx context.Context, conn *UserConn, m *msggatewaypb.BodyReq, uid string, platformID string) {
 	nReply := new(chatpb.SendMsgResp)
 	nReply.ErrCode = types.ErrCodeLimit
-	l.sendMsgResp(ctx, conn, m, nReply)
+	l.sendMsgResp(ctx, conn, m, nReply, uid, platformID)
 }
 
-func (l *MsggatewayLogic) sendMsgRateLimitHitQuota(ctx context.Context, conn *UserConn, m *msggatewaypb.Req, uid string) {
+func (l *MsggatewayLogic) sendMsgRateLimitHitQuota(ctx context.Context, conn *UserConn, m *msggatewaypb.BodyReq, uid string, platformID string) {
 	nReply := new(chatpb.SendMsgResp)
 	nReply.ErrCode = types.ErrCodeLimit
-	l.sendMsgResp(ctx, conn, m, nReply)
+	l.sendMsgResp(ctx, conn, m, nReply, uid, platformID)
 }

@@ -2,11 +2,11 @@ syntax = "proto3";
 
 option go_package = "./pb";
 
-import "ws.proto";
+import "chat.proto";
 package msg_gateway;
 
 message OnlinePushMsgReq {
-  server_api_params.MsgData msgData = 2;
+  pbChat.MsgData msgData = 2;
   string pushToUserID = 3;
 }
 
@@ -27,13 +27,17 @@ message GetUsersOnlineStatusReq{
 }
 
 message GetUsersOnlineStatusResp{
+  enum Status{
+    ONLINE = 0;
+    OFFLINE = 1;
+  }
   int32  errCode = 1;
   string errMsg = 2;
   repeated SuccessResult successResult = 3;
   repeated FailedDetail failedResult = 4;
   message SuccessDetail{
     string platform = 1;
-    string status = 2;
+    Status status = 2;
   }
   message FailedDetail{
     string userID = 3;
@@ -42,7 +46,7 @@ message GetUsersOnlineStatusResp{
   }
   message SuccessResult{
     string userID = 1;
-    string status = 2;
+    Status status = 2;
     repeated SuccessDetail detailPlatformStatus = 3;
   }
 }

@@ -15,14 +15,14 @@ type Config struct {
 	Mongo      MongoConfig
 	MsgPushRpc zrpc.RpcClientConf
 }
-type KafkaConfigOnline struct {
+type StorageConsumer struct {
 	xkafka.ProducerConfig
-	MsgToMongoGroupID string
+	MsgToHistoryGroupID string
 }
 type KafkaConfig struct {
-	Online         KafkaConfigOnline
-	SinglePush     xkafka.ProducerConfig
-	SuperGroupPush xkafka.ProducerConfig
+	StorageConsumer StorageConsumer
+	SinglePush      xkafka.ProducerConfig
+	GroupPush       xkafka.ProducerConfig
 }
 type RedisConfig struct {
 	Conf redis.RedisConf
@@ -30,8 +30,8 @@ type RedisConfig struct {
 }
 type MongoConfig struct {
 	global.MongoConfig
-	DBDatabase                      string
-	DBTimeout                       int
-	SingleChatMsgCollectionName     string
-	SuperGroupChatMsgCollectionName string
+	DBDatabase                  string
+	DBTimeout                   int
+	SingleChatMsgCollectionName string
+	GroupChatMsgCollectionName  string
 }

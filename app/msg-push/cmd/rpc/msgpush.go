@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/http"
 
 	"github.com/Path-IM/Path-IM-Server/app/msg-push/cmd/rpc/internal/config"
 	"github.com/Path-IM/Path-IM-Server/app/msg-push/cmd/rpc/internal/server"
@@ -15,10 +16,14 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
+import _ "net/http/pprof"
 
 var configFile = flag.String("f", "etc/msgpush.yaml", "the config file")
 
 func main() {
+	go func() {
+		http.ListenAndServe("0.0.0.0:13171", nil)
+	}()
 	flag.Parse()
 
 	var c config.Config

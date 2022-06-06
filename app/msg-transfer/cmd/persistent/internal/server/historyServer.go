@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"errors"
 	"github.com/Path-IM/Path-IM-Server/app/msg-transfer/cmd/persistent/internal/logic"
 	"github.com/Path-IM/Path-IM-Server/app/msg-transfer/cmd/persistent/internal/svc"
 	chatpb "github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/pb"
@@ -13,7 +12,6 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 	"go.opentelemetry.io/otel/attribute"
 	"sync"
-	"time"
 )
 
 func NewMsgTransferPersistentServer(svcCtx *svc.ServiceContext) *MsgTransferPersistentServer {
@@ -21,12 +19,12 @@ func NewMsgTransferPersistentServer(svcCtx *svc.ServiceContext) *MsgTransferPers
 	m.cmdCh = make(chan Cmd2Value, 10000)
 	m.w = new(sync.Mutex)
 	m.msgHandle = make(map[string]fcb)
-	m.msgHandle[svcCtx.Config.Kafka.Online.Topic] = m.ChatMs2Mongo
+	m.msgHandle[svcCtx.Config.Kafka.Topic] = m.SaveMsg
 	m.persistentConsumerGroup = xkafka.NewMConsumerGroup(&xkafka.MConsumerGroupConfig{
 		KafkaVersion:   sarama.V0_10_2_0,
 		OffsetsInitial: sarama.OffsetNewest, IsReturnErr: false,
-	}, []string{svcCtx.Config.Kafka.Online.Topic},
-		svcCtx.Config.Kafka.Online.Brokers, svcCtx.Config.Kafka.Online.MsgPersistentGroupID)
+	}, []string{svcCtx.Config.Kafka.Topic},
+		svcCtx.Config.Kafka.Brokers, svcCtx.Config.Kafka.MsgPersistentGroupID)
 	return m
 }
 
@@ -34,72 +32,25 @@ func (s *MsgTransferPersistentServer) Start() {
 	s.persistentConsumerGroup.RegisterHandleAndConsumer(s)
 }
 
-func (s *MsgTransferPersistentServer) ChatMs2Mongo(msg []byte, msgKey string) error {
+func (s *MsgTransferPersistentServer) SaveMsg(msg []byte, msgKey string) error {
 	msgFromMQ := chatpb.MsgDataToMQ{}
 	err := proto.Unmarshal(msg, &msgFromMQ)
 	if err != nil {
 		logx.Errorf("unmarshal msg failed, err: %v", err)
 		return nil
 	}
-	logx.Info("msgFromMQ.OperationID: ", msgFromMQ.OperationID)
-	xtrace.RunWithTrace(msgFromMQ.OperationID, func(ctx context.Context) {
-		err = logic.NewMsgTransferPersistentOnlineLogic(ctx, s.svcCtx).Do(msg, msgKey)
+	logx.Info("msgFromMQ.TraceId: ", msgFromMQ.TraceId)
+	xtrace.RunWithTrace(msgFromMQ.TraceId, func(ctx context.Context) {
+		err = logic.NewMsgTransferPersistentLogic(ctx, s.svcCtx).Do(msg, msgKey)
 	}, attribute.String("msgKey", msgKey))
 	return err
 }
 
-func (s *MsgTransferPersistentServer) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
-	for msg := range claim.Messages() {
-		s.SetOnlineTopicStatus(OnlineTopicBusy)
-		err := s.msgHandle[msg.Topic](msg.Value, string(msg.Key))
-		if err != nil {
-			logx.Errorf("msgHandle error: %v", err)
-			continue
-		}
-		sess.MarkMessage(msg, "")
-		if claim.HighWaterMarkOffset()-msg.Offset <= 1 {
-			s.SetOnlineTopicStatus(OnlineTopicVacancy)
-			s.TriggerCmd(context.Background(), OnlineTopicVacancy)
-		}
+func (s *MsgTransferPersistentServer) HandleMsg(value []byte, key []byte, topic string, partition int32, offset int64, msg *sarama.ConsumerMessage) error {
+	err := s.msgHandle[msg.Topic](msg.Value, string(msg.Key))
+	if err != nil {
+		logx.Errorf("msgHandle error: %v", err)
+		return err
 	}
 	return nil
-}
-
-func (s *MsgTransferPersistentServer) Setup(session sarama.ConsumerGroupSession) error {
-	return nil
-}
-
-func (s *MsgTransferPersistentServer) Cleanup(session sarama.ConsumerGroupSession) error {
-	return nil
-}
-
-func (s *MsgTransferPersistentServer) SetOnlineTopicStatus(busy int) {
-	s.w.Lock()
-	defer s.w.Unlock()
-	s.OnlineTopicStatus = busy
-
-}
-func (s *MsgTransferPersistentServer) TriggerCmd(ctx context.Context, status int) {
-	for {
-		err := s.sendCmd(ctx, s.cmdCh, Cmd2Value{Cmd: status, Value: ""}, 1)
-		if err != nil {
-			logx.WithContext(ctx).Errorf("send cmd error: %v", err)
-			continue
-		}
-		return
-	}
-}
-func (s *MsgTransferPersistentServer) sendCmd(ctx context.Context, ch chan Cmd2Value, value Cmd2Value, timeout int64) error {
-	var flag = 0
-	select {
-	case ch <- value:
-		flag = 1
-	case <-time.After(time.Second * time.Duration(timeout)):
-		flag = 2
-	}
-	if flag == 1 {
-		return nil
-	} else {
-		return errors.New("send cmd timeout")
-	}
 }

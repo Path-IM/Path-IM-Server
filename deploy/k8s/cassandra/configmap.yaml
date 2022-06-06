@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cassandra-configmap
+  namespace: pathim
+data:
+  CASSANDRA_CLUSTER_NAME: "path-im-demo"
+  HEAP_NEWSIZE: "512M"
+  MAX_HEAP_SIZE: "2048M"
+  JVM_OPTS: "-Xms512M -Xmx2048M"
+  CASSANDRA_SEEDS: "cassandra-0.cassandra.pathim.svc.cluster.local"

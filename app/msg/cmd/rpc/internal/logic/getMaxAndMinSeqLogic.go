@@ -28,8 +28,8 @@ func NewGetMaxAndMinSeqLogic(ctx context.Context, svcCtx *svc.ServiceContext) *G
 	}
 }
 
-func (l *GetMaxAndMinSeqLogic) GetMaxAndMinSeq(in *pb.GetMaxAndMinSeqReq) (*pb.GetMaxAndMinSeqResp, error) {
-	resp := new(pb.GetMaxAndMinSeqResp)
+func (l *GetMaxAndMinSeqLogic) GetMaxAndMinSeq(in *pb.GetMinAndMaxSeqReq) (*pb.GetMinAndMaxSeqResp, error) {
+	resp := new(pb.GetMinAndMaxSeqResp)
 	maxSeq, err := l.rep.GetUserMaxSeq(in.UserID)
 	if err == nil {
 		resp.MaxSeq = uint32(maxSeq)

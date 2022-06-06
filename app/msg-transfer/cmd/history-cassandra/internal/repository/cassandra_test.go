@@ -30,7 +30,7 @@ var (
 		Seq:        1212,
 		SendTime:   1234532345676,
 		CreateTime: 23456754323456,
-		OfflinePushInfo: &pb.OfflinePushInfo{
+		OfflinePush: &pb.OfflinePush{
 			Title:         "123456r4ewqrt",
 			Desc:          "2345trewwrt",
 			Ex:            "wergfwdqwefgds",

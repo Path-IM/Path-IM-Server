@@ -1,5 +1,5 @@
 Name: msgpush-rpc
-ListenOn: 192.168.2.77:10170
+ListenOn: 127.0.0.1:10050
 
 MsgGatewayEtcd:
   Hosts:
@@ -12,7 +12,7 @@ Log:
 
 Prometheus:
   Host: 0.0.0.0
-  Port: 10171
+  Port: 10051
   Path: /metrics
 
 Telemetry:
@@ -30,20 +30,22 @@ Jpns:
   MasterSecret: "02204efe3f3832947a236ee5"
 
 
-MsgGatewayRpc:
-  Endpoints:
-    - 192.168.2.77:10400
+MsgGatewayRpcEndpoints:
+  - 127.0.0.1:10040
+
 ImUserRpc:
   Endpoints:
-    - 192.168.2.77:10240
+    - 127.0.0.1:10010
 
 SinglePushConsumer:
   Brokers:
     - 172.27.10.3:9092
   Topic: im_msg_push_single
   SinglePushGroupID: "im_msg_push_single_group"
-SuperGroupPushConsumer:
+GroupPushConsumer:
   Brokers:
     - 172.27.10.3:9092
   Topic: im_msg_push_supergroup
-  SuperGroupPushGroupID: "im_msg_push_supergroup_group"
+  GroupPushGroupID: "im_msg_push_group_group"
+
+OfflinePushDefaultTitle: "你收到一条新消息"

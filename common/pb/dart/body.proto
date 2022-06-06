@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package pb;
+
+message BodyReq {
+  uint32 reqIdentifier = 1;
+  string token = 2;
+  string sendID = 3;
+  bytes data = 4;
+}
+
+message BodyResp {
+  uint32 reqIdentifier = 1;
+  uint32 errCode = 2;
+  string errMsg = 3;
+  bytes data = 4;
+}

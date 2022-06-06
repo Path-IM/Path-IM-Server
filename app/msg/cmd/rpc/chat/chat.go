@@ -13,26 +13,28 @@ import (
 )
 
 type (
-	GetMaxAndMinSeqReq                = pb.GetMaxAndMinSeqReq
-	GetMaxAndMinSeqResp               = pb.GetMaxAndMinSeqResp
-	GetMaxAndMinSuperGroupSeqReq      = pb.GetMaxAndMinSuperGroupSeqReq
-	GetMaxAndMinSuperGroupSeqResp     = pb.GetMaxAndMinSuperGroupSeqResp
-	GetMaxAndMinSuperGroupSeqRespItem = pb.GetMaxAndMinSuperGroupSeqRespItem
-	MsgDataToDB                       = pb.MsgDataToDB
-	MsgDataToMQ                       = pb.MsgDataToMQ
-	PullMessageBySuperGroupSeqListReq = pb.PullMessageBySuperGroupSeqListReq
-	PushMsgDataToMQ                   = pb.PushMsgDataToMQ
-	PushMsgToSuperGroupDataToMQ       = pb.PushMsgToSuperGroupDataToMQ
-	SendMsgReq                        = pb.SendMsgReq
-	SendMsgResp                       = pb.SendMsgResp
-	WrapPullMessageBySeqListReq       = pb.WrapPullMessageBySeqListReq
-	WrapPullMessageBySeqListResp      = pb.WrapPullMessageBySeqListResp
+	GetMinAndMaxGroupSeqItem = pb.GetMinAndMaxGroupSeqItem
+	GetMinAndMaxGroupSeqReq  = pb.GetMinAndMaxGroupSeqReq
+	GetMinAndMaxGroupSeqResp = pb.GetMinAndMaxGroupSeqResp
+	GetMinAndMaxSeqReq       = pb.GetMinAndMaxSeqReq
+	GetMinAndMaxSeqResp      = pb.GetMinAndMaxSeqResp
+	MsgData                  = pb.MsgData
+	MsgDataToDB              = pb.MsgDataToDB
+	MsgDataToMQ              = pb.MsgDataToMQ
+	MsgOptions               = pb.MsgOptions
+	OfflinePush              = pb.OfflinePush
+	PullMsgByGroupSeqListReq = pb.PullMsgByGroupSeqListReq
+	PullMsgBySeqListReq      = pb.PullMsgBySeqListReq
+	PullMsgListResp          = pb.PullMsgListResp
+	PushMsgDataToMQ          = pb.PushMsgDataToMQ
+	SendMsgReq               = pb.SendMsgReq
+	SendMsgResp              = pb.SendMsgResp
 
 	Chat interface {
-		GetMaxAndMinSeq(ctx context.Context, in *GetMaxAndMinSeqReq, opts ...grpc.CallOption) (*GetMaxAndMinSeqResp, error)
-		GetSuperGroupMaxAndMinSeq(ctx context.Context, in *GetMaxAndMinSuperGroupSeqReq, opts ...grpc.CallOption) (*GetMaxAndMinSuperGroupSeqResp, error)
-		PullMessageBySeqList(ctx context.Context, in *WrapPullMessageBySeqListReq, opts ...grpc.CallOption) (*WrapPullMessageBySeqListResp, error)
-		PullMessageBySuperGroupSeqList(ctx context.Context, in *PullMessageBySuperGroupSeqListReq, opts ...grpc.CallOption) (*WrapPullMessageBySeqListResp, error)
+		GetMaxAndMinSeq(ctx context.Context, in *GetMinAndMaxSeqReq, opts ...grpc.CallOption) (*GetMinAndMaxSeqResp, error)
+		GetMinAndMaxGroupSeq(ctx context.Context, in *GetMinAndMaxGroupSeqReq, opts ...grpc.CallOption) (*GetMinAndMaxGroupSeqResp, error)
+		PullMessageBySeqList(ctx context.Context, in *PullMsgBySeqListReq, opts ...grpc.CallOption) (*PullMsgListResp, error)
+		PullMessageByGroupSeqList(ctx context.Context, in *PullMsgByGroupSeqListReq, opts ...grpc.CallOption) (*PullMsgListResp, error)
 		SendMsg(ctx context.Context, in *SendMsgReq, opts ...grpc.CallOption) (*SendMsgResp, error)
 	}
 
@@ -47,24 +49,24 @@ func NewChat(cli zrpc.Client) Chat {
 	}
 }
 
-func (m *defaultChat) GetMaxAndMinSeq(ctx context.Context, in *GetMaxAndMinSeqReq, opts ...grpc.CallOption) (*GetMaxAndMinSeqResp, error) {
+func (m *defaultChat) GetMaxAndMinSeq(ctx context.Context, in *GetMinAndMaxSeqReq, opts ...grpc.CallOption) (*GetMinAndMaxSeqResp, error) {
 	client := pb.NewChatClient(m.cli.Conn())
 	return client.GetMaxAndMinSeq(ctx, in, opts...)
 }
 
-func (m *defaultChat) GetSuperGroupMaxAndMinSeq(ctx context.Context, in *GetMaxAndMinSuperGroupSeqReq, opts ...grpc.CallOption) (*GetMaxAndMinSuperGroupSeqResp, error) {
+func (m *defaultChat) GetMinAndMaxGroupSeq(ctx context.Context, in *GetMinAndMaxGroupSeqReq, opts ...grpc.CallOption) (*GetMinAndMaxGroupSeqResp, error) {
 	client := pb.NewChatClient(m.cli.Conn())
-	return client.GetSuperGroupMaxAndMinSeq(ctx, in, opts...)
+	return client.GetMinAndMaxGroupSeq(ctx, in, opts...)
 }
 
-func (m *defaultChat) PullMessageBySeqList(ctx context.Context, in *WrapPullMessageBySeqListReq, opts ...grpc.CallOption) (*WrapPullMessageBySeqListResp, error) {
+func (m *defaultChat) PullMessageBySeqList(ctx context.Context, in *PullMsgBySeqListReq, opts ...grpc.CallOption) (*PullMsgListResp, error) {
 	client := pb.NewChatClient(m.cli.Conn())
 	return client.PullMessageBySeqList(ctx, in, opts...)
 }
 
-func (m *defaultChat) PullMessageBySuperGroupSeqList(ctx context.Context, in *PullMessageBySuperGroupSeqListReq, opts ...grpc.CallOption) (*WrapPullMessageBySeqListResp, error) {
+func (m *defaultChat) PullMessageByGroupSeqList(ctx context.Context, in *PullMsgByGroupSeqListReq, opts ...grpc.CallOption) (*PullMsgListResp, error) {
 	client := pb.NewChatClient(m.cli.Conn())
-	return client.PullMessageBySuperGroupSeqList(ctx, in, opts...)
+	return client.PullMessageByGroupSeqList(ctx, in, opts...)
 }
 
 func (m *defaultChat) SendMsg(ctx context.Context, in *SendMsgReq, opts ...grpc.CallOption) (*SendMsgResp, error) {

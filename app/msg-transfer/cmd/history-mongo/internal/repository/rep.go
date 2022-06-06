@@ -32,7 +32,7 @@ func NewRep(svcCtx *svc.ServiceContext) *Rep {
 	}
 	// 检查 mongodb 索引
 	rep.CheckMongoIndexSingle()
-	rep.CheckMongoIndexSuperGroup()
+	rep.CheckMongoIndexGroup()
 	return rep
 }
 
@@ -70,14 +70,14 @@ func (r *Rep) CheckMongoIndexSingle() {
 	}
 }
 
-func (r *Rep) CheckMongoIndexSuperGroup() {
+func (r *Rep) CheckMongoIndexGroup() {
 	type indexResult struct {
 		V    int               `bson:"v"`
 		Key  map[string]string `bson:"key"`
 		Name string            `bson:"name"`
 	}
 	var results []indexResult
-	collection := r.MongoClient.Database(r.svcCtx.Config.Mongo.DBDatabase).Collection(r.svcCtx.Config.Mongo.SuperGroupChatMsgCollectionName)
+	collection := r.MongoClient.Database(r.svcCtx.Config.Mongo.DBDatabase).Collection(r.svcCtx.Config.Mongo.GroupChatMsgCollectionName)
 	cursor, err := collection.Indexes().List(context.Background())
 	if err != nil {
 		panic(err)

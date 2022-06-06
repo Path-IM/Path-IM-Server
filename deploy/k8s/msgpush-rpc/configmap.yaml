@@ -1,0 +1,48 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: etc-msgpush-rpc
+  namespace: pathim
+data:
+  msgpush.yaml: |-
+    Name: msgpush-rpc
+    ListenOn: :8080
+    
+    Log:
+      ServiceName: msgpush-rpc
+      Level: info
+    
+    Prometheus:
+      Host: 0.0.0.0
+      Port: 80
+      Path: /metrics
+    
+    Telemetry:
+      Name: msgpush-rpc
+      Endpoint: http://101.43.214.203:14268/api/traces
+      Sampler: 1.0
+      Batcher: jaeger
+    
+    PushType: "jpns"
+    Jpns:
+      PushIntent: "intent:#Intent;component=io.openim.app.enterprisechat/io.openim.app.enterprisechat.MainActivity;end"
+      PushUrl: "https://api.jpush.cn/v3/push"
+      AppKey: "cf47465a368f24c659608e7e"
+      MasterSecret: "02204efe3f3832947a236ee5"
+    
+    ImUserRpc:
+      Target: "k8s://pathim/imuser-rpc-svc:8080"
+    MsgGatewayRpcK8sTarget: "k8s://pathim/msggateway-rpc-svc:8080"
+    SinglePushConsumer:
+      Brokers:
+        - 101.43.214.203:9092
+      Topic: im_msg_push_single
+      SinglePushGroupID: "im_msg_push_single_group"
+    GroupPushConsumer:
+      Brokers:
+        - 101.43.214.203:9092
+      Topic: im_msg_push_supergroup
+      GroupPushGroupID: "im_msg_push_group_group"
+    
+    OfflinePushDefaultTitle: "你收到一条新消息"

@@ -22,24 +22,24 @@ func NewChatServer(svcCtx *svc.ServiceContext) *ChatServer {
 	}
 }
 
-func (s *ChatServer) GetMaxAndMinSeq(ctx context.Context, in *pb.GetMaxAndMinSeqReq) (*pb.GetMaxAndMinSeqResp, error) {
+func (s *ChatServer) GetMaxAndMinSeq(ctx context.Context, in *pb.GetMinAndMaxSeqReq) (*pb.GetMinAndMaxSeqResp, error) {
 	l := logic.NewGetMaxAndMinSeqLogic(ctx, s.svcCtx)
 	return l.GetMaxAndMinSeq(in)
 }
 
-func (s *ChatServer) GetSuperGroupMaxAndMinSeq(ctx context.Context, in *pb.GetMaxAndMinSuperGroupSeqReq) (*pb.GetMaxAndMinSuperGroupSeqResp, error) {
-	l := logic.NewGetSuperGroupMaxAndMinSeqLogic(ctx, s.svcCtx)
-	return l.GetSuperGroupMaxAndMinSeq(in)
+func (s *ChatServer) GetMinAndMaxGroupSeq(ctx context.Context, in *pb.GetMinAndMaxGroupSeqReq) (*pb.GetMinAndMaxGroupSeqResp, error) {
+	l := logic.NewGetMinAndMaxGroupSeqLogic(ctx, s.svcCtx)
+	return l.GetMinAndMaxGroupSeq(in)
 }
 
-func (s *ChatServer) PullMessageBySeqList(ctx context.Context, in *pb.WrapPullMessageBySeqListReq) (*pb.WrapPullMessageBySeqListResp, error) {
+func (s *ChatServer) PullMessageBySeqList(ctx context.Context, in *pb.PullMsgBySeqListReq) (*pb.PullMsgListResp, error) {
 	l := logic.NewPullMessageBySeqListLogic(ctx, s.svcCtx)
 	return l.PullMessageBySeqList(in)
 }
 
-func (s *ChatServer) PullMessageBySuperGroupSeqList(ctx context.Context, in *pb.PullMessageBySuperGroupSeqListReq) (*pb.WrapPullMessageBySeqListResp, error) {
-	l := logic.NewPullMessageBySuperGroupSeqListLogic(ctx, s.svcCtx)
-	return l.PullMessageBySuperGroupSeqList(in)
+func (s *ChatServer) PullMessageByGroupSeqList(ctx context.Context, in *pb.PullMsgByGroupSeqListReq) (*pb.PullMsgListResp, error) {
+	l := logic.NewPullMessageByGroupSeqListLogic(ctx, s.svcCtx)
+	return l.PullMessageByGroupSeqList(in)
 }
 
 func (s *ChatServer) SendMsg(ctx context.Context, in *pb.SendMsgReq) (*pb.SendMsgResp, error) {

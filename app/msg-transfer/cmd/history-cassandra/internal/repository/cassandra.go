@@ -10,7 +10,7 @@ import (
 )
 
 const singleGocMsgNum = 5000
-const superGroupGocMsgNum = 5000
+const groupGocMsgNum = 5000
 
 func indexGen(uid string, seqSuffix uint32) string {
 	return uid + ":" + strconv.FormatInt(int64(seqSuffix), 10)
@@ -21,7 +21,7 @@ func getSeqUid(uid string, seq uint32) string {
 	return indexGen(uid, seqSuffix)
 }
 func getSeqGroupId(groupId string, seq uint32) string {
-	seqSuffix := seq / superGroupGocMsgNum
+	seqSuffix := seq / groupGocMsgNum
 	return indexGen(groupId, seqSuffix)
 }
 
@@ -47,7 +47,7 @@ func (r *Rep) SaveUserChatCassandra2(spanCtx context.Context, uid string, sendTi
 	return nil
 }
 
-func (r *Rep) SaveSuperGroupChatCassandra2(spanCtx context.Context, groupId string, sendTime int64, m *chatpb.MsgDataToDB) error {
+func (r *Rep) SaveGroupChatCassandra(spanCtx context.Context, groupId string, sendTime int64, m *chatpb.MsgDataToDB) error {
 	ctx, _ := context.WithTimeout(context.Background(), time.Duration(r.svcCtx.Config.Cassandra.TimeoutSecond)*time.Second)
 	seqGroupId := getSeqGroupId(groupId, m.MsgData.Seq)
 	{
@@ -55,14 +55,14 @@ func (r *Rep) SaveSuperGroupChatCassandra2(spanCtx context.Context, groupId stri
 			fmt.Sprintf(
 				`UPDATE %s.%s SET msgs = msgs + ? WHERE groupid = ?`,
 				r.svcCtx.Config.Cassandra.Keyspace,
-				r.svcCtx.Config.Cassandra.SuperGroupChatMsgTableName,
+				r.svcCtx.Config.Cassandra.GroupChatMsgTableName,
 			),
 			[]map[int64][]byte{{
 				sendTime: m.MsgData.Bytes(),
 			}}, seqGroupId,
 		).WithContext(ctx).Exec()
 		if err != nil {
-			logx.WithContext(spanCtx).Errorf("SaveSuperGroupChatCassandra2 error: %v", err)
+			logx.WithContext(spanCtx).Errorf("SaveGroupChatCassandra error: %v", err)
 			return err
 		}
 	}

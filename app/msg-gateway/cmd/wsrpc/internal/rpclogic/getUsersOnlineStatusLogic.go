@@ -44,13 +44,13 @@ func (l *GetUsersOnlineStatusLogic) GetUsersOnlineStatus(req *pb.GetUsersOnlineS
 			if conn := logic.GetUserConn(userID, platform); conn != nil {
 				ps := new(pb.GetUsersOnlineStatusResp_SuccessDetail)
 				ps.Platform = platform
-				ps.Status = types.OnlineStatus
-				temp.Status = types.OnlineStatus
+				ps.Status = pb.GetUsersOnlineStatusResp_ONLINE
+				temp.Status = pb.GetUsersOnlineStatusResp_ONLINE
 				temp.DetailPlatformStatus = append(temp.DetailPlatformStatus, ps)
 
 			}
 		}
-		if temp.Status == types.OnlineStatus {
+		if temp.Status == pb.GetUsersOnlineStatusResp_ONLINE {
 			resp.SuccessResult = append(resp.SuccessResult, temp)
 		}
 	}

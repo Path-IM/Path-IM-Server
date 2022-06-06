@@ -1,6 +1,5 @@
 Name: msg-rpc
-ListenOn: 192.168.2.77:10130
-
+ListenOn: 127.0.0.1:10020
 
 Log:
   ServiceName: msg-rpc
@@ -8,7 +7,7 @@ Log:
 
 Prometheus:
   Host: 0.0.0.0
-  Port: 10131
+  Port: 10021
   Path: /metrics
 
 Telemetry:
@@ -20,26 +19,20 @@ Telemetry:
 
 ImUserRpc:
   Endpoints:
-    - 192.168.2.77:10240
+    - 127.0.0.1:10010
 MsgCallbackRpc:
   Endpoints:
-    - 192.168.2.77:10250
+    - 127.0.0.1:10030
 
 MessageVerify:
   FriendVerify: true # 只有好友可以发送消息
 
 Callback:
-  CallbackWordFilter:
-    Enable: true # 开启关键词过滤
-    ContinueOnError: true # 开启关键词过滤时，如果出错，是否继续发送
-  CallbackAtAllInSuperGroup:
-    Enable: true # 超级大群中，是否允许@所有人
-    ContinueOnError: true # 超级大群中，@所有人时，如果出错，是否继续发送通知
-  CallbackBeforeSendSuperGroupMsg:
-    Enable: true # 开启超级大群消息发送前回调
-    ContinueOnError: true # 开启超级大群消息发送前回调时，如果出错，是否继续发送
-  CallbackAfterSendSuperGroupMsg:
-    Enable: true # 开启超级大群消息发送后回调
+  CallbackBeforeSendGroupMsg:
+    Enable: true # 开启群消息发送前回调
+    ContinueOnError: true # 开启群消息发送前回调时，如果出错，是否继续发送
+  CallbackAfterSendGroupMsg:
+    Enable: true # 开启群消息发送后回调
     ContinueOnError: true # 无意义
   CallbackBeforeSendSingleMsg:
     Enable: true # 开启私聊消息发送前回调
@@ -49,14 +42,9 @@ Callback:
     ContinueOnError: true # 无意义
 
 Kafka:
-  Online:
-    Brokers:
-      - 172.27.10.3:9092
-    Topic: im_msg_online
-  Offline:
-    Brokers:
-      - 172.27.10.3:9092
-    Topic: im_msg_offline
+  Brokers:
+    - 172.27.10.3:9092
+  Topic: im_msg
 
 RedisConfig:
   Conf:
@@ -69,7 +57,7 @@ RedisConfig:
 Mongo:
   Uri: mongodb://192.168.2.77/admin
   SingleChatMsgCollectionName: "single_chat_msg"
-  SuperGroupChatMsgCollectionName: "super_group_chat_msg"
+  GroupChatMsgCollectionName: "group_chat_msg"
   DBDatabase: "zeroim"
   DBTimeout: 30
 
@@ -82,7 +70,7 @@ Cassandra:
   Password: "cassandra"
   Consistency: QUORUM
   SingleChatMsgTableName: "single_chat_msg"
-  SuperGroupChatMsgTableName: "super_group_chat_msg"
-  TimeoutSeconds: 5
+  GroupChatMsgTableName: "group_chat_msg"
+  TimeoutSecond: 5
 
 HistoryDBType: cassandra # mongo, cassandra

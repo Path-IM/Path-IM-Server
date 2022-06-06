@@ -6,7 +6,7 @@ Log:
 
 Prometheus:
   Host: 0.0.0.0
-  Port: 10262
+  Port: 10061
   Path: /metrics
 
 Telemetry:
@@ -18,27 +18,23 @@ Telemetry:
 
 
 Kafka:
-  Online:
+  StorageConsumer:
     Brokers:
       - 172.27.10.3:9092
-    Topic: im_msg_online
-    MsgToCassandraGroupID: msgtransfer_history_online
-  Offline:
-    Brokers:
-      - 172.27.10.3:9092
-    Topic: im_msg_offline
+    Topic: im_msg
+    MsgToHistoryGroupID: msgtransfer_history
   SinglePush:
     Brokers:
       - 172.27.10.3:9092
     Topic: im_msg_push_single
-  SuperGroupPush:
+  GroupPush:
     Brokers:
       - 172.27.10.3:9092
-    Topic: im_msg_push_supergroup
+    Topic: im_msg_push_group
 
 Redis:
   Conf:
-    Host: 192.168.2.77:6379
+    Host: 127.0.0.1:6379
     Pass: "123456"
     Type: node
   DB: 0
@@ -52,9 +48,9 @@ Cassandra:
   Password: "cassandra"
   Consistency: ONE
   SingleChatMsgTableName: "single_chat_msg"
-  SuperGroupChatMsgTableName: "super_group_chat_msg"
-  TimeoutSeconds: 5
+  GroupChatMsgTableName: "group_chat_msg"
+  TimeoutSecond: 5
 
 MsgPushRpc:
   Endpoints:
-    - 192.168.2.77:10170
+    - 127.0.0.1:10050

@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package pb;
+
+import "msg.proto";
+
+message PullMsgBySeqListReq{
+  repeated uint32 seqList = 1;
+}
+
+message PullMsgByGroupSeqListReq {
+  string groupID = 1;
+  repeated uint32 seqList = 2;
+}
+
+message PullMsgListResp {
+  repeated MsgData list = 1;
+}

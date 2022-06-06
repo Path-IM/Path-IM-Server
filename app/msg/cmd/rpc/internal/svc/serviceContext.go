@@ -13,16 +13,14 @@ type ServiceContext struct {
 	ImUser      imuserservice.ImUserService
 	MsgCallback msgcallbackservice.MsgcallbackService
 
-	OnlineProducer  *xkafka.Producer
-	OfflineProducer *xkafka.Producer
+	Producer *xkafka.Producer
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
 	return &ServiceContext{
-		Config:          c,
-		ImUser:          imuserservice.NewImUserService(zrpc.MustNewClient(c.ImUserRpc)),
-		MsgCallback:     msgcallbackservice.NewMsgcallbackService(zrpc.MustNewClient(c.MsgCallbackRpc)),
-		OnlineProducer:  xkafka.MustNewProducer(c.Kafka.Online),
-		OfflineProducer: xkafka.MustNewProducer(c.Kafka.Offline),
+		Config:      c,
+		ImUser:      imuserservice.NewImUserService(zrpc.MustNewClient(c.ImUserRpc)),
+		MsgCallback: msgcallbackservice.NewMsgcallbackService(zrpc.MustNewClient(c.MsgCallbackRpc)),
+		Producer:    xkafka.MustNewProducer(c.Kafka),
 	}
 }

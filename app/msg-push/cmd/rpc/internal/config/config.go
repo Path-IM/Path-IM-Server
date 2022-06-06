@@ -8,13 +8,15 @@ import (
 
 type Config struct {
 	zrpc.RpcServerConf
-	PushType               string `json:",default=jpns,options=jpns|mobpush"`
-	Jpns                   JpnsConf
-	MsgGatewayRpc          discov.EtcdConf
-	ImUserRpc              zrpc.RpcClientConf
-	SinglePushConsumer     SinglePushConsumerConfig
-	SuperGroupPushConsumer SuperGroupPushConsumerConfig
-	MsgGatewayRpcK8sTarget string `json:",optional"`
+	PushType                string `json:",default=jpns,options=jpns|mobpush"`
+	Jpns                    JpnsConf
+	MsgGatewayRpcEtcd       *discov.EtcdConf `json:",optional"`
+	MsgGatewayRpcEndpoints  []string         `json:",optional"`
+	ImUserRpc               zrpc.RpcClientConf
+	SinglePushConsumer      SinglePushConsumerConfig
+	GroupPushConsumer       GroupPushConsumerConfig
+	MsgGatewayRpcK8sTarget  string `json:",optional"`
+	OfflinePushDefaultTitle string // 默认的离线推送标题
 }
 type JpnsConf struct {
 	PushIntent     string
@@ -28,7 +30,7 @@ type SinglePushConsumerConfig struct {
 	SinglePushGroupID string
 }
 
-type SuperGroupPushConsumerConfig struct {
+type GroupPushConsumerConfig struct {
 	xkafka.ProducerConfig
-	SuperGroupPushGroupID string
+	GroupPushGroupID string
 }

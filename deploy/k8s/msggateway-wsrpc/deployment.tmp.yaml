@@ -1,0 +1,155 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: msggateway-wsrpc
+  namespace: pathim
+  labels:
+    app: msggateway-wsrpc
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: msggateway-wsrpc
+  template:
+    metadata:
+      labels:
+        app: msggateway-wsrpc
+    spec:
+      serviceAccountName: find-endpoints
+      containers:
+        - name: msggateway-wsrpc
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.hostIP
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+          envFrom:
+            - configMapRef:
+                name: pathim-configmap
+          image: "TMP_IMAGE"
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh","-c","sleep 5"]
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 60Mi
+            limits:
+              cpu: 100m
+              memory: 60Mi
+          volumeMounts:
+            - name: timezone
+              mountPath: /etc/localtime
+            - name: etc
+              mountPath: /app/etc/msggateway-rpc.yaml
+              subPath: msggateway-rpc.yaml
+            - name: etc
+              mountPath: /app/etc/msggateway-ws.yaml
+              subPath: msggateway-ws.yaml
+      imagePullSecrets:
+        - name: registry
+      volumes:
+        - name: etc
+          configMap:
+            name: etc-msggateway-wsrpc
+        - name: timezone
+          hostPath:
+            path: /usr/share/zoneinfo/Asia/Shanghai
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: msggateway-rpc-svc
+  namespace: pathim
+spec:
+  ports:
+    - port: 8080
+  selector:
+    app: msggateway-wsrpc
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: msggateway-ws-svc
+  namespace: pathim
+spec:
+  ports:
+    - port: 9090
+  selector:
+    app: msggateway-wsrpc
+
+---
+
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: msggateway-wsrpc-hpa-c
+  namespace: pathim
+  labels:
+    app: msggateway-wsrpc-hpa-c
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: msggateway-wsrpc
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        targetAverageUtilization: 80
+
+---
+
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: msggateway-wsrpc-hpa-m
+  namespace: pathim
+  labels:
+    app: msggateway-wsrpc-hpa-m
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: msggateway-wsrpc
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: memory
+        targetAverageUtilization: 80

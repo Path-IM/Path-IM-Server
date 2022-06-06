@@ -14,7 +14,7 @@ func (l *SendMsgLogic) callbackBeforeSendSingleMsg(msg *chatpb.SendMsgReq) (canS
 	commonCallbackReq.CallbackCommand = msgcallbackpb.CallbackCommand_BeforeSendSingleMsg
 	req := msgcallbackpb.CallbackSendSingleMsgReq{
 		CommonCallbackReq: &commonCallbackReq,
-		RecvID:            msg.MsgData.RecvID,
+		RecvID:            msg.MsgData.ReceiveID,
 	}
 	resp, err := l.svcCtx.MsgCallback.CallbackBeforeSendSingleMsg(l.ctx, &req)
 	if err != nil {
@@ -39,7 +39,7 @@ func (l *SendMsgLogic) callbackAfterSendSingleMsg(msg *chatpb.SendMsgReq) error 
 	commonCallbackReq.CallbackCommand = msgcallbackpb.CallbackCommand_AfterSendSingleMsg
 	req := msgcallbackpb.CallbackSendSingleMsgReq{
 		CommonCallbackReq: &commonCallbackReq,
-		RecvID:            msg.MsgData.RecvID,
+		RecvID:            msg.MsgData.ReceiveID,
 	}
 	_, err := l.svcCtx.MsgCallback.CallbackAfterSendSingleMsg(l.ctx, &req)
 	if err != nil {

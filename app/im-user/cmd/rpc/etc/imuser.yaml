@@ -1,5 +1,5 @@
 Name: imuser-rpc
-ListenOn: 192.168.2.77:10240
+ListenOn: 127.0.0.1:10010
 
 Log:
   ServiceName: imuser-rpc
@@ -7,7 +7,7 @@ Log:
 
 Prometheus:
   Host: 0.0.0.0
-  Port: 10241
+  Port: 10011
   Path: /metrics
 
 Telemetry:

@@ -27,23 +27,17 @@ func NewPullMessageBySeqListLogic(ctx context.Context, svcCtx *svc.ServiceContex
 	}
 }
 
-func (l *PullMessageBySeqListLogic) PullMessageBySeqList(in *pb.WrapPullMessageBySeqListReq) (*pb.WrapPullMessageBySeqListResp, error) {
-	resp := new(pb.PullMessageBySeqListResp)
-	msgList, err := l.rep.GetMsgBySeqList(in.PullMessageBySeqListReq.UserID, in.PullMessageBySeqListReq.SeqList)
+func (l *PullMessageBySeqListLogic) PullMessageBySeqList(in *pb.PullMsgBySeqListReq) (*pb.PullMsgListResp, error) {
+	resp := new(pb.PullMsgListResp)
+	msgList, err := l.rep.GetMsgBySeqList(in.UserID, in.SeqList)
 	if err != nil {
 		l.Error("PullMessageBySeqList data error ", err.Error())
 		resp.ErrCode = types.ErrCodeFailed
 		resp.ErrMsg = err.Error()
-		return &pb.WrapPullMessageBySeqListResp{
-			PullMessageBySeqListResp: resp,
-		}, nil
+		return resp, nil
 	}
-	//respSingleMsgFormat = singleMsgHandleByUser(SingleMsgFormat, in.UserID)
-	//respGroupMsgFormat = groupMsgHandleByUser(GroupMsgFormat)
 	resp.ErrCode = types.ErrCodeOK
 	resp.ErrMsg = ""
 	resp.List = msgList
-	return &pb.WrapPullMessageBySeqListResp{
-		PullMessageBySeqListResp: resp,
-	}, nil
+	return resp, nil
 }

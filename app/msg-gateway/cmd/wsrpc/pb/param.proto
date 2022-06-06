@@ -2,15 +2,17 @@ syntax = "proto3";
 
 option go_package = "./pb";
 package msg_gateway;
-message Req {
-  uint32 ReqIdentifier = 1;
-  string Token = 2;
-  string SendID = 3;
-  bytes Data = 4;
+
+message BodyReq {
+  uint32 reqIdentifier = 1;
+  string token = 2;
+  string sendID = 3;
+  bytes data = 4;
 }
-message Resp {
-  uint32 ReqIdentifier = 1;
-  uint32 ErrCode = 2;
-  string ErrMsg = 3;
-  bytes Data = 4;
+
+message BodyResp {
+  uint32 reqIdentifier = 1;
+  uint32 errCode = 2;
+  string errMsg = 3;
+  bytes data = 4;
 }

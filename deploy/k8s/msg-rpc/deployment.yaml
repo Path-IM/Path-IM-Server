@@ -1,0 +1,140 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: msg-rpc
+  namespace: pathim
+  labels:
+    app: msg-rpc
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: msg-rpc
+  template:
+    metadata:
+      labels:
+        app: msg-rpc
+    spec:
+      serviceAccountName: find-endpoints
+      containers:
+        - name: msg-rpc
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.hostIP
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+          envFrom:
+            - configMapRef:
+                name: pathim-configmap
+          image: "ccr.ccs.tencentyun.com/zeroim/msg-rpc:20220606181748"
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh","-c","sleep 5"]
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 60Mi
+            limits:
+              cpu: 100m
+              memory: 60Mi
+          volumeMounts:
+            - name: timezone
+              mountPath: /etc/localtime
+            - name: etc
+              mountPath: /app/etc/chat.yaml
+              subPath: chat.yaml
+      imagePullSecrets:
+        - name: registry
+      volumes:
+        - name: etc
+          configMap:
+            name: etc-msg-rpc
+        - name: timezone
+          hostPath:
+            path: /usr/share/zoneinfo/Asia/Shanghai
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: msg-rpc-svc
+  namespace: pathim
+spec:
+  ports:
+    - port: 8080
+  selector:
+    app: msg-rpc
+
+---
+
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: msg-rpc-hpa-c
+  namespace: pathim
+  labels:
+    app: msg-rpc-hpa-c
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: msg-rpc
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        targetAverageUtilization: 80
+
+---
+
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: msg-rpc-hpa-m
+  namespace: pathim
+  labels:
+    app: msg-rpc-hpa-m
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: msg-rpc
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: memory
+        targetAverageUtilization: 80

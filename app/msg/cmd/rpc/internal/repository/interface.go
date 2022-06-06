@@ -9,7 +9,7 @@ import (
 
 type IPullHistoryMsg interface {
 	GetMsgBySeqList(uid string, seqList []uint32) (seqMsg []*pb.MsgData, err error)
-	GetMsgBySuperGroupSeqList(groupId string, seqList []uint32) (seqMsg []*pb.MsgData, err error)
+	GetMsgByGroupSeqList(groupId string, seqList []uint32) (seqMsg []*pb.MsgData, err error)
 }
 type MongoHistory struct {
 	svcCtx      *svc.ServiceContext

@@ -6,7 +6,7 @@ Log:
 
 Prometheus:
   Host: 0.0.0.0
-  Port: 10261
+  Port: 10071
   Path: /metrics
 
 Telemetry:
@@ -18,39 +18,35 @@ Telemetry:
 
 
 Kafka:
-  Online:
+  StorageConsumer:
     Brokers:
       - 172.27.10.3:9092
-    Topic: im_msg_online
-    MsgToMongoGroupID: msgtransfer_history_online
-  Offline:
-    Brokers:
-      - 172.27.10.3:9092
-    Topic: im_msg_offline
+    Topic: im_msg
+    MsgToHistoryGroupID: msgtransfer_history
   SinglePush:
     Brokers:
       - 172.27.10.3:9092
     Topic: im_msg_push_single
-  SuperGroupPush:
+  GroupPush:
     Brokers:
       - 172.27.10.3:9092
     Topic: im_msg_push_supergroup
 
 Redis:
   Conf:
-    Host: 192.168.2.77:6379
+    Host: 127.0.0.1:6379
     Pass: "123456"
     Type: node
   DB: 0
 
 # mongodb://[username:password@]host1[:port1][,...hostN[:portN]][/[database][?options]]
 Mongo:
-  Uri: mongodb://192.168.2.77/admin
+  Uri: mongodb://127.0.0.1/admin
   SingleChatMsgCollectionName: "single_chat_msg"
-  SuperGroupChatMsgCollectionName: "super_group_chat_msg"
+  GroupChatMsgCollectionName: "group_chat_msg"
   DBDatabase: "zeroim"
   DBTimeout: 30
 
 MsgPushRpc:
   Endpoints:
-    - 192.168.2.77:10170
+    - 127.0.0.1:10050

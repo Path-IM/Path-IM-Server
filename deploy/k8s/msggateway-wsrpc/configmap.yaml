@@ -1,0 +1,68 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: etc-msggateway-wsrpc
+  namespace: pathim
+data:
+  msggateway-rpc.yaml: |-
+    Name: msggateway-rpc
+    ListenOn: :8080
+    
+    Log:
+      ServiceName: msggateway-rpc
+      Level: info
+    
+    Prometheus:
+      Host: 0.0.0.0
+      Port: 80
+      Path: /metrics
+    
+    Telemetry:
+      Name: msggateway-rpc
+      Endpoint: http://101.43.214.203:14268/api/traces
+      Sampler: 1.0
+      Batcher: jaeger
+
+  msggateway-ws.yaml: |-
+    Name: msggateway-ws
+    Host: 0.0.0.0
+    Port: 9090
+    
+    Websocket:
+      MaxConnNum: 10000
+      TimeOut: 10
+      ReadBufferSize: 4096
+    
+    Log:
+      ServiceName: msggateway-ws
+      Level: info
+    
+    
+    Prometheus:
+      Host: 0.0.0.0
+      Port: 81
+      Path: /metrics
+    
+    Telemetry:
+      Name: msggateway-ws
+      Endpoint: http://101.43.214.203:14268/api/traces
+      Sampler: 1.0
+      Batcher: jaeger
+    
+    #rpc service
+    ImUserRpc:
+      Target: "k8s://pathim/imuser-rpc-svc:8080"
+    
+    MsgRpc:
+      Target: "k8s://pathim/msg-rpc-svc:8080"
+    
+    SendMsgRateLimit:
+      Enable: true
+      Seconds: 1
+      Quota: 10
+    
+    Redis:
+      Host: redis:6379
+      Pass: "123456"
+      Type: node

@@ -26,10 +26,6 @@ func (l *MsggatewayLogic) addUserConn(uid string, platformID string, conn *UserC
 		i[platformID] = uid
 		l.wsConnToUser[conn] = i
 	}
-	count := 0
-	for _, v := range l.wsUserToConn {
-		count = count + len(v)
-	}
 }
 
 func (l *MsggatewayLogic) getUserUid(conn *UserConn) (uid string, platform string) {
