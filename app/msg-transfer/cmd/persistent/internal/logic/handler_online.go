@@ -7,7 +7,6 @@ import (
 	"github.com/Path-IM/Path-IM-Server/app/msg-transfer/cmd/persistent/internal/svc"
 	chatpb "github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/pb"
 	"github.com/Path-IM/Path-IM-Server/common/types"
-	"github.com/Path-IM/Path-IM-Server/common/utils"
 	"github.com/Path-IM/Path-IM-Server/common/utils/statistics"
 	"github.com/Path-IM/Path-IM-Server/common/xtrace"
 	"github.com/golang/protobuf/proto"
@@ -52,7 +51,7 @@ func (l *MsgTransferPersistentLogic) Do(msg []byte, msgKey string) (err error) {
 		return
 	}
 	logx.WithContext(l.ctx).Infof("msg: %v", msgFromMQ.String())
-	isPersistent := utils.GetSwitchFromOptions(msgFromMQ.MsgData.MsgOptions, types.IsPersistent)
+	isPersistent := chatpb.GetSwitchFromOptions(msgFromMQ.MsgData.MsgOptions, types.IsPersistent, true)
 	switch msgFromMQ.MsgData.ConversationType {
 	case types.SingleChatType:
 		xtrace.StartFuncSpan(l.ctx, "MsgTransferPersistentLogic.SaveMsg.SingleChat", func(ctx context.Context) {

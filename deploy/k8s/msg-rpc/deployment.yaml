@@ -42,7 +42,7 @@ spec:
           envFrom:
             - configMapRef:
                 name: pathim-configmap
-          image: "ccr.ccs.tencentyun.com/zeroim/msg-rpc:20220606181748"
+          image: "ccr.ccs.tencentyun.com/zeroim/msg-rpc:20220606233624"
           lifecycle:
             preStop:
               exec:

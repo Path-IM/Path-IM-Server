@@ -10,7 +10,6 @@ import (
 	"github.com/Path-IM/Path-IM-Server/app/msg-push/cmd/rpc/pb"
 	chatpb "github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/pb"
 	"github.com/Path-IM/Path-IM-Server/common/types"
-	"github.com/Path-IM/Path-IM-Server/common/utils"
 	numUtils "github.com/Path-IM/Path-IM-Server/common/utils/num"
 	strUtils "github.com/Path-IM/Path-IM-Server/common/utils/str"
 	"github.com/Path-IM/Path-IM-Server/common/xtrace"
@@ -56,7 +55,7 @@ func (l *PushMsgLogic) getAllMsgGatewayService() (services []onlinemessagerelays
 
 func (l *PushMsgLogic) MsgToUser(pushMsg *pb.PushMsgReq) {
 	var wsResult []*gatewaypb.SingleMsgToUser
-	isOfflinePush := utils.GetSwitchFromOptions(pushMsg.MsgData.MsgOptions, types.IsOfflinePush)
+	isOfflinePush := chatpb.GetSwitchFromOptions(pushMsg.MsgData.MsgOptions, types.IsOfflinePush, pushMsg.MsgData.OfflinePush != nil)
 
 	services, err := l.getAllMsgGatewayService()
 	if err != nil {
@@ -121,7 +120,7 @@ func (l *PushMsgLogic) MsgToUser(pushMsg *pb.PushMsgReq) {
 }
 
 func (l *PushMsgLogic) PushGroupMsg(in *chatpb.PushMsgDataToMQ) (*pb.PushMsgResp, error) {
-	isOfflinePush := utils.GetSwitchFromOptions(in.MsgData.MsgOptions, types.IsOfflinePush)
+	isOfflinePush := chatpb.GetSwitchFromOptions(in.MsgData.MsgOptions, types.IsOfflinePush, in.MsgData.OfflinePush != nil)
 
 	tagAll := false
 	// 如果艾特人了

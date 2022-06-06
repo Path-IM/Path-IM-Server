@@ -118,6 +118,7 @@ func (l *MsggatewayLogic) pullMsgBySeqListReq(ctx context.Context, conn *UserCon
 	isPass, errCode, errMsg, data := l.argsValidate(m, types.WSPullMsgBySeqList)
 	if isPass {
 		rpcReq := data.(chatpb.PullMsgBySeqListReq)
+		rpcReq.UserID = uid
 		logx.WithContext(ctx).Info("Ws call success to pullMsgBySeqListReq middle", m.SendID, m.ReqIdentifier, data.(chatpb.PullMsgBySeqListReq).SeqList)
 		reply, err := l.svcCtx.MsgRpc().PullMessageBySeqList(ctx, &rpcReq)
 		if err != nil {

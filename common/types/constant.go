@@ -29,7 +29,7 @@ const (
 	//OptionsKey
 	IsHistory          = "IsHistory"          // 存储到 mongodb/cassandra
 	IsPersistent       = "IsPersistent"       // 存储到 持久层
-	UnreadCount        = "UnreadCount"        // 用户离线了是否也推送
+	UnreadCount        = "UnreadCount"        // 是否更新未读数
 	UpdateConversation = "UpdateConversation" // 更新会话
 	NeedBeFriend       = "NeedBeFriend"       // 是否需要成为好友
 	IsOfflinePush      = "IsOfflinePush"      // 是否离线推送

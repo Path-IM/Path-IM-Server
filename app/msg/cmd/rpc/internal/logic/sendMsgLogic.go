@@ -38,7 +38,7 @@ func (l *SendMsgLogic) SendMsg(pb *pb.SendMsgReq) (*pb.SendMsgResp, error) {
 	{
 		// 生成消息id
 		pb.MsgData.ServerMsgID = global.GetID()
-		pb.MsgData.ServerTime = uint32(timeUtils.GetCurrentTimestampByMill())
+		pb.MsgData.ServerTime = timeUtils.GetCurrentTimestampByMill()
 		// 修改消息options
 		l.encapsulateMsgData(pb.MsgData)
 		logx.WithContext(l.ctx).Info("this is a test MsgData ", pb.MsgData)
@@ -113,7 +113,7 @@ func returnMsg(replay *chatpb.SendMsgResp, pb *chatpb.SendMsgReq, errCode int32,
 	replay.ErrMsg = errMsg
 	replay.ServerMsgID = serverMsgID
 	replay.ClientMsgID = pb.MsgData.ClientMsgID
-	replay.ServerTime = uint32(sendTime)
+	replay.ServerTime = sendTime
 	replay.ReceiveID = pb.MsgData.ReceiveID
 	replay.ContentType = pb.MsgData.ContentType
 	replay.ConversationType = pb.MsgData.ConversationType
@@ -141,7 +141,7 @@ func (l *SendMsgLogic) userRelationshipVerification(data *chatpb.SendMsgReq) (bo
 		}
 	}
 	if l.svcCtx.Config.MessageVerify.FriendVerify {
-		needFriend := utils.GetSwitchFromOptions(data.MsgData.MsgOptions, types.NeedBeFriend)
+		needFriend := pb.GetSwitchFromOptions(data.MsgData.MsgOptions, types.NeedBeFriend, false)
 		if !needFriend {
 			return true, 0, ""
 		}
@@ -187,7 +187,7 @@ func (l *SendMsgLogic) modifyMessageByUserMessageReceiveOpt(userID, sourceID str
 			if pb.MsgData.MsgOptions == nil {
 				pb.MsgData.MsgOptions = &chatpb.MsgOptions{}
 			}
-			utils.SetSwitchFromOptions(pb.MsgData.MsgOptions, types.IsOfflinePush, false)
+			chatpb.SetSwitchFromOptions(pb.MsgData.MsgOptions, types.IsOfflinePush, false)
 		}
 		return true
 	}

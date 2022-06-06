@@ -8,7 +8,6 @@ import (
 	"github.com/Path-IM/Path-IM-Server/app/msg-transfer/cmd/history-mongo/internal/svc"
 	chatpb "github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/pb"
 	"github.com/Path-IM/Path-IM-Server/common/types"
-	"github.com/Path-IM/Path-IM-Server/common/utils"
 	"github.com/Path-IM/Path-IM-Server/common/utils/statistics"
 	"github.com/Path-IM/Path-IM-Server/common/xtrace"
 	"github.com/golang/protobuf/proto"
@@ -113,8 +112,8 @@ func (l *MsgTransferHistoryLogic) ChatMs2Mongo(msg []byte, msgKey string) (err e
 		return
 	}
 	logx.WithContext(l.ctx).Infof("msg: %v", msgFromMQ.String())
-	isHistory := utils.GetSwitchFromOptions(msgFromMQ.MsgData.MsgOptions, types.IsHistory)
-	isSenderSync := utils.GetSwitchFromOptions(msgFromMQ.MsgData.MsgOptions, types.IsSenderSync)
+	isHistory := chatpb.GetSwitchFromOptions(msgFromMQ.MsgData.MsgOptions, types.IsHistory, true)
+	isSenderSync := chatpb.GetSwitchFromOptions(msgFromMQ.MsgData.MsgOptions, types.IsSenderSync, true)
 	switch msgFromMQ.MsgData.ConversationType {
 	case types.SingleChatType:
 		xtrace.StartFuncSpan(l.ctx, "MsgTransferHistoryLogic.ChatMs2Mongo.SingleChat", func(ctx context.Context) {

@@ -42,7 +42,7 @@ spec:
           envFrom:
             - configMapRef:
                 name: pathim-configmap
-          image: "ccr.ccs.tencentyun.com/zeroim/msggateway-wsrpc:20220606182601"
+          image: "ccr.ccs.tencentyun.com/zeroim/msggateway-wsrpc:20220606231030"
           lifecycle:
             preStop:
               exec:

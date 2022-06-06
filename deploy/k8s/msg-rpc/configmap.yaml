@@ -63,7 +63,7 @@ data:
       Keyspace: "pathim"
       Username: "cassandra"
       Password: "cassandra"
-      Consistency: QUORUM
+      Consistency: ONE
       SingleChatMsgTableName: "single_chat_msg"
       GroupChatMsgTableName: "group_chat_msg"
       TimeoutSecond: 5

@@ -48,7 +48,7 @@ data:
       Hosts:
         - cassandra-0.cassandra.pathim.svc.cluster.local
       Port: 9042
-      Keyspace: "zeroim"
+      Keyspace: "pathim"
       Username: "cassandra"
       Password: "cassandra"
       Consistency: ONE

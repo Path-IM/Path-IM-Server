@@ -51,6 +51,8 @@ func (r *CassandraHistory) GetMsgBySeqList(uid string, seqList []uint32) (seqMsg
 			if err != nil {
 				logx.Error("Unmarshal failed:", err.Error())
 				return nil, err
+			} else {
+				//logx.Infof("%+v", msg.String())
 			}
 			if numUtils.IsContainUInt32(msg.Seq, value) {
 				seqMsg = append(seqMsg, msg)

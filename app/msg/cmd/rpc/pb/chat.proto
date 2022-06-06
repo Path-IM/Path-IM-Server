@@ -28,8 +28,8 @@ message MsgData {
   uint32 contentType = 6;
   bytes content = 7;
   repeated string atUserIDList = 8;
-  uint32 clientTime = 9;
-  uint32 serverTime = 10;
+  int64 clientTime = 9;
+  int64 serverTime = 10;
   uint32 seq = 11;
   OfflinePush offlinePush = 12;
   MsgOptions msgOptions = 13;
@@ -73,8 +73,8 @@ message GetMinAndMaxSeqReq {
 }
 
 message GetMinAndMaxSeqResp {
-  uint32 MaxSeq = 1;
-  uint32 MinSeq = 2;
+  uint32 MinSeq = 1;
+  uint32 MaxSeq = 2;
   uint32 ErrCode = 3;
   string ErrMsg = 4;
 }
@@ -104,7 +104,7 @@ message SendMsgResp {
   uint32 conversationType = 3;
   string receiveID = 4;
   uint32 contentType = 5;
-  uint32 serverTime = 6;
+  int64  serverTime = 6;
 
   int32 ErrCode = 7;
   string ErrMsg = 8;
