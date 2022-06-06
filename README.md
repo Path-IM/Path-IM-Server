@@ -8,12 +8,19 @@
 - 不依赖`mysql`所有业务逻辑均请求你自己的业务rpc接口 你只需实现rpc接口即可 
 - 可以使用 `cassandra` 来替代 `mongodb`
 - 类似`QQ`群聊的`读扩散`模式  妈妈再也不用担心`mongodb`/`cassandra`写入性能问题了
+- 使用dart开发[sdk](https://github.com/Path-IM/Path-IM-Core-Flutter), 使用flutter做客户端, 直接生成5端代码
+
 ## 开源组件依赖
 - mongodb or cassandra (离线消息存储 个人推荐cassandra)
 - kafka (消息队列)
 - redis (存储seq)
 - ~~etcd~~ (不依赖etcd)
 - ~~mysql~~ (不依赖mysql)
+
+# rancher 查看服务运行情况
+- 地址：[rancher](https://42.194.149.177:1443)
+- 用户名：guest
+- 密码：guest
 
 ## 业务架构图
 ![image1.svg](https://raw.githubusercontent.com/Path-IM/Path-IM-Docs/main/images/20220604/Path-IM-Server%20%E4%B8%9A%E5%8A%A1%E6%9E%B6%E6%9E%84%E5%9B%BE.svg)
@@ -36,10 +43,6 @@
 - [x] 完成 消息持久化存储 文档 编写 [第十天](https://github.com/Path-IM/Path-IM-Server/tree/main/docs/persistent.md)
 - [x] 支持 cassandra 离线消息存储 [第十二天](https://github.com/Path-IM/Path-IM-Server/tree/main/docs/cassandra.md)
 - [x] go-zero periodlimit 用户发送消息限流 [第十二天](https://github.com/Path-IM/Path-IM-Server/tree/main/docs/periodlimit.md)
-
-# Path-IM-Client-Go
-[Path-IM-Client-Go](https://github.com/Path-IM/Path-IM-Client-Go.git)
-> 我们计划编写 `dart` sdk；由于时间问题，暂时放出 `golang` 客户端 测试代码；以供参考！
 
 # 其他
 ## jaeger
