@@ -2,6 +2,8 @@
 package handler
 
 import (
+	"context"
+	"github.com/Path-IM/Path-IM-Server/app/msg-gateway/cmd/wsrpc/internal/wslogic"
 	"net/http"
 
 	"github.com/Path-IM/Path-IM-Server/app/msg-gateway/cmd/wsrpc/internal/wssvc"
@@ -11,6 +13,7 @@ import (
 
 func RegisterHandlers(server *rest.Server, serverCtx *wssvc.ServiceContext) {
 	//http.HandleFunc("/", MsggatewayHandler(serverCtx))
+	wslogic.NewMsggatewayLogic(context.Background(), serverCtx)
 	server.AddRoutes(
 		[]rest.Route{
 			{

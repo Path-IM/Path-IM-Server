@@ -10,10 +10,10 @@ import (
 
 type Config struct {
 	service.ServiceConf
-	Kafka      KafkaConfig
-	Redis      RedisConfig
-	Mongo      MongoConfig
-	MsgPushRpc zrpc.RpcClientConf
+	Kafka     KafkaConfig
+	Redis     RedisConfig
+	Mongo     MongoConfig
+	ImUserRpc zrpc.RpcClientConf
 }
 type StorageConsumer struct {
 	xkafka.ProducerConfig

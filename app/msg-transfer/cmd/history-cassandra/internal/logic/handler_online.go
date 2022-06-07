@@ -3,7 +3,6 @@ package logic
 import (
 	"context"
 	"fmt"
-	pushpb "github.com/Path-IM/Path-IM-Server/app/msg-push/cmd/rpc/pb"
 	"github.com/Path-IM/Path-IM-Server/app/msg-transfer/cmd/history-cassandra/internal/repository"
 	"github.com/Path-IM/Path-IM-Server/app/msg-transfer/cmd/history-cassandra/internal/svc"
 	chatpb "github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/pb"
@@ -77,29 +76,6 @@ func (l *MsgTransferHistoryLogic) saveGroupChat(ctx context.Context, groupId str
 		err = l.rep.SaveGroupChatCassandra(ctx, groupId, int64(pbSaveData.MsgData.ServerTime), &pbSaveData)
 	})
 	return err
-}
-func (l *MsgTransferHistoryLogic) sendMessageToPush(ctx context.Context, message *chatpb.MsgDataToMQ, pushToUserID string) {
-	logx.WithContext(ctx).Info("msg_transfer send message to push", "message", message.String())
-	rpcPushMsg := pushpb.PushMsgReq{MsgData: message.MsgData, PushToUserID: pushToUserID}
-	_, err := l.svcCtx.MsgPush.PushMsg(ctx, &rpcPushMsg)
-	if err != nil {
-		logx.WithContext(ctx).Error("rpc send failed", "push data", rpcPushMsg.String(), "err", err.Error())
-		mqPushMsg := chatpb.PushMsgDataToMQ{MsgData: message.MsgData, PushToUserID: pushToUserID, TraceId: xtrace.TraceIdFromContext(l.ctx)}
-		pid, offset, err := l.svcCtx.SinglePushProducer.SendMessage(ctx, &mqPushMsg)
-		if err != nil {
-			logx.WithContext(ctx).Error("kafka send failed", mqPushMsg.TraceId, "send data", mqPushMsg.String(), "pid", pid, "offset", offset, "err", err.Error())
-		}
-	} else {
-		logx.WithContext(ctx).Info("rpc send success", "push data", rpcPushMsg.String())
-	}
-}
-
-func (l *MsgTransferHistoryLogic) sendMessageToGroupPush(ctx context.Context, message *chatpb.MsgDataToMQ, groupId string) {
-	mqPushMsg := chatpb.PushMsgDataToMQ{MsgData: message.MsgData, TraceId: xtrace.TraceIdFromContext(l.ctx)}
-	pid, offset, err := l.svcCtx.GroupPushProducer.SendMessage(ctx, &mqPushMsg)
-	if err != nil {
-		logx.WithContext(ctx).Error("kafka send failed ", "send data ", mqPushMsg.String(), " pid ", pid, " offset ", offset, " err ", err.Error())
-	}
 }
 
 func (l *MsgTransferHistoryLogic) ChatMs2Cassandra(msg []byte, msgKey string) (err error) {

@@ -2,14 +2,17 @@ package wslogic
 
 import (
 	"context"
-	"github.com/Path-IM/Path-IM-Server/app/msg-gateway/cmd/wsrpc/pb"
 	"github.com/gorilla/websocket"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-func (l *MsggatewayLogic) addUserConn(uid string, platformID string, conn *UserConn, token string) {
+func (l *MsggatewayLogic) addUserConn(uid string, platformID string, conn *UserConn, token string) error {
 	rwLock.Lock()
 	defer rwLock.Unlock()
+	err := l.rep.AddUserConn(uid, platformID)
+	if err != nil {
+		return err
+	}
 	if oldConnMap, ok := l.wsUserToConn[uid]; ok {
 		oldConnMap[platformID] = conn
 		l.wsUserToConn[uid] = oldConnMap
@@ -26,6 +29,7 @@ func (l *MsggatewayLogic) addUserConn(uid string, platformID string, conn *UserC
 		i[platformID] = uid
 		l.wsConnToUser[conn] = i
 	}
+	return nil
 }
 
 func (l *MsggatewayLogic) getUserUid(conn *UserConn) (uid string, platform string) {
@@ -56,16 +60,16 @@ func (l *MsggatewayLogic) delUserConn(conn *UserConn) {
 			if len(oldConnMap) == 0 {
 				delete(l.wsUserToConn, uid)
 			}
-			count := 0
-			for _, v := range l.wsUserToConn {
-				count = count + len(v)
-			}
 		}
 		delete(l.wsConnToUser, conn)
 	}
 	err := conn.Close()
 	if err != nil {
 		logx.WithContext(l.ctx).Error("close conn err", "", "uid", uid, "platform", platform)
+	}
+	err = l.rep.DelUserConn(uid, platform)
+	if err != nil {
+		logx.WithContext(l.ctx).Error("redis DelUserConn err ", err.Error(), " uid ", uid, " platform ", platform)
 	}
 }
 
@@ -79,29 +83,30 @@ func (l *MsggatewayLogic) GetUserConn(uid string, platform string) *UserConn {
 	}
 	return nil
 }
+func (l *MsggatewayLogic) GetOnlineUserMap() map[string]interface{} {
+	m := make(map[string]interface{})
+	rwLock.RLock()
+	defer rwLock.RUnlock()
+	for uid := range l.wsUserToConn {
+		m[uid] = nil
+	}
+	return m
+}
 
 func (l *MsggatewayLogic) DelUserConn(uid string, platform string) {
 	rwLock.RLock()
 	defer rwLock.RUnlock()
-	if connMap, ok := l.wsUserToConn[uid]; ok {
-		if len(connMap) == 0 {
-			delete(l.wsUserToConn, uid)
-		} else {
-			if _, flag := connMap[platform]; flag {
-				delete(connMap, platform)
-			}
-		}
-	}
+	conn := l.GetUserConn(uid, platform)
+	l.delUserConn(conn)
 }
 
-func (l *MsggatewayLogic) SendMsgToUser(ctx context.Context, conn *UserConn, bMsg []byte, in *pb.OnlinePushMsgReq, RecvPlatForm, RecvID string) (ResultCode int64) {
+func (l *MsggatewayLogic) SendMsgToUser(ctx context.Context, conn *UserConn, bMsg []byte, RecvPlatForm, RecvID string) error {
+	//logx.WithContext(ctx).Infof("发送给用户:%s[%s],%+v", RecvID, RecvPlatForm, string(bMsg))
 	err := l.writeMsg(conn, websocket.BinaryMessage, bMsg)
 	if err != nil {
 		logx.WithContext(ctx).Error("send msg to user err ", "", "err ", err.Error())
-		ResultCode = -2
-		return ResultCode
+		return err
 	} else {
-		ResultCode = 0
-		return ResultCode
+		return nil
 	}
 }

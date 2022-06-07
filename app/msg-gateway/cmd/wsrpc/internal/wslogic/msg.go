@@ -70,18 +70,18 @@ func (l *MsggatewayLogic) writeMsg(conn *UserConn, a int, msg []byte) error {
 }
 
 func (l *MsggatewayLogic) sendMsgReq(ctx context.Context, conn *UserConn, m *pb.BodyReq, uid string, platformID string) {
-	// 是否开启限流
-	if l.svcCtx.Config.SendMsgRateLimit.Enable {
-		if !l.sendMsgRateLimit(ctx, conn, m, uid, platformID) {
-			return
-		}
-	}
 	sendMsgAllCount++
 	logx.WithContext(ctx).Info("Ws call success to sendMsgReq start", m.ReqIdentifier, m.SendID, m.Data)
 	nReply := new(chatpb.SendMsgResp)
 	isPass, errCode, errMsg, pData := l.argsValidate(m, types.WSSendMsg)
 	if isPass {
 		pbData := pData.(chatpb.SendMsgReq)
+		// 是否开启限流
+		if l.svcCtx.Config.SendMsgRateLimit.Enable {
+			if !l.sendMsgRateLimit(ctx, conn, m, uid, platformID, &pbData) {
+				return
+			}
+		}
 		logx.WithContext(ctx).Info("Ws call success to sendMsgReq middle", m.ReqIdentifier, m.SendID, pbData.String())
 
 		reply, err := l.svcCtx.MsgRpc().SendMsg(ctx, &pbData)
@@ -89,6 +89,10 @@ func (l *MsggatewayLogic) sendMsgReq(ctx context.Context, conn *UserConn, m *pb.
 			logx.WithContext(ctx).Error("UserSendMsg err ", err.Error())
 			nReply.ErrCode = types.ErrCodeFailed
 			nReply.ErrMsg = err.Error()
+			nReply.ClientMsgID = pbData.MsgData.ClientMsgID
+			nReply.ReceiveID = pbData.MsgData.ReceiveID
+			nReply.ConversationType = pbData.MsgData.ConversationType
+			nReply.ContentType = pbData.MsgData.ContentType
 			l.sendMsgResp(ctx, conn, m, nReply, uid, platformID)
 		} else {
 			logx.WithContext(ctx).Info("rpc call success to sendMsgReq", reply.String())

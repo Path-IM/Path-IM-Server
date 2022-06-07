@@ -58,6 +58,17 @@ func NewMsggatewayLogic(ctx context.Context, svcCtx *wssvc.ServiceContext) *Msgg
 		CheckOrigin:      func(r *http.Request) bool { return true },
 	}
 	msgGatewayLogic = ws
+	go func() {
+		// 定时打印统计信息
+		ws.printStat()
+		ticker := time.NewTicker(time.Second * 10)
+		for {
+			select {
+			case <-ticker.C:
+				ws.printStat()
+			}
+		}
+	}()
 	return msgGatewayLogic
 }
 
@@ -104,7 +115,11 @@ func (l *MsggatewayLogic) WsUpgrade(uid string, req *types.Request, w http.Respo
 		return err
 	}
 	newConn := &UserConn{conn, new(sync.Mutex)}
-	l.addUserConn(uid, req.Platform, newConn, req.Token)
+	err = l.addUserConn(uid, req.Platform, newConn, req.Token)
+	if err != nil {
+		logx.Errorf("addUserConn err:%v", err)
+		return err
+	}
 	go l.readMsg(newConn, uid, req.Platform)
 	return nil
 }
@@ -195,4 +210,8 @@ func (l *MsggatewayLogic) getGroupResp(ctx context.Context, conn *UserConn, m *m
 		Data:          b,
 	}
 	l.sendMsg(ctx, conn, mReply, uid, platformID)
+}
+
+func (l *MsggatewayLogic) printStat() {
+	l.Infof("用户数量: %d;连接数量: %d;", len(l.wsUserToConn), len(l.wsConnToUser))
 }

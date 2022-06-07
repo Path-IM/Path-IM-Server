@@ -5,4 +5,5 @@ const (
 	RedisKeyGroupIncrSeq = "REDIS_GROUP_INCR_SEQ:" // user incr seq
 	RedisKeyGroupMinSeq  = "REDIS_GROUP_MIN_SEQ:"  // user incr seq
 	RedisKeyUserMinSeq   = "REDIS_USER_MIN_SEQ:"
+	RedisKeyUserConn     = "REDIS_USER_CONN:"
 )

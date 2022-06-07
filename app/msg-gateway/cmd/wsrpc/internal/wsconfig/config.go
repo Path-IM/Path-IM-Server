@@ -13,6 +13,7 @@ type Config struct {
 	Websocket        WebsocketConfig
 	SendMsgRateLimit RateLimitConfig
 	Redis            redis.RedisConf
+	RpcPort          int
 }
 type WebsocketConfig struct {
 	MaxConnNum     int

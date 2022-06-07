@@ -1,12 +1,13 @@
 syntax = "proto3";
 
 option go_package = "./pb";
-import "ws.proto";
+import "chat.proto";
+
 package pb;
 
 message PushMsgReq {
-  server_api_params.MsgData msgData = 2;
-  string pushToUserID = 3;
+  pbChat.MsgData msgData = 2;
+  repeated string pushToUserID = 3;
 }
 message PushMsgResp{
   int32   ResultCode = 1;

@@ -2,14 +2,17 @@ package wsrepository
 
 import (
 	"github.com/Path-IM/Path-IM-Server/app/msg-gateway/cmd/wsrpc/internal/wssvc"
+	"github.com/Path-IM/Path-IM-Server/common/utils"
 	"github.com/zeromicro/go-zero/core/limit"
 	"github.com/zeromicro/go-zero/core/stores/redis"
+	"os"
 )
 
 type Rep struct {
 	svcCtx             *wssvc.ServiceContext
 	Redis              *redis.Redis
 	SendMsgPeriodLimit *limit.PeriodLimit
+	podIp              string
 }
 
 var rep *Rep
@@ -26,6 +29,16 @@ func NewRep(svcCtx *wssvc.ServiceContext) *Rep {
 		svcCtx.Config.SendMsgRateLimit.Seconds, svcCtx.Config.SendMsgRateLimit.Quota,
 		rep.Redis, "periodlimit:sendmsg:", limit.Align(),
 	)
+	if v := os.Getenv("POD_IP"); v != "" {
+		rep.podIp = v
+	} else {
+		// 获取ip
+		ip, err := utils.ExternalIP()
+		if err != nil {
+			panic(err)
+		}
+		rep.podIp = ip.String()
+	}
 	return rep
 }
 

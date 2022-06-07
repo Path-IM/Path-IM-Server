@@ -42,7 +42,7 @@ spec:
           envFrom:
             - configMapRef:
                 name: pathim-configmap
-          image: "ccr.ccs.tencentyun.com/zeroim/imuser-rpc:20220606173735"
+          image: "ccr.ccs.tencentyun.com/zeroim/imuser-rpc:20220607115611"
           lifecycle:
             preStop:
               exec:
@@ -95,46 +95,3 @@ spec:
   selector:
     app: imuser-rpc
 
----
-
-apiVersion: autoscaling/v2beta1
-kind: HorizontalPodAutoscaler
-metadata:
-  name: imuser-rpc-hpa-c
-  namespace: pathim
-  labels:
-    app: imuser-rpc-hpa-c
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: imuser-rpc
-  minReplicas: 1
-  maxReplicas: 10
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        targetAverageUtilization: 80
-
----
-
-apiVersion: autoscaling/v2beta1
-kind: HorizontalPodAutoscaler
-metadata:
-  name: imuser-rpc-hpa-m
-  namespace: pathim
-  labels:
-    app: imuser-rpc-hpa-m
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: imuser-rpc
-  minReplicas: 1
-  maxReplicas: 10
-  metrics:
-    - type: Resource
-      resource:
-        name: memory
-        targetAverageUtilization: 80

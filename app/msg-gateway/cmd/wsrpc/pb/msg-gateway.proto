@@ -11,19 +11,12 @@ message OnlinePushMsgReq {
 }
 
 message OnlinePushMsgResp{
-  repeated SingleMsgToUser resp = 1;
-}
-
-message SingleMsgToUser{
-  int64   ResultCode = 1;
-  string  RecvID = 2;
-  int32   RecvPlatFormID = 3;
+  bool Success = 1;
+  string ErrMsg = 2;
 }
 
 message GetUsersOnlineStatusReq{
   repeated string  userIDList = 1;
-  string  operationID = 2;
-  string opUserID = 3;
 }
 
 message GetUsersOnlineStatusResp{

@@ -42,7 +42,7 @@ spec:
           envFrom:
             - configMapRef:
                 name: pathim-configmap
-          image: "ccr.ccs.tencentyun.com/zeroim/msg-rpc:20220606233624"
+          image: "ccr.ccs.tencentyun.com/zeroim/msg-rpc:20220607095054"
           lifecycle:
             preStop:
               exec:
@@ -94,47 +94,3 @@ spec:
     - port: 8080
   selector:
     app: msg-rpc
-
----
-
-apiVersion: autoscaling/v2beta1
-kind: HorizontalPodAutoscaler
-metadata:
-  name: msg-rpc-hpa-c
-  namespace: pathim
-  labels:
-    app: msg-rpc-hpa-c
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: msg-rpc
-  minReplicas: 1
-  maxReplicas: 10
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        targetAverageUtilization: 80
-
----
-
-apiVersion: autoscaling/v2beta1
-kind: HorizontalPodAutoscaler
-metadata:
-  name: msg-rpc-hpa-m
-  namespace: pathim
-  labels:
-    app: msg-rpc-hpa-m
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: msg-rpc
-  minReplicas: 1
-  maxReplicas: 10
-  metrics:
-    - type: Resource
-      resource:
-        name: memory
-        targetAverageUtilization: 80

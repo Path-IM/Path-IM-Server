@@ -33,8 +33,9 @@ message OfflinePush{
 message MsgOptions{
   bool persistent = 1;
   bool history = 2;
-  bool unreadCount = 3;
-  bool updateConversation = 4;
+  bool local = 3;
+  bool updateUnreadCount = 4;
+  bool updateConversation = 5;
 }
 
 message SendMsgResp {

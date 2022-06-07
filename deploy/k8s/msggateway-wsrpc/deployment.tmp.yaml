@@ -6,7 +6,7 @@ metadata:
   labels:
     app: msggateway-wsrpc
 spec:
-  replicas: 1
+  replicas: 3
   revisionHistoryLimit: 5
   selector:
     matchLabels:
@@ -62,10 +62,10 @@ spec:
           resources:
             requests:
               cpu: 100m
-              memory: 60Mi
+              memory: 300Mi
             limits:
-              cpu: 100m
-              memory: 60Mi
+              cpu: 2000m
+              memory: 500Mi
           volumeMounts:
             - name: timezone
               mountPath: /etc/localtime
@@ -111,45 +111,3 @@ spec:
     app: msggateway-wsrpc
 
 ---
-
-apiVersion: autoscaling/v2beta1
-kind: HorizontalPodAutoscaler
-metadata:
-  name: msggateway-wsrpc-hpa-c
-  namespace: pathim
-  labels:
-    app: msggateway-wsrpc-hpa-c
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: msggateway-wsrpc
-  minReplicas: 1
-  maxReplicas: 10
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        targetAverageUtilization: 80
-
----
-
-apiVersion: autoscaling/v2beta1
-kind: HorizontalPodAutoscaler
-metadata:
-  name: msggateway-wsrpc-hpa-m
-  namespace: pathim
-  labels:
-    app: msggateway-wsrpc-hpa-m
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: msggateway-wsrpc
-  minReplicas: 1
-  maxReplicas: 10
-  metrics:
-    - type: Resource
-      resource:
-        name: memory
-        targetAverageUtilization: 80

@@ -6,7 +6,7 @@ metadata:
   labels:
     app: msgtransfer-history-cassandra
 spec:
-  replicas: 1
+  replicas: 3
   revisionHistoryLimit: 5
   selector:
     matchLabels:
@@ -96,45 +96,3 @@ spec:
     app: msgtransfer-history-cassandra
 
 ---
-
-apiVersion: autoscaling/v2beta1
-kind: HorizontalPodAutoscaler
-metadata:
-  name: msgtransfer-history-cassandra-hpa-c
-  namespace: pathim
-  labels:
-    app: msgtransfer-history-cassandra-hpa-c
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: msgtransfer-history-cassandra
-  minReplicas: 1
-  maxReplicas: 10
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        targetAverageUtilization: 80
-
----
-
-apiVersion: autoscaling/v2beta1
-kind: HorizontalPodAutoscaler
-metadata:
-  name: msgtransfer-history-cassandra-hpa-m
-  namespace: pathim
-  labels:
-    app: msgtransfer-history-cassandra-hpa-m
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: msgtransfer-history-cassandra
-  minReplicas: 1
-  maxReplicas: 10
-  metrics:
-    - type: Resource
-      resource:
-        name: memory
-        targetAverageUtilization: 80

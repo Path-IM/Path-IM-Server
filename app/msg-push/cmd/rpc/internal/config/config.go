@@ -2,21 +2,21 @@ package config
 
 import (
 	"github.com/Path-IM/Path-IM-Server/common/xkafka"
-	"github.com/zeromicro/go-zero/core/discov"
+	"github.com/zeromicro/go-zero/core/stores/redis"
 	"github.com/zeromicro/go-zero/zrpc"
 )
 
 type Config struct {
 	zrpc.RpcServerConf
-	PushType                string `json:",default=jpns,options=jpns|mobpush"`
-	Jpns                    JpnsConf
-	MsgGatewayRpcEtcd       *discov.EtcdConf `json:",optional"`
-	MsgGatewayRpcEndpoints  []string         `json:",optional"`
+	PushType                string      `json:",default=jpns,options=jpns|mobpush"`
+	Jpns                    JpnsConf    `json:",optional"`
+	MobPush                 MobPushConf `json:",optional"`
 	ImUserRpc               zrpc.RpcClientConf
+	OfflinePushDefaultTitle string // 默认的离线推送标题
+	OfflinePushGroupTitle   string // 群聊消息推送标题
 	SinglePushConsumer      SinglePushConsumerConfig
 	GroupPushConsumer       GroupPushConsumerConfig
-	MsgGatewayRpcK8sTarget  string `json:",optional"`
-	OfflinePushDefaultTitle string // 默认的离线推送标题
+	Redis                   redis.RedisConf
 }
 type JpnsConf struct {
 	PushIntent     string
@@ -25,6 +25,15 @@ type JpnsConf struct {
 	MasterSecret   string
 	ApnsProduction bool `json:",default=false"`
 }
+type MobPushConf struct {
+	AppKey         string
+	AppSecret      string
+	ApnsProduction bool `json:",default=false"`
+	ApnsCateGory   string
+	ApnsSound      string
+	AndroidSound   string
+}
+
 type SinglePushConsumerConfig struct {
 	xkafka.ProducerConfig
 	SinglePushGroupID string

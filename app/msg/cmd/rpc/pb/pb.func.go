@@ -19,8 +19,10 @@ func SetSwitchFromOptions(options *MsgOptions, key string, value bool) {
 		options.History = value
 	case types.IsPersistent:
 		options.Persistent = value
+	case types.IsLocal:
+		options.Local = value
 	case types.UnreadCount:
-		options.UnreadCount = value
+		options.UpdateUnreadCount = value
 	case types.UpdateConversation:
 		options.UpdateConversation = value
 	case types.NeedBeFriend:
@@ -41,8 +43,10 @@ func GetSwitchFromOptions(options *MsgOptions, key string, defaultValue bool) (r
 		result = options.History
 	case types.IsPersistent:
 		result = options.Persistent
+	case types.IsLocal:
+		result = options.Local
 	case types.UnreadCount:
-		result = options.UnreadCount
+		result = options.UpdateUnreadCount
 	case types.UpdateConversation:
 		result = options.UpdateConversation
 	case types.NeedBeFriend:

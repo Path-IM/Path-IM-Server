@@ -44,12 +44,13 @@ message OfflinePush{
 message MsgOptions{
   bool persistent = 1;
   bool history = 2;
-  bool unreadCount = 3;
-  bool updateConversation = 4;
+  bool local = 3;
+  bool updateUnreadCount = 4;
+  bool updateConversation = 5;
   // server端控制
-  bool needBeFriend = 5;
-  bool offlinePush = 6;
-  bool senderSync = 7;
+  bool needBeFriend = 6;
+  bool offlinePush = 7;
+  bool senderSync = 8;
 }
 
 message MsgDataToMQ{
@@ -65,7 +66,7 @@ message MsgDataToDB {
 message PushMsgDataToMQ{
   string traceId = 1;
   MsgData msgData = 2;
-  string pushToUserID = 3;
+  repeated string pushToUserID = 3;
 }
 
 message GetMinAndMaxSeqReq {

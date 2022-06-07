@@ -5,88 +5,24 @@ package server
 
 import (
 	"context"
+
 	"github.com/Path-IM/Path-IM-Server/app/msg-push/cmd/rpc/internal/logic"
 	"github.com/Path-IM/Path-IM-Server/app/msg-push/cmd/rpc/internal/svc"
-	pushpb "github.com/Path-IM/Path-IM-Server/app/msg-push/cmd/rpc/pb"
-	chatpb "github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/pb"
-	"github.com/Path-IM/Path-IM-Server/common/xkafka"
-	"github.com/Path-IM/Path-IM-Server/common/xtrace"
-	"github.com/Shopify/sarama"
-	"github.com/golang/protobuf/proto"
-	"github.com/zeromicro/go-zero/core/logx"
-	"go.opentelemetry.io/otel/attribute"
+	"github.com/Path-IM/Path-IM-Server/app/msg-push/cmd/rpc/pb"
 )
-
-type fcb func(msg []byte, msgKey string)
-type Cmd2Value struct {
-	Cmd   int
-	Value interface{}
-}
 
 type MsgPushServiceServer struct {
 	svcCtx *svc.ServiceContext
-	pushpb.UnimplementedMsgPushServiceServer
-	SingleConsumerGroup *xkafka.MConsumerGroup
-	GroupConsumerGroup  *xkafka.MConsumerGroup
-}
-
-func (s *MsgPushServiceServer) HandleMsg(value []byte, key []byte, topic string, partition int32, offset int64, msg *sarama.ConsumerMessage) error {
-	msgFromMQ := &chatpb.PushMsgDataToMQ{}
-	if err := proto.Unmarshal(msg.Value, msgFromMQ); err != nil {
-		logx.Errorf("unmarshal msg error: %v", err)
-		return err
-	}
-	var err error
-	xtrace.RunWithTrace(msgFromMQ.TraceId, func(ctx context.Context) {
-		xtrace.StartFuncSpan(ctx, "MsgPushServiceServer.ConsumeSingle.PushMsg", func(ctx context.Context) {
-			if topic == s.svcCtx.Config.SinglePushConsumer.Topic {
-				_, err = s.PushMsg(ctx, &pushpb.PushMsgReq{
-					MsgData:      msgFromMQ.MsgData,
-					PushToUserID: msgFromMQ.PushToUserID,
-				})
-				if err != nil {
-					logx.Errorf("push Single msg error: %v", err)
-				}
-			} else if topic == s.svcCtx.Config.GroupPushConsumer.Topic {
-				_, err = s.PushGroupMsg(ctx, msgFromMQ)
-				if err != nil {
-					logx.Errorf("push Group msg error: %v", err)
-				}
-			}
-		})
-	}, attribute.String("msg.key", string(msg.Key)))
-	return err
+	pb.UnimplementedMsgPushServiceServer
 }
 
 func NewMsgPushServiceServer(svcCtx *svc.ServiceContext) *MsgPushServiceServer {
-	m := &MsgPushServiceServer{
+	return &MsgPushServiceServer{
 		svcCtx: svcCtx,
-		SingleConsumerGroup: xkafka.NewMConsumerGroup(&xkafka.MConsumerGroupConfig{
-			KafkaVersion:   sarama.V0_10_2_0,
-			OffsetsInitial: sarama.OffsetNewest, IsReturnErr: false,
-		}, []string{svcCtx.Config.SinglePushConsumer.Topic},
-			svcCtx.Config.SinglePushConsumer.Brokers, svcCtx.Config.SinglePushConsumer.SinglePushGroupID),
-		GroupConsumerGroup: xkafka.NewMConsumerGroup(&xkafka.MConsumerGroupConfig{
-			KafkaVersion:   sarama.V0_10_2_0,
-			OffsetsInitial: sarama.OffsetNewest, IsReturnErr: false,
-		}, []string{svcCtx.Config.GroupPushConsumer.Topic},
-			svcCtx.Config.GroupPushConsumer.Brokers, svcCtx.Config.GroupPushConsumer.GroupPushGroupID),
 	}
-	m.Subscribe()
-	return m
-
 }
 
-func (s *MsgPushServiceServer) PushMsg(ctx context.Context, in *pushpb.PushMsgReq) (*pushpb.PushMsgResp, error) {
+func (s *MsgPushServiceServer) PushMsg(ctx context.Context, in *pb.PushMsgReq) (*pb.PushMsgResp, error) {
 	l := logic.NewPushMsgLogic(ctx, s.svcCtx)
-	return l.PushMsg(in)
-}
-func (s *MsgPushServiceServer) PushGroupMsg(ctx context.Context, in *chatpb.PushMsgDataToMQ) (*pushpb.PushMsgResp, error) {
-	l := logic.NewPushMsgLogic(ctx, s.svcCtx)
-	return l.PushGroupMsg(in)
-}
-
-func (s *MsgPushServiceServer) Subscribe() {
-	go s.SingleConsumerGroup.RegisterHandleAndConsumer(s)
-	go s.GroupConsumerGroup.RegisterHandleAndConsumer(s)
+	return l.OfflinePushMsg(in)
 }

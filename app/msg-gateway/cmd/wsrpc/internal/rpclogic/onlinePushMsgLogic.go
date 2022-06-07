@@ -2,13 +2,12 @@ package rpclogic
 
 import (
 	"context"
+	imuserpb "github.com/Path-IM/Path-IM-Server/app/im-user/cmd/rpc/pb"
 	"github.com/Path-IM/Path-IM-Server/app/msg-gateway/cmd/wsrpc/internal/rpcsvc"
-	"github.com/Path-IM/Path-IM-Server/app/msg-gateway/cmd/wsrpc/internal/wslogic"
+	"github.com/Path-IM/Path-IM-Server/app/msg-gateway/cmd/wsrpc/pb"
+	chatpb "github.com/Path-IM/Path-IM-Server/app/msg/cmd/rpc/pb"
 	"github.com/Path-IM/Path-IM-Server/common/types"
 	"github.com/Path-IM/Path-IM-Server/common/xtrace"
-	"github.com/golang/protobuf/proto"
-
-	"github.com/Path-IM/Path-IM-Server/app/msg-gateway/cmd/wsrpc/pb"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -27,58 +26,57 @@ func NewOnlinePushMsgLogic(ctx context.Context, svcCtx *rpcsvc.ServiceContext) *
 	}
 }
 
-func (l *OnlinePushMsgLogic) OnlinePushMsg(in *pb.OnlinePushMsgReq) (*pb.OnlinePushMsgResp, error) {
-	logic := wslogic.NewMsggatewayLogic(nil, nil)
-	var resp []*pb.SingleMsgToUser
-	msgBytes, _ := proto.Marshal(in.MsgData)
-	reqIdentifier := types.WSPushMsg
-	if in.MsgData.ConversationType == types.GroupChatType {
-		reqIdentifier = types.WSGroupPushMsg
+func (l *OnlinePushMsgLogic) OnlinePushMsg(message *pb.OnlinePushMsgReq) (*pb.OnlinePushMsgResp, error) {
+	var err error
+	if message.MsgData.ConversationType == types.GroupChatType {
+		err = l.sendMessageToGroupPush(message, message.MsgData.ReceiveID)
+	} else {
+		err = l.sendMessageToPush(message, message.PushToUserID)
 	}
-	mReply := &pb.BodyResp{
-		ReqIdentifier: uint32(reqIdentifier),
-		Data:          msgBytes,
-	}
-	replyBytes, err := proto.Marshal(mReply)
 	if err != nil {
-		l.Error("data encode err ", err.Error())
+		return &pb.OnlinePushMsgResp{
+			Success: false,
+			ErrMsg:  err.Error(),
+		}, err
+	} else {
+		return &pb.OnlinePushMsgResp{Success: true}, nil
 	}
-	var tag bool
-	recvID := in.PushToUserID
-	platformList := []string{
-		types.IOSPlatformStr,
-		types.AndroidPlatformStr,
-		types.WindowsPlatformStr,
-		types.OSXPlatformStr,
-		types.WebPlatformStr,
-		types.MiniWebPlatformStr,
-		types.LinuxPlatformStr,
+}
+
+func (l *OnlinePushMsgLogic) sendMessageToGroupPush(message *pb.OnlinePushMsgReq, groupId string) error {
+	// 获取群里所有没屏蔽群消息的人
+	req := imuserpb.GetUserListFromGroupWithOptReq{
+		GroupID: groupId,
+		Opts: []imuserpb.RecvMsgOpt{
+			imuserpb.RecvMsgOpt_ReceiveMessage,
+			imuserpb.RecvMsgOpt_ReceiveNotNotifyMessage,
+		},
+		UserIDList: nil,
 	}
-	for _, v := range platformList {
-		if conn := logic.GetUserConn(recvID, v); conn != nil {
-			tag = true
-			var resultCode int64
-			xtrace.StartFuncSpan(l.ctx, "OnlinePushMsgLogic.OnlinePushMsg", func(ctx context.Context) {
-				resultCode = logic.SendMsgToUser(ctx, conn, replyBytes, in, v, recvID)
-			})
-			temp := &pb.SingleMsgToUser{
-				ResultCode:     resultCode,
-				RecvID:         recvID,
-				RecvPlatFormID: types.PlatformNameToID(v),
-			}
-			resp = append(resp, temp)
-		} else {
-			temp := &pb.SingleMsgToUser{
-				ResultCode:     -1,
-				RecvID:         recvID,
-				RecvPlatFormID: types.PlatformNameToID(v),
-			}
-			resp = append(resp, temp)
-		}
+	resp, err := l.svcCtx.ImUserRpc().GetUserListFromGroupWithOpt(l.ctx, &req)
+	if err != nil {
+		logx.WithContext(l.ctx).Error("GetUserListFromGroupWithOpt err :", err)
+		return err
 	}
-	if !tag {
+	var uids []string
+	for _, u := range resp.UserIDOptList {
+		uids = append(uids, u.UserID)
 	}
-	return &pb.OnlinePushMsgResp{
-		Resp: resp,
-	}, nil
+	mqPushMsg := chatpb.PushMsgDataToMQ{MsgData: message.MsgData, TraceId: xtrace.TraceIdFromContext(l.ctx), PushToUserID: uids}
+	pid, offset, err := l.svcCtx.GroupPushProducer.SendMessage(l.ctx, &mqPushMsg)
+	if err != nil {
+		logx.WithContext(l.ctx).Error("kafka send failed ", "send data ", mqPushMsg.String(), " pid ", pid, " offset ", offset, " err ", err.Error())
+		return err
+	}
+	return nil
+}
+
+func (l *OnlinePushMsgLogic) sendMessageToPush(message *pb.OnlinePushMsgReq, pushToUserID string) error {
+	mqPushMsg := chatpb.PushMsgDataToMQ{MsgData: message.MsgData, PushToUserID: []string{pushToUserID}, TraceId: xtrace.TraceIdFromContext(l.ctx)}
+	pid, offset, err := l.svcCtx.SinglePushProducer.SendMessage(l.ctx, &mqPushMsg)
+	if err != nil {
+		logx.WithContext(l.ctx).Error("kafka send failed", mqPushMsg.TraceId, "send data", mqPushMsg.String(), "pid", pid, "offset", offset, "err", err.Error())
+		return err
+	}
+	return nil
 }

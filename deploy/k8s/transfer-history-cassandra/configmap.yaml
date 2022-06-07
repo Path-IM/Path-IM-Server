@@ -58,3 +58,5 @@ data:
     
     MsgPushRpc:
       Target: "k8s://pathim/msgpush-rpc-svc:8080"
+    ImUserRpc:
+      Target: "k8s://pathim/imuser-rpc-svc:8080"

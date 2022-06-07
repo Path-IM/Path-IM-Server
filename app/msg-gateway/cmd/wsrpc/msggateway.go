@@ -10,7 +10,6 @@ import (
 	"github.com/Path-IM/Path-IM-Server/app/msg-gateway/cmd/wsrpc/internal/wsconfig"
 	"github.com/Path-IM/Path-IM-Server/app/msg-gateway/cmd/wsrpc/internal/wssvc"
 	"github.com/Path-IM/Path-IM-Server/app/msg-gateway/cmd/wsrpc/pb"
-	"github.com/gorilla/websocket"
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/service"
 	"github.com/zeromicro/go-zero/zrpc"
@@ -40,15 +39,7 @@ func ws() {
 	handler.RegisterHandlers(server, ctx)
 
 	fmt.Printf("Starting server at %s:%d...\n", wsConfig.Host, wsConfig.Port)
-	go func() {
-		time.Sleep(time.Second * 3)
-		_, _, err := websocket.DefaultDialer.Dial(
-			fmt.Sprintf("ws://127.0.0.1:%d?token=test-token&userID=-1&platform=Linux", wsConfig.Port),
-			nil)
-		if err != nil {
-			panic("自检程序失败:" + err.Error())
-		}
-	}()
+
 	server.Start()
 }
 
