@@ -2,7 +2,7 @@
 使用go-zero框架开发的IM服务器。 有高度定制IM需求的开发者，可以使用这个项目。
 > 普通开发者可以在[演示项目](https://github.com/Path-IM/Path-IM-Server-Demo) 基础上进行开发。
 
-> [文档入口](https://pathim.msypy.xyz)
+> [文档入口](https://doc.pathim.cn)
 ## 优势
 - 使用go-zero微服务框架 开发更方便 自带`链路追踪`,`p2c服务负载均衡`,`熔断限流`,`自适应降载`等功能
 - 不依赖`mysql`所有业务逻辑均请求你自己的业务rpc接口 你只需实现rpc接口即可 
