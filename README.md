@@ -58,8 +58,11 @@ cd deploy/local/pathim-docker
 docker-compose up -d
 ```
 ### 服务运行情况
+#### docker ps
 ![img.png](https://raw.githubusercontent.com/Path-IM/Path-IM-Docs/main/images/20220608/docker-compose.png)
-
+#### jaeger
+> 打开`内网/公网ip`:16686 进入jaeger-ui
+![img.png](https://raw.githubusercontent.com/Path-IM/Path-IM-Docs/main/images/20220608/jaegerui.png)
 ### 
 ## 源码部署
 ### 编译命令
@@ -78,12 +81,3 @@ CMD ["/app/zeroservice"]
 ```shell
 docker run -v ./xxx.yaml:/app/etc/xxx.yaml your-image:tag
 ```
-
-# 其他
-## jaeger
-![jaeger.png](https://raw.githubusercontent.com/Path-IM/Path-IM-Docs/main/images/20220517/jaeger.png)
-## 如果选择使用mongo或cassandra
-- 1、msg-transfer中只部署`history-cassandra`服务，或`history-mongo`服务
-- 2、msg-rpc配置文件`HistoryDBType`设置为`cassandra`/`mongo`
-
-> 本项目设计思路源自[Open-IM-Server](https://github.com/OpenIMSDK/Open-IM-Server)
