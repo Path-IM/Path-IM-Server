@@ -35,7 +35,7 @@
 - ！！！一定要先替换内网地址 目录下文件全部替换 替换ip地址`10.1.3.12`为`内网/公网ip`
 - ！！！一定要先替换内网地址 目录下文件全部替换 替换ip地址`10.1.3.12`为`内网/公网ip`
 - ！！！一定要先替换内网地址 目录下文件全部替换 替换ip地址`10.1.3.12`为`内网/公网ip`
-### 如何按照docker-compose
+### 如何安装docker-compose
 #### linux
 ```shell
 wget https://github.91chi.fun//https://github.com//docker/compose/releases/download/v2.5.1/docker-compose-linux-x86_64
