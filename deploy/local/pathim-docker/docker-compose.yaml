@@ -1,0 +1,90 @@
+version: v3
+networks:
+  pathim_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.26.26.0/24
+services:
+  # ------------- path-im-server ------------- #
+  imuser-rpc:
+    image: registry.cn-shanghai.aliyuncs.com/pathim/imuser-rpc:v1.0.0-x86_64
+    environment:
+      - POD_IP=172.26.26.71
+      - POD_NAME=imuser-rpc
+    restart: always
+    volumes:
+      - ./imuser-rpc.yaml:/app/etc/imuser.yaml
+    networks:
+      pathim_net:
+        ipv4_address: 172.26.26.71
+  msgcallback-rpc:
+    image: registry.cn-shanghai.aliyuncs.com/pathim/msgcallback-rpc:v1.0.0-x86_64
+    environment:
+      - POD_IP=172.26.26.72
+      - POD_NAME=msgcallback-rpc
+    restart: always
+    volumes:
+      - ./msgcallback-rpc.yaml:/app/etc/msgcallback.yaml
+    networks:
+      pathim_net:
+        ipv4_address: 172.26.26.72
+  msg-rpc:
+    image: registry.cn-shanghai.aliyuncs.com/pathim/msg-rpc:v1.0.0-x86_64
+    environment:
+      - POD_IP=172.26.26.73
+      - POD_NAME=msg-rpc
+    restart: always
+    volumes:
+      - ./msg-rpc.yaml:/app/etc/chat.yaml
+    networks:
+      pathim_net:
+        ipv4_address: 172.26.26.73
+  msggateway-wsrpc:
+    image: registry.cn-shanghai.aliyuncs.com/pathim/msggateway-wsrpc:v1.0.0-x86_64
+    environment:
+      - POD_IP=172.26.26.74
+      - POD_NAME=msggateway-wsrpc
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./msggateway-rpc.yaml:/app/etc/msggateway-rpc.yaml
+      - ./msggateway-ws.yaml:/app/etc/msggateway-ws.yaml
+    networks:
+      pathim_net:
+        ipv4_address: 172.26.26.74
+  msgpush-rpc:
+    image: registry.cn-shanghai.aliyuncs.com/pathim/msgpush-rpc:v1.0.0-x86_64
+    environment:
+      - POD_IP=172.26.26.75
+      - POD_NAME=msgpush-rpc
+    restart: always
+    volumes:
+      - ./msgpush-rpc.yaml:/app/etc/msgpush.yaml
+    networks:
+      pathim_net:
+        ipv4_address: 172.26.26.75
+  msgtransfer-history-cassandra:
+    image: registry.cn-shanghai.aliyuncs.com/pathim/msgtransfer-history-cassandra:v1.0.0-x86_64
+    environment:
+      - POD_IP=172.26.26.76
+      - POD_NAME=msgtransfer-history-cassandra
+    restart: always
+    volumes:
+      - ./msgtransfer-history-cassandra.yaml:/app/etc/history.yaml
+    networks:
+      pathim_net:
+        ipv4_address: 172.26.26.76
+  msgtransfer-history-mongo: # 和 msgtransfer-history-cassandra 二选一
+    image: registry.cn-shanghai.aliyuncs.com/pathim/msgtransfer-history-mongo:v1.0.0-x86_64
+    environment:
+      - POD_IP=172.26.26.77
+      - POD_NAME=msgtransfer-history-mongo
+    restart: always
+    volumes:
+      - ./msgtransfer-history-mongo.yaml:/app/etc/history.yaml
+    networks:
+      pathim_net:
+        ipv4_address: 172.26.26.77
+  # ============= path-im-server ============= #

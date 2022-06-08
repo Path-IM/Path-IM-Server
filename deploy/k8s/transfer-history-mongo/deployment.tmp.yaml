@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: msgtransfer-history-mongo
+  namespace: pathim
+  labels:
+    app: msgtransfer-history-mongo
+spec:
+  replicas: 3
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: msgtransfer-history-mongo
+  template:
+    metadata:
+      labels:
+        app: msgtransfer-history-mongo
+    spec:
+      serviceAccountName: find-endpoints
+      containers:
+        - name: msgtransfer-history-mongo
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.hostIP
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+          envFrom:
+            - configMapRef:
+                name: pathim-configmap
+          image: "TMP_IMAGE"
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh","-c","sleep 5"]
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 60Mi
+            limits:
+              cpu: 100m
+              memory: 60Mi
+          volumeMounts:
+            - name: timezone
+              mountPath: /etc/localtime
+            - name: etc
+              mountPath: /app/etc/history.yaml
+              subPath: history.yaml
+      imagePullSecrets:
+        - name: registry
+      volumes:
+        - name: etc
+          configMap:
+            name: etc-msgtransfer-history-mongo
+        - name: timezone
+          hostPath:
+            path: /usr/share/zoneinfo/Asia/Shanghai
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: msgtransfer-history-mongo-svc
+  namespace: pathim
+spec:
+  ports:
+    - port: 8080
+  selector:
+    app: msgtransfer-history-mongo
+
+---

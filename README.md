@@ -28,21 +28,56 @@
 ## 业务流程图
 ![flow.svg](https://raw.githubusercontent.com/Path-IM/Path-IM-Docs/main/images/20220608/Path-IM-Server%E4%B8%9A%E5%8A%A1%E6%B5%81%E7%A8%8B%E5%9B%BE.svg)
 
-# 演示项目:Path-IM-Server (最好的文档就是demo)
-> 使用 `Path-IM-Server` 开发一个 `IM` 应用 
-## 开发计划
-- [x] 完成 Path-IM-Server 的 TODO [第一天](https://github.com/Path-IM/Path-IM-Server/tree/main/docs/day01)
-- [x] 完成 用户模块 rpc 接口 编写 [第二天](https://github.com/Path-IM/Path-IM-Server/tree/main/docs/day02)
-- [x] 完成 用户关系模块 rpc 接口 编写 [第三天](https://github.com/Path-IM/Path-IM-Server/tree/main/docs/day03/relation.md)
-- [x] 完成 群聊模块 rpc 接口 编写 [第三天](https://github.com/Path-IM/Path-IM-Server/tree/main/docs/day03/group.md)
-- [x] 完成 用户模块 api 接口 编写 [第四天](https://github.com/Path-IM/Path-IM-Server/tree/main/docs/day04)
-- [x] 完成 用户关系模块 api 接口 编写 [第四天](https://github.com/Path-IM/Path-IM-Server/tree/main/docs/day04)
-- [x] 完成 群聊模块 api 接口 编写 [第四天](https://github.com/Path-IM/Path-IM-Server/tree/main/docs/day04)
-- [x] 完成 k8s 部署 [第五天](https://github.com/Path-IM/Path-IM-Server/tree/main/deploy/k8s)
-- [x] 完成 api 文档 编写 [第六天](https://github.com/Path-IM/Path-IM-Server/tree/main/docs/api.md)
-- [x] 完成 消息持久化存储 文档 编写 [第十天](https://github.com/Path-IM/Path-IM-Server/tree/main/docs/persistent.md)
-- [x] 支持 cassandra 离线消息存储 [第十二天](https://github.com/Path-IM/Path-IM-Server/tree/main/docs/cassandra.md)
-- [x] go-zero periodlimit 用户发送消息限流 [第十二天](https://github.com/Path-IM/Path-IM-Server/tree/main/docs/periodlimit.md)
+# 部署运行
+## docker-compose
+> 目录：deploy/local/pathim-docker
+
+！！！一定要先替换内网地址 目录下文件全部替换 替换ip地址`10.1.3.12`为`内网/公网ip`
+！！！一定要先替换内网地址 目录下文件全部替换 替换ip地址`10.1.3.12`为`内网/公网ip`
+！！！一定要先替换内网地址 目录下文件全部替换 替换ip地址`10.1.3.12`为`内网/公网ip`
+### 如何按照docker-compose
+#### linux
+```shell
+wget https://github.91chi.fun//https://github.com//docker/compose/releases/download/v2.5.1/docker-compose-linux-x86_64
+chmod +x docker-compose-linux-x86_64 && mv docker-compose-linux-x86_64 /usr/bin/docker-compose
+```
+### 依赖
+```shell
+cd deploy/local/pathim-docker/dependencies
+docker-compose up -d
+```
+> 打开`内网/公网ip`:8081 进入kafka-ui 主动创建以下topic
+
+- im_msg
+- im_msg_push_single
+- im_msg_push_group
+[img.png](https://raw.githubusercontent.com/Path-IM/Path-IM-Docs/main/images/20220608/kafkaui.png)
+### Path-IM-Server各服务
+```shell
+cd deploy/local/pathim-docker
+docker-compose up -d
+```
+### 服务运行情况
+[img.png](https://raw.githubusercontent.com/Path-IM/Path-IM-Docs/main/images/20220608/docker-compose.png)
+
+### 
+## 源码部署
+### 编译命令
+```shell
+go build -o bin .
+```
+### Dockerfile
+```dockerfile
+FROM showurl/zerobase
+WORKDIR /app
+COPY ./bin /app/zeroservice
+RUN chmod +x /app/zeroservice && mkdir /app/etc
+CMD ["/app/zeroservice"]
+```
+### docker容器中运行
+```shell
+docker run -v ./xxx.yaml:/app/etc/xxx.yaml your-image:tag
+```
 
 # 其他
 ## jaeger

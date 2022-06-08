@@ -1,0 +1,50 @@
+Name: msgtransfer-history-mongo
+
+Log:
+  ServiceName: msgtransfer-history-mongo
+  Level: info
+
+Prometheus:
+  Host: 0.0.0.0
+  Port: 8080
+  Path: /metrics
+
+Telemetry:
+  Name: msgtransfer-history-mongo
+  Endpoint: http://10.1.3.12:14268/api/traces
+  Sampler: 1.0
+  Batcher: jaeger
+Kafka:
+  StorageConsumer:
+    Brokers:
+      - 10.1.3.12:9092
+    Topic: im_msg
+    MsgToHistoryGroupID: msgtransfer_history
+  SinglePush:
+    Brokers:
+      - 10.1.3.12:9092
+    Topic: im_msg_push_single
+  GroupPush:
+    Brokers:
+      - 10.1.3.12:9092
+    Topic: im_msg_push_group
+
+Redis:
+  Conf:
+    Host: 10.1.3.12:6379
+    Pass: "123456"
+    Type: node
+  DB: 0
+Mongo:
+  Uri: mongodb://10.1.3.12/mongo/admin
+  SingleChatMsgCollectionName: "single_chat_msg"
+  GroupChatMsgCollectionName: "group_chat_msg"
+  DBDatabase: "pathim"
+  DBTimeout: 30
+
+MsgPushRpc:
+  Endpoints:
+    - msgpush-rpc:8080
+ImUserRpc:
+  Endpoints:
+    - imuser-rpc:8080

@@ -1,0 +1,62 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: etc-msgtransfer-history-mongo
+  namespace: pathim
+data:
+  history.yaml: |-
+    Name: msgtransfer-history-mongo
+    
+    Log:
+      ServiceName: msgtransfer-history-mongo
+      Level: info
+    
+    Prometheus:
+      Host: 0.0.0.0
+      Port: 8080
+      Path: /metrics
+    
+    Telemetry:
+      Name: msgtransfer-history-mongo
+      Endpoint: http://101.43.214.203:14268/api/traces
+      Sampler: 1.0
+      Batcher: jaeger
+    Kafka:
+      StorageConsumer:
+        Brokers:
+          - 101.43.214.203:9092
+        Topic: im_msg
+        MsgToHistoryGroupID: msgtransfer_history
+      SinglePush:
+        Brokers:
+          - 101.43.214.203:9092
+        Topic: im_msg_push_single
+      GroupPush:
+        Brokers:
+          - 101.43.214.203:9092
+        Topic: im_msg_push_supergroup
+    
+    Redis:
+      Conf:
+        Host: redis:6379
+        Pass: "123456"
+        Type: node
+      DB: 0
+    
+    Cassandra:
+      Hosts:
+        - cassandra-0.cassandra.pathim.svc.cluster.local
+      Port: 9042
+      Keyspace: "pathim"
+      Username: "cassandra"
+      Password: "cassandra"
+      Consistency: ONE
+      SingleChatMsgTableName: "single_chat_msg"
+      GroupChatMsgTableName: "group_chat_msg"
+      TimeoutSecond: 5
+    
+    MsgPushRpc:
+      Target: "k8s://pathim/msgpush-rpc-svc:8080"
+    ImUserRpc:
+      Target: "k8s://pathim/imuser-rpc-svc:8080"

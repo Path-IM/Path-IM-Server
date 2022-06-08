@@ -1,0 +1,56 @@
+Name: msgtransfer-history-cassandra
+
+Log:
+  ServiceName: msgtransfer-history-cassandra
+  Level: info
+
+Prometheus:
+  Host: 0.0.0.0
+  Port: 8080
+  Path: /metrics
+
+Telemetry:
+  Name: msgtransfer-history-cassandra
+  Endpoint: http://10.1.3.12:14268/api/traces
+  Sampler: 1.0
+  Batcher: jaeger
+Kafka:
+  StorageConsumer:
+    Brokers:
+      - 10.1.3.12:9092
+    Topic: im_msg
+    MsgToHistoryGroupID: msgtransfer_history
+  SinglePush:
+    Brokers:
+      - 10.1.3.12:9092
+    Topic: im_msg_push_single
+  GroupPush:
+    Brokers:
+      - 10.1.3.12:9092
+    Topic: im_msg_push_group
+
+Redis:
+  Conf:
+    Host: 10.1.3.12:6379
+    Pass: "123456"
+    Type: node
+  DB: 0
+
+Cassandra:
+  Hosts:
+    - 10.1.3.12
+  Port: 9042
+  Keyspace: "pathim"
+  Username: "cassandra"
+  Password: "cassandra"
+  Consistency: ONE
+  SingleChatMsgTableName: "single_chat_msg"
+  GroupChatMsgTableName: "group_chat_msg"
+  TimeoutSecond: 5
+
+MsgPushRpc:
+  Endpoints:
+    - msgpush-rpc:8080
+ImUserRpc:
+  Endpoints:
+    - imuser-rpc:8080
