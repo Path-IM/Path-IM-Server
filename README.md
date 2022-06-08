@@ -53,6 +53,13 @@ docker-compose up -d
 - im_msg_push_group
 ![img.png](https://raw.githubusercontent.com/Path-IM/Path-IM-Docs/main/images/20220608/kafkaui.png)
 ### Path-IM-Server各服务
+> 确定你要使用的离线消息存储  mongo/cassandra
+#### 假设你使用mongo做离线消息存储
+- 修改`deploy/local/pathim-docker/msg-rpc.yaml` --> `HistoryDBType:mongo` 
+- 删除 `deploy/local/pathim-docker/docker-compose.yaml` 中 `msgtransfer-history-cassandra`服务
+#### 假设你使用cassandra做离线消息存储
+- 修改`deploy/local/pathim-docker/msg-rpc.yaml` --> `HistoryDBType:cassandra` 
+- 删除 `deploy/local/pathim-docker/docker-compose.yaml` 中 `msgtransfer-history-mongo`服务
 ```shell
 cd deploy/local/pathim-docker
 docker-compose up -d
