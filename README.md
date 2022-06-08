@@ -51,14 +51,14 @@ docker-compose up -d
 - im_msg
 - im_msg_push_single
 - im_msg_push_group
-[img.png](https://raw.githubusercontent.com/Path-IM/Path-IM-Docs/main/images/20220608/kafkaui.png)
+![img.png](https://raw.githubusercontent.com/Path-IM/Path-IM-Docs/main/images/20220608/kafkaui.png)
 ### Path-IM-Server各服务
 ```shell
 cd deploy/local/pathim-docker
 docker-compose up -d
 ```
 ### 服务运行情况
-[img.png](https://raw.githubusercontent.com/Path-IM/Path-IM-Docs/main/images/20220608/docker-compose.png)
+![img.png](https://raw.githubusercontent.com/Path-IM/Path-IM-Docs/main/images/20220608/docker-compose.png)
 
 ### 
 ## 源码部署
