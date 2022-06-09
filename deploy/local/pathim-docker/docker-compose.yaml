@@ -8,7 +8,7 @@ networks:
 services:
   # ------------- path-im-server ------------- #
   imuser-rpc:
-    image: registry.cn-shanghai.aliyuncs.com/pathim/imuser-rpc:v1.0.0-x86_64
+    image: registry.cn-shanghai.aliyuncs.com/pathim/imuser-rpc:v1.0.1-x86_64
     environment:
       - POD_IP=172.26.26.71
       - POD_NAME=imuser-rpc
@@ -41,7 +41,7 @@ services:
       pathim_net:
         ipv4_address: 172.26.26.73
   msggateway-wsrpc:
-    image: registry.cn-shanghai.aliyuncs.com/pathim/msggateway-wsrpc:v1.0.0-x86_64
+    image: registry.cn-shanghai.aliyuncs.com/pathim/msggateway-wsrpc:v1.0.1-x86_64
     environment:
       - POD_IP=172.26.26.74
       - POD_NAME=msggateway-wsrpc

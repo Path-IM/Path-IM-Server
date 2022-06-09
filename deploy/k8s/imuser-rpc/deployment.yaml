@@ -42,7 +42,7 @@ spec:
           envFrom:
             - configMapRef:
                 name: pathim-configmap
-          image: "ccr.ccs.tencentyun.com/zeroim/imuser-rpc:20220607115611"
+          image: "ccr.ccs.tencentyun.com/zeroim/imuser-rpc:20220609161937"
           lifecycle:
             preStop:
               exec:
@@ -94,4 +94,3 @@ spec:
     - port: 8080
   selector:
     app: imuser-rpc
-

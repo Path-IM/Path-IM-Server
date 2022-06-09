@@ -90,3 +90,4 @@ data:
       Pass: "123456"
       Type: node
     RpcPort: 8080
+    EnableUserCallback: true
