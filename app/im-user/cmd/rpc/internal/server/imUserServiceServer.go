@@ -57,3 +57,9 @@ func (s *ImUserServiceServer) IfPreviewMessage(ctx context.Context, in *pb.IfPre
 	l := logic.NewIfPreviewMessageLogic(ctx, s.svcCtx)
 	return l.IfPreviewMessage(in)
 }
+
+//  用户回调
+func (s *ImUserServiceServer) UserCallback(ctx context.Context, in *pb.UserCallbackReq) (*pb.UserCallbackResp, error) {
+	l := logic.NewUserCallbackLogic(ctx, s.svcCtx)
+	return l.UserCallback(in)
+}

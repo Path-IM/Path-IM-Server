@@ -8,12 +8,13 @@ import (
 
 type Config struct {
 	rest.RestConf
-	ImUserRpc        zrpc.RpcClientConf
-	MsgRpc           zrpc.RpcClientConf
-	Websocket        WebsocketConfig
-	SendMsgRateLimit RateLimitConfig
-	Redis            redis.RedisConf
-	RpcPort          int
+	ImUserRpc          zrpc.RpcClientConf
+	MsgRpc             zrpc.RpcClientConf
+	Websocket          WebsocketConfig
+	SendMsgRateLimit   RateLimitConfig
+	Redis              redis.RedisConf
+	RpcPort            int
+	EnableUserCallback bool `json:",optional"`
 }
 type WebsocketConfig struct {
 	MaxConnNum     int

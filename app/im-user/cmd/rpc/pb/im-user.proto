@@ -95,7 +95,21 @@ message IfPreviewMessageResp {
   bool ifPreview = 2;
   string replaceTitle = 3;
 }
-
+message UserCallbackReq {
+  enum Event {
+    Online = 0;
+    Offline = 1;
+    MsgTooOften = 2;
+  }
+  Event event = 1;
+  // 13位时间戳
+  int64 timestamp = 2;
+  string userID = 3;
+  string platform = 4;
+  string RemoteAddr = 5;
+}
+message UserCallbackResp {
+}
 service imUserService{
   // 判断用户A是否在B黑名单中
   rpc IfAInBBlacklist(IfAInBBlacklistReq) returns (IfAInBBlacklistResp);
@@ -109,4 +123,6 @@ service imUserService{
   rpc VerifyToken(VerifyTokenReq) returns (VerifyTokenResp);
   // 是否预览消息
   rpc IfPreviewMessage(IfPreviewMessageReq) returns (IfPreviewMessageResp);
+  // 用户回调
+  rpc UserCallback(UserCallbackReq) returns (UserCallbackResp);
 }

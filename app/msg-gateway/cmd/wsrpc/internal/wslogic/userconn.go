@@ -2,8 +2,10 @@ package wslogic
 
 import (
 	"context"
+	imuserpb "github.com/Path-IM/Path-IM-Server/app/im-user/cmd/rpc/pb"
 	"github.com/gorilla/websocket"
 	"github.com/zeromicro/go-zero/core/logx"
+	"time"
 )
 
 func (l *MsggatewayLogic) addUserConn(uid string, platformID string, conn *UserConn, token string) error {
@@ -12,6 +14,19 @@ func (l *MsggatewayLogic) addUserConn(uid string, platformID string, conn *UserC
 	err := l.rep.AddUserConn(uid, platformID)
 	if err != nil {
 		return err
+	}
+	if l.svcCtx.Config.EnableUserCallback {
+		_, err = l.svcCtx.ImUserService().UserCallback(l.ctx, &imuserpb.UserCallbackReq{
+			Event:      imuserpb.UserCallbackReq_Online,
+			Timestamp:  time.Now().UnixMilli(),
+			UserID:     uid,
+			Platform:   platformID,
+			RemoteAddr: conn.RemoteAddr().String(),
+		})
+		if err != nil {
+			logx.Errorf("user callback err %s", err.Error())
+			err = nil
+		}
 	}
 	if oldConnMap, ok := l.wsUserToConn[uid]; ok {
 		oldConnMap[platformID] = conn
@@ -70,6 +85,19 @@ func (l *MsggatewayLogic) delUserConn(conn *UserConn) {
 	err = l.rep.DelUserConn(uid, platform)
 	if err != nil {
 		logx.WithContext(l.ctx).Error("redis DelUserConn err ", err.Error(), " uid ", uid, " platform ", platform)
+	}
+	if l.svcCtx.Config.EnableUserCallback {
+		_, err = l.svcCtx.ImUserService().UserCallback(l.ctx, &imuserpb.UserCallbackReq{
+			Event:      imuserpb.UserCallbackReq_Offline,
+			Timestamp:  time.Now().UnixMilli(),
+			UserID:     uid,
+			Platform:   platform,
+			RemoteAddr: conn.RemoteAddr().String(),
+		})
+		if err != nil {
+			logx.Errorf("user callback err %s", err.Error())
+			err = nil
+		}
 	}
 }
 

@@ -34,6 +34,8 @@ type ImUserServiceClient interface {
 	VerifyToken(ctx context.Context, in *VerifyTokenReq, opts ...grpc.CallOption) (*VerifyTokenResp, error)
 	// 是否预览消息
 	IfPreviewMessage(ctx context.Context, in *IfPreviewMessageReq, opts ...grpc.CallOption) (*IfPreviewMessageResp, error)
+	// 用户回调
+	UserCallback(ctx context.Context, in *UserCallbackReq, opts ...grpc.CallOption) (*UserCallbackResp, error)
 }
 
 type imUserServiceClient struct {
@@ -98,6 +100,15 @@ func (c *imUserServiceClient) IfPreviewMessage(ctx context.Context, in *IfPrevie
 	return out, nil
 }
 
+func (c *imUserServiceClient) UserCallback(ctx context.Context, in *UserCallbackReq, opts ...grpc.CallOption) (*UserCallbackResp, error) {
+	out := new(UserCallbackResp)
+	err := c.cc.Invoke(ctx, "/imuser.imUserService/UserCallback", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ImUserServiceServer is the server API for ImUserService service.
 // All implementations must embed UnimplementedImUserServiceServer
 // for forward compatibility
@@ -114,6 +125,8 @@ type ImUserServiceServer interface {
 	VerifyToken(context.Context, *VerifyTokenReq) (*VerifyTokenResp, error)
 	// 是否预览消息
 	IfPreviewMessage(context.Context, *IfPreviewMessageReq) (*IfPreviewMessageResp, error)
+	// 用户回调
+	UserCallback(context.Context, *UserCallbackReq) (*UserCallbackResp, error)
 	mustEmbedUnimplementedImUserServiceServer()
 }
 
@@ -138,6 +151,9 @@ func (UnimplementedImUserServiceServer) VerifyToken(context.Context, *VerifyToke
 }
 func (UnimplementedImUserServiceServer) IfPreviewMessage(context.Context, *IfPreviewMessageReq) (*IfPreviewMessageResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IfPreviewMessage not implemented")
+}
+func (UnimplementedImUserServiceServer) UserCallback(context.Context, *UserCallbackReq) (*UserCallbackResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UserCallback not implemented")
 }
 func (UnimplementedImUserServiceServer) mustEmbedUnimplementedImUserServiceServer() {}
 
@@ -260,6 +276,24 @@ func _ImUserService_IfPreviewMessage_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ImUserService_UserCallback_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserCallbackReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ImUserServiceServer).UserCallback(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/imuser.imUserService/UserCallback",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ImUserServiceServer).UserCallback(ctx, req.(*UserCallbackReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ImUserService_ServiceDesc is the grpc.ServiceDesc for ImUserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -290,6 +324,10 @@ var ImUserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "IfPreviewMessage",
 			Handler:    _ImUserService_IfPreviewMessage_Handler,
+		},
+		{
+			MethodName: "UserCallback",
+			Handler:    _ImUserService_UserCallback_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

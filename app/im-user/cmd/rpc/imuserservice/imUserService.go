@@ -26,6 +26,8 @@ type (
 	IfAInBFriendListResp                 = pb.IfAInBFriendListResp
 	IfPreviewMessageReq                  = pb.IfPreviewMessageReq
 	IfPreviewMessageResp                 = pb.IfPreviewMessageResp
+	UserCallbackReq                      = pb.UserCallbackReq
+	UserCallbackResp                     = pb.UserCallbackResp
 	UserIDOpt                            = pb.UserIDOpt
 	UserInfo                             = pb.UserInfo
 	VerifyTokenReq                       = pb.VerifyTokenReq
@@ -44,6 +46,8 @@ type (
 		VerifyToken(ctx context.Context, in *VerifyTokenReq, opts ...grpc.CallOption) (*VerifyTokenResp, error)
 		//  是否预览消息
 		IfPreviewMessage(ctx context.Context, in *IfPreviewMessageReq, opts ...grpc.CallOption) (*IfPreviewMessageResp, error)
+		//  用户回调
+		UserCallback(ctx context.Context, in *UserCallbackReq, opts ...grpc.CallOption) (*UserCallbackResp, error)
 	}
 
 	defaultImUserService struct {
@@ -91,4 +95,10 @@ func (m *defaultImUserService) VerifyToken(ctx context.Context, in *VerifyTokenR
 func (m *defaultImUserService) IfPreviewMessage(ctx context.Context, in *IfPreviewMessageReq, opts ...grpc.CallOption) (*IfPreviewMessageResp, error) {
 	client := pb.NewImUserServiceClient(m.cli.Conn())
 	return client.IfPreviewMessage(ctx, in, opts...)
+}
+
+//  用户回调
+func (m *defaultImUserService) UserCallback(ctx context.Context, in *UserCallbackReq, opts ...grpc.CallOption) (*UserCallbackResp, error) {
+	client := pb.NewImUserServiceClient(m.cli.Conn())
+	return client.UserCallback(ctx, in, opts...)
 }
