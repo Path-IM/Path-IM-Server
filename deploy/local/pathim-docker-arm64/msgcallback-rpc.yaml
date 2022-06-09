@@ -1,0 +1,14 @@
+Name: msgcallback-rpc
+ListenOn: :8080
+Log:
+  ServiceName: msgcallback-rpc
+  Level: info
+Prometheus:
+  Host: 0.0.0.0
+  Port: 80
+  Path: /metrics
+Telemetry:
+  Name: msgcallback-rpc
+  Endpoint: http://10.1.3.12:14268/api/traces
+  Sampler: 1.0
+  Batcher: jaeger

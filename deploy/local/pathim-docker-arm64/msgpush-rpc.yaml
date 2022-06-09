@@ -1,0 +1,51 @@
+Name: msgpush-rpc
+ListenOn: :8080
+
+Log:
+  ServiceName: msgpush-rpc
+  Level: info
+
+Prometheus:
+  Host: 0.0.0.0
+  Port: 80
+  Path: /metrics
+
+Telemetry:
+  Name: msgpush-rpc
+  Endpoint: http://10.1.3.12:14268/api/traces
+  Sampler: 1.0
+  Batcher: jaeger
+
+PushType: "jpns"
+Jpns:
+  PushIntent: "intent:#Intent;component=io.openim.app.enterprisechat/io.openim.app.enterprisechat.MainActivity;end"
+  PushUrl: "https://api.jpush.cn/v3/push"
+  AppKey: "cf47465a368f24c659608e7e"
+  MasterSecret: "02204efe3f3832947a236ee5"
+MobPush:
+  AppKey: ""
+  AppSecret: ""
+  ApnsProduction: false
+  ApnsCateGory: ""
+  ApnsSound: ""
+  AndroidSound: ""
+ImUserRpc:
+  Endpoints:
+    - imuser-rpc:8080
+
+OfflinePushDefaultTitle: "你收到一条新消息"
+OfflinePushGroupTitle: "你收到一条群消息"
+SinglePushConsumer:
+  Brokers:
+    - 10.1.3.12:9092
+  Topic: im_msg_push_single
+  SinglePushGroupID: "msg_offline_push"
+GroupPushConsumer:
+  Brokers:
+    - 10.1.3.12:9092
+  Topic: im_msg_push_group
+  GroupPushGroupID: "msg_offline_push"
+Redis:
+  Host: 10.1.3.12:6379
+  Pass: "123456"
+  Type: node

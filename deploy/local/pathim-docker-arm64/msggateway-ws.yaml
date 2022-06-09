@@ -1,0 +1,44 @@
+Name: msggateway-ws
+Host: 0.0.0.0
+Port: 9090
+
+Websocket:
+  MaxConnNum: 10000
+  TimeOut: 10
+  ReadBufferSize: 4096
+
+Log:
+  ServiceName: msggateway-ws
+  Level: info
+
+
+Prometheus:
+  Host: 0.0.0.0
+  Port: 81
+  Path: /metrics
+
+Telemetry:
+  Name: msggateway-ws
+  Endpoint: http://10.1.3.12:14268/api/traces
+  Sampler: 1.0
+  Batcher: jaeger
+
+#rpc service
+ImUserRpc:
+  Endpoints:
+    - imuser-rpc:8080
+
+MsgRpc:
+  Endpoints:
+    - msg-rpc:8080
+
+SendMsgRateLimit:
+  Enable: true
+  Seconds: 1
+  Quota: 3
+
+Redis:
+  Host: 10.1.3.12:6379
+  Pass: "123456"
+  Type: node
+RpcPort: 8080
