@@ -138,7 +138,7 @@ func (l *MsggatewayLogic) readMsg(conn *UserConn, uid string, platformID string)
 		if err != nil {
 			uid, platform := l.getUserUid(conn)
 			logx.Error("WS ReadMsg error ", " userIP ", conn.RemoteAddr().String(), " userUid ", uid, " platform ", platform, " error ", err.Error())
-			l.delUserConn(conn)
+			l.delUserConn(context.Background(), conn)
 			return
 		}
 		xtrace.RunWithTrace("", func(ctx context.Context) {

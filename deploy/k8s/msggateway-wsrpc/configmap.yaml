@@ -37,6 +37,11 @@ data:
         - 101.43.214.203:9092
       Topic: im_msg_push_supergroup
       GroupPushGroupID: ""
+    KickConnConsumerGroup:
+      Brokers:
+        - 101.43.214.203:9092
+      Topic: kick_conn
+      KickConnGroupID: ""
     Producer:
       SinglePush:
         Brokers:
@@ -46,6 +51,10 @@ data:
         Brokers:
           - 101.43.214.203:9092
         Topic: im_msg_push_supergroup
+      KickConn:
+        Brokers:
+          - 101.43.214.203:9092
+        Topic: kick_conn
 
   msggateway-ws.yaml: |-
     Name: msggateway-ws

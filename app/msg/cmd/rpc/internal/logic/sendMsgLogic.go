@@ -177,7 +177,7 @@ func (l *SendMsgLogic) modifyMessageByUserMessageReceiveOpt(userID, sourceID str
 	if err != nil {
 		logx.WithContext(l.ctx).Error("GetSingleConversationMsgOpt from redis err ", pb.String(), " ", err.Error())
 		return true
-	} else if resp.CommonResp.ErrCode != 0 {
+	} else if resp.CommonResp == nil || resp.CommonResp.ErrCode != 0 {
 		return true
 	} else {
 		switch resp.Opts {

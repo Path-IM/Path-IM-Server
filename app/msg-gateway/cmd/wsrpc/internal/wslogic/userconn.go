@@ -76,7 +76,7 @@ func (l *MsggatewayLogic) getUserUid(conn *UserConn) (uid string, platform strin
 	return "", ""
 }
 
-func (l *MsggatewayLogic) delUserConn(conn *UserConn) {
+func (l *MsggatewayLogic) delUserConn(ctx context.Context, conn *UserConn) {
 	rwLock.Lock()
 	defer rwLock.Unlock()
 	var platform, uid string
@@ -98,7 +98,7 @@ func (l *MsggatewayLogic) delUserConn(conn *UserConn) {
 	if err != nil {
 		logx.WithContext(l.ctx).Error("close conn err", "", "uid", uid, "platform", platform)
 	}
-	err = l.rep.DelUserConn(uid, platform)
+	err = l.rep.DelUserConn(ctx, uid, platform)
 	if err != nil {
 		logx.WithContext(l.ctx).Error("redis DelUserConn err ", err.Error(), " uid ", uid, " platform ", platform)
 	}
@@ -137,11 +137,9 @@ func (l *MsggatewayLogic) GetOnlineUserMap() map[string]interface{} {
 	return m
 }
 
-func (l *MsggatewayLogic) DelUserConn(uid string, platform string) {
-	rwLock.RLock()
-	defer rwLock.RUnlock()
+func (l *MsggatewayLogic) DelUserConn(ctx context.Context, uid string, platform string) {
 	conn := l.GetUserConn(uid, platform)
-	l.delUserConn(conn)
+	l.delUserConn(ctx, conn)
 }
 
 func (l *MsggatewayLogic) SendMsgToUser(ctx context.Context, conn *UserConn, bMsg []byte, RecvPlatForm, RecvID string) error {

@@ -11,9 +11,9 @@ func (r *Rep) AddUserConn(uid string, platform string) error {
 	return r.Redis.Hset(key, platform, fmt.Sprintf("%s:%d", r.podIp, r.svcCtx.Config.RpcPort))
 }
 
-func (r *Rep) DelUserConn(uid string, platform string) error {
+func (r *Rep) DelUserConn(ctx context.Context, uid string, platform string) error {
 	key := fmt.Sprintf("%s%s", types.RedisKeyUserConn, uid)
-	_, err := r.Redis.Hdel(key, platform)
+	_, err := r.Redis.HdelCtx(ctx, key, platform)
 	return err
 }
 

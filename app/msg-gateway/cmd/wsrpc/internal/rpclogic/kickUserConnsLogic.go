@@ -47,7 +47,7 @@ func (l *KickUserConnsLogic) KickUserConns(in *pb.KickUserConnsReq) (*pb.KickUse
 func (l *KickUserConnsLogic) KickUserConnFromMQ(in *pb.KickUserConnsToMQ) error {
 	logic := wslogic.NewMsggatewayLogic(nil, nil)
 	for _, platform := range in.PlatformIDs {
-		logic.DelUserConn(in.UserID, platform)
+		logic.DelUserConn(l.ctx, in.UserID, platform)
 	}
 	return nil
 }

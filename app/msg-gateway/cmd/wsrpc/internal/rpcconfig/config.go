@@ -41,7 +41,7 @@ func (s SinglePushConsumerConfig) GetGroupID() string {
 		if podName == "" {
 			panic("env POD_NAME is null")
 		}
-		return podName
+		return "single_push_" + podName
 	}
 	return s.SinglePushGroupID
 }
@@ -51,7 +51,7 @@ func (s GroupPushConsumerConfig) GetGroupID() string {
 		if podName == "" {
 			panic("env POD_NAME is null")
 		}
-		return podName
+		return "group_push_" + podName
 	}
 	return s.GroupPushGroupID
 }
@@ -61,7 +61,7 @@ func (s KickConnConsumerConfig) GetGroupID() string {
 		if podName == "" {
 			panic("env POD_NAME is null")
 		}
-		return podName
+		return "kick_conn_" + podName
 	}
 	return s.KickConnGroupID
 }
