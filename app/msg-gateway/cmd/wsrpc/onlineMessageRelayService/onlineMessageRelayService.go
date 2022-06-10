@@ -13,16 +13,13 @@ import (
 )
 
 type (
-	GetUsersOnlineStatusReq                = pb.GetUsersOnlineStatusReq
-	GetUsersOnlineStatusResp               = pb.GetUsersOnlineStatusResp
-	GetUsersOnlineStatusResp_FailedDetail  = pb.GetUsersOnlineStatusResp_FailedDetail
-	GetUsersOnlineStatusResp_SuccessDetail = pb.GetUsersOnlineStatusResp_SuccessDetail
-	GetUsersOnlineStatusResp_SuccessResult = pb.GetUsersOnlineStatusResp_SuccessResult
-	KickUserConnsReq                       = pb.KickUserConnsReq
-	KickUserConnsResp                      = pb.KickUserConnsResp
-	KickUserConnsToMQ                      = pb.KickUserConnsToMQ
-	OnlinePushMsgReq                       = pb.OnlinePushMsgReq
-	OnlinePushMsgResp                      = pb.OnlinePushMsgResp
+	GetUsersOnlineStatusReq  = pb.GetUsersOnlineStatusReq
+	GetUsersOnlineStatusResp = pb.GetUsersOnlineStatusResp
+	KickUserConnsReq         = pb.KickUserConnsReq
+	KickUserConnsResp        = pb.KickUserConnsResp
+	KickUserConnsToMQ        = pb.KickUserConnsToMQ
+	OnlinePushMsgReq         = pb.OnlinePushMsgReq
+	OnlinePushMsgResp        = pb.OnlinePushMsgResp
 
 	OnlineMessageRelayService interface {
 		OnlinePushMsg(ctx context.Context, in *OnlinePushMsgReq, opts ...grpc.CallOption) (*OnlinePushMsgResp, error)
