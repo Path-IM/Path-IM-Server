@@ -20,33 +20,21 @@ message GetUsersOnlineStatusReq{
 }
 
 message GetUsersOnlineStatusResp{
-  enum Status{
-    ONLINE = 0;
-    OFFLINE = 1;
-  }
-  int32  errCode = 1;
-  string errMsg = 2;
-  repeated SuccessResult successResult = 3;
-  repeated FailedDetail failedResult = 4;
-  message SuccessDetail{
-    string platform = 1;
-    Status status = 2;
-  }
-  message FailedDetail{
-    string userID = 3;
-    int32  errCode = 1;
-    string errMsg = 2;
-  }
-  message SuccessResult{
+  message UserStatus {
     string userID = 1;
-    Status status = 2;
-    repeated SuccessDetail detailPlatformStatus = 3;
+    map<string, string> platformAddrMap = 2;
   }
+  repeated UserStatus statusList = 1;
 }
 
 message KickUserConnsReq{
   string userID = 1;
   repeated string platformIDs = 2;
+}
+message KickUserConnsToMQ{
+  string userID = 1;
+  repeated string platformIDs = 2;
+  string traceID = 3;
 }
 message KickUserConnsResp{
   int32  errCode = 1;

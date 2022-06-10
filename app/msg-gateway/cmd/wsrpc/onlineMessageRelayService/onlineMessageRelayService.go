@@ -18,13 +18,16 @@ type (
 	GetUsersOnlineStatusResp_FailedDetail  = pb.GetUsersOnlineStatusResp_FailedDetail
 	GetUsersOnlineStatusResp_SuccessDetail = pb.GetUsersOnlineStatusResp_SuccessDetail
 	GetUsersOnlineStatusResp_SuccessResult = pb.GetUsersOnlineStatusResp_SuccessResult
+	KickUserConnsReq                       = pb.KickUserConnsReq
+	KickUserConnsResp                      = pb.KickUserConnsResp
+	KickUserConnsToMQ                      = pb.KickUserConnsToMQ
 	OnlinePushMsgReq                       = pb.OnlinePushMsgReq
 	OnlinePushMsgResp                      = pb.OnlinePushMsgResp
-	SingleMsgToUser                        = pb.SingleMsgToUser
 
 	OnlineMessageRelayService interface {
 		OnlinePushMsg(ctx context.Context, in *OnlinePushMsgReq, opts ...grpc.CallOption) (*OnlinePushMsgResp, error)
 		GetUsersOnlineStatus(ctx context.Context, in *GetUsersOnlineStatusReq, opts ...grpc.CallOption) (*GetUsersOnlineStatusResp, error)
+		KickUserConns(ctx context.Context, in *KickUserConnsReq, opts ...grpc.CallOption) (*KickUserConnsResp, error)
 	}
 
 	defaultOnlineMessageRelayService struct {
@@ -46,4 +49,9 @@ func (m *defaultOnlineMessageRelayService) OnlinePushMsg(ctx context.Context, in
 func (m *defaultOnlineMessageRelayService) GetUsersOnlineStatus(ctx context.Context, in *GetUsersOnlineStatusReq, opts ...grpc.CallOption) (*GetUsersOnlineStatusResp, error) {
 	client := pb.NewOnlineMessageRelayServiceClient(m.cli.Conn())
 	return client.GetUsersOnlineStatus(ctx, in, opts...)
+}
+
+func (m *defaultOnlineMessageRelayService) KickUserConns(ctx context.Context, in *KickUserConnsReq, opts ...grpc.CallOption) (*KickUserConnsResp, error) {
+	client := pb.NewOnlineMessageRelayServiceClient(m.cli.Conn())
+	return client.KickUserConns(ctx, in, opts...)
 }

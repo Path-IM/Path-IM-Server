@@ -21,13 +21,15 @@ import (
 type OnlineMessageRelayServiceServer struct {
 	svcCtx *rpcsvc.ServiceContext
 	pb.UnimplementedOnlineMessageRelayServiceServer
-	SingleConsumerGroup *xkafka.MConsumerGroup
-	GroupConsumerGroup  *xkafka.MConsumerGroup
+	SingleConsumerGroup   *xkafka.MConsumerGroup
+	GroupConsumerGroup    *xkafka.MConsumerGroup
+	KickConnConsumerGroup *xkafka.MConsumerGroup
 }
 
 func (s *OnlineMessageRelayServiceServer) Subscribe() {
 	go s.SingleConsumerGroup.RegisterHandleAndConsumer(s)
 	go s.GroupConsumerGroup.RegisterHandleAndConsumer(s)
+	go s.KickConnConsumerGroup.RegisterHandleAndConsumer(s)
 }
 
 func NewOnlineMessageRelayServiceServer(svcCtx *rpcsvc.ServiceContext) *OnlineMessageRelayServiceServer {
@@ -43,11 +45,15 @@ func NewOnlineMessageRelayServiceServer(svcCtx *rpcsvc.ServiceContext) *OnlineMe
 			OffsetsInitial: sarama.OffsetNewest, IsReturnErr: false,
 		}, []string{svcCtx.Config.GroupPushConsumer.Topic},
 			svcCtx.Config.GroupPushConsumer.Brokers, svcCtx.Config.GroupPushConsumer.GetGroupID()),
+		KickConnConsumerGroup: xkafka.NewMConsumerGroup(&xkafka.MConsumerGroupConfig{
+			KafkaVersion:   sarama.V0_10_2_0,
+			OffsetsInitial: sarama.OffsetNewest, IsReturnErr: false,
+		}, []string{svcCtx.Config.KickConnConsumerGroup.Topic},
+			svcCtx.Config.KickConnConsumerGroup.Brokers, svcCtx.Config.KickConnConsumerGroup.GetGroupID()),
 	}
 	s.Subscribe()
 	return s
 }
-
 func (s *OnlineMessageRelayServiceServer) OnlinePushMsg(ctx context.Context, in *pb.OnlinePushMsgReq) (*pb.OnlinePushMsgResp, error) {
 	l := rpclogic.NewOnlinePushMsgLogic(ctx, s.svcCtx)
 	return l.OnlinePushMsg(in)
@@ -64,33 +70,59 @@ func (s *OnlineMessageRelayServiceServer) KickUserConns(ctx context.Context, in 
 }
 
 func (s *OnlineMessageRelayServiceServer) HandleMsg(value []byte, key []byte, topic string, partition int32, offset int64, msg *sarama.ConsumerMessage) error {
-	msgFromMQ := &chatpb.PushMsgDataToMQ{}
-	if err := proto.Unmarshal(msg.Value, msgFromMQ); err != nil {
-		logx.Errorf("unmarshal msg error: %v", err)
-		return err
-	}
-	var err error
-	xtrace.RunWithTrace(msgFromMQ.TraceId, func(ctx context.Context) {
-		if topic == s.svcCtx.Config.SinglePushConsumer.Topic {
-			xtrace.StartFuncSpan(ctx, "MsgGateway.ConsumeSingle.PushMsg2User", func(ctx context.Context) {
-				err = s.PushMsg(ctx, msgFromMQ)
-				if err != nil {
-					logx.Errorf("push Single msg error: %v", err)
-				}
-			})
-		} else if topic == s.svcCtx.Config.GroupPushConsumer.Topic {
-			xtrace.StartFuncSpan(ctx, "MsgGateway.ConsumeGroup.PushMsg2GroupMember", func(ctx context.Context) {
-				err = s.PushMsg(ctx, msgFromMQ)
-				if err != nil {
-					logx.Errorf("push Group msg error: %v", err)
-				}
-			})
+	switch topic {
+	case s.svcCtx.Config.SinglePushConsumer.Topic, s.svcCtx.Config.GroupPushConsumer.Topic:
+		msgFromMQ := &chatpb.PushMsgDataToMQ{}
+		if err := proto.Unmarshal(msg.Value, msgFromMQ); err != nil {
+			logx.Errorf("unmarshal msg error: %v", err)
+			return err
 		}
-	}, attribute.String("msg.key", string(msg.Key)))
-	return err
+		var err error
+		xtrace.RunWithTrace(msgFromMQ.TraceId, func(ctx context.Context) {
+			if topic == s.svcCtx.Config.SinglePushConsumer.Topic {
+				xtrace.StartFuncSpan(ctx, "MsgGateway.ConsumeSingle.PushMsg2User", func(ctx context.Context) {
+					err = s.PushMsg(ctx, msgFromMQ)
+					if err != nil {
+						logx.Errorf("push Single msg error: %v", err)
+					}
+				})
+			} else if topic == s.svcCtx.Config.GroupPushConsumer.Topic {
+				xtrace.StartFuncSpan(ctx, "MsgGateway.ConsumeGroup.PushMsg2GroupMember", func(ctx context.Context) {
+					err = s.PushMsg(ctx, msgFromMQ)
+					if err != nil {
+						logx.Errorf("push Group msg error: %v", err)
+					}
+				})
+			}
+		}, attribute.String("msg.key", string(msg.Key)))
+		return err
+	case s.svcCtx.Config.KickConnConsumerGroup.Topic:
+		msgFromMQ := &pb.KickUserConnsToMQ{}
+		if err := proto.Unmarshal(msg.Value, msgFromMQ); err != nil {
+			logx.Errorf("unmarshal msg error: %v", err)
+			return err
+		}
+		var err error
+		xtrace.RunWithTrace(msgFromMQ.TraceID, func(ctx context.Context) {
+			xtrace.StartFuncSpan(ctx, "MsgGateway.ConsumeKickConn.KickUserConnFromMQ", func(ctx context.Context) {
+				err = s.KickUserConn(ctx, msgFromMQ)
+				if err != nil {
+					logx.Errorf("kick user conn error: %v", err)
+				}
+			})
+		}, attribute.String("msg.key", string(msg.Key)))
+		return err
+	default:
+		return nil
+	}
 }
 
 func (s *OnlineMessageRelayServiceServer) PushMsg(ctx context.Context, msgFromMQ *chatpb.PushMsgDataToMQ) error {
 	l := rpclogic.NewPushMsgLogic(ctx, s.svcCtx)
 	return l.PushMsg(msgFromMQ)
+}
+
+func (s *OnlineMessageRelayServiceServer) KickUserConn(ctx context.Context, msgFromMQ *pb.KickUserConnsToMQ) error {
+	l := rpclogic.NewKickUserConnsLogic(ctx, s.svcCtx)
+	return l.KickUserConnFromMQ(msgFromMQ)
 }

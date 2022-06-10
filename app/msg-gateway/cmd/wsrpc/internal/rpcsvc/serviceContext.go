@@ -13,6 +13,7 @@ type ServiceContext struct {
 	imUserRpc          imuserservice.ImUserService
 	SinglePushProducer *xkafka.Producer
 	GroupPushProducer  *xkafka.Producer
+	KickConnProducer   *xkafka.Producer
 	msgPushRpc         msgpushservice.MsgPushService
 }
 
@@ -35,5 +36,6 @@ func NewServiceContext(c rpcconfig.Config) *ServiceContext {
 		Config:             c,
 		SinglePushProducer: xkafka.MustNewProducer(c.Producer.SinglePush),
 		GroupPushProducer:  xkafka.MustNewProducer(c.Producer.GroupPush),
+		KickConnProducer:   xkafka.MustNewProducer(c.Producer.KickConn),
 	}
 }

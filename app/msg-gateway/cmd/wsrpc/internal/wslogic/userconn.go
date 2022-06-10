@@ -3,10 +3,26 @@ package wslogic
 import (
 	"context"
 	imuserpb "github.com/Path-IM/Path-IM-Server/app/im-user/cmd/rpc/pb"
+	msggatewaypb "github.com/Path-IM/Path-IM-Server/app/msg-gateway/cmd/wsrpc/pb"
 	"github.com/gorilla/websocket"
 	"github.com/zeromicro/go-zero/core/logx"
 	"time"
 )
+
+func (l *MsggatewayLogic) GetUsersOnlineStatus(ctx context.Context, req *msggatewaypb.GetUsersOnlineStatusReq) (*msggatewaypb.GetUsersOnlineStatusResp, error) {
+	var resp msggatewaypb.GetUsersOnlineStatusResp
+	for _, userID := range req.UserIDList {
+		platformMap, err := l.rep.GetUserConn(ctx, userID)
+		if err != nil {
+			return nil, err
+		}
+		resp.StatusList = append(resp.StatusList, &msggatewaypb.GetUsersOnlineStatusResp_UserStatus{
+			UserID:          userID,
+			PlatformAddrMap: platformMap,
+		})
+	}
+	return &resp, nil
+}
 
 func (l *MsggatewayLogic) addUserConn(uid string, platformID string, conn *UserConn, token string) error {
 	rwLock.Lock()

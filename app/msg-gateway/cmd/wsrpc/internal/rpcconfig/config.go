@@ -8,16 +8,18 @@ import (
 
 type Config struct {
 	zrpc.RpcServerConf
-	SinglePushConsumer SinglePushConsumerConfig
-	GroupPushConsumer  GroupPushConsumerConfig
-	ImUserRpc          zrpc.RpcClientConf
-	MsgPushRpc         zrpc.RpcClientConf
-	Producer           KafkaConfig
+	SinglePushConsumer    SinglePushConsumerConfig
+	GroupPushConsumer     GroupPushConsumerConfig
+	KickConnConsumerGroup KickConnConsumerConfig
+	ImUserRpc             zrpc.RpcClientConf
+	MsgPushRpc            zrpc.RpcClientConf
+	Producer              KafkaConfig
 }
 
 type KafkaConfig struct {
 	SinglePush xkafka.ProducerConfig
 	GroupPush  xkafka.ProducerConfig
+	KickConn   xkafka.ProducerConfig
 }
 type SinglePushConsumerConfig struct {
 	xkafka.ProducerConfig
@@ -27,6 +29,10 @@ type SinglePushConsumerConfig struct {
 type GroupPushConsumerConfig struct {
 	xkafka.ProducerConfig
 	GroupPushGroupID string `json:",optional"`
+}
+type KickConnConsumerConfig struct {
+	xkafka.ProducerConfig
+	KickConnGroupID string `json:",optional"`
 }
 
 func (s SinglePushConsumerConfig) GetGroupID() string {
@@ -48,4 +54,14 @@ func (s GroupPushConsumerConfig) GetGroupID() string {
 		return podName
 	}
 	return s.GroupPushGroupID
+}
+func (s KickConnConsumerConfig) GetGroupID() string {
+	if s.KickConnGroupID == "" {
+		podName := os.Getenv("POD_NAME")
+		if podName == "" {
+			panic("env POD_NAME is null")
+		}
+		return podName
+	}
+	return s.KickConnGroupID
 }
