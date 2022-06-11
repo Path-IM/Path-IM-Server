@@ -139,7 +139,9 @@ func (l *MsggatewayLogic) GetOnlineUserMap() map[string]interface{} {
 
 func (l *MsggatewayLogic) DelUserConn(ctx context.Context, uid string, platform string) {
 	conn := l.GetUserConn(uid, platform)
-	l.delUserConn(ctx, conn)
+	if conn != nil {
+		l.delUserConn(ctx, conn)
+	}
 }
 
 func (l *MsggatewayLogic) SendMsgToUser(ctx context.Context, conn *UserConn, bMsg []byte, RecvPlatForm, RecvID string) error {

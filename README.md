@@ -51,6 +51,8 @@ docker-compose up -d
 - im_msg
 - im_msg_push_single
 - im_msg_push_group
+- kick_conn
+
 ![img.png](https://raw.githubusercontent.com/Path-IM/Path-IM-Docs/main/images/20220608/kafkaui.png)
 ### Path-IM-Server各服务
 > 确定你要使用的离线消息存储  mongo/cassandra
