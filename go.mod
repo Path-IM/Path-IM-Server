@@ -3,7 +3,7 @@ module github.com/Path-IM/Path-IM-Server
 go 1.18
 
 require (
-	github.com/Shopify/sarama v1.30.0
+	github.com/Shopify/sarama v1.29.0
 	github.com/bwmarrin/snowflake v0.3.0
 	github.com/go-playground/validator/v10 v10.11.0
 	github.com/go-redis/redis/v8 v8.11.5
@@ -24,12 +24,9 @@ require (
 	google.golang.org/protobuf v1.28.0
 	gorm.io/driver/mysql v1.3.3
 	gorm.io/gorm v1.23.5
-	k8s.io/apimachinery v0.20.12
-	k8s.io/client-go v0.20.12
 )
 
 require (
-	github.com/Path-IM/mobpush-websdkv3-go v0.0.0-20220607022836-a2585f55f3ce // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
@@ -106,6 +103,8 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	k8s.io/api v0.20.12 // indirect
+	k8s.io/apimachinery v0.20.12 // indirect
+	k8s.io/client-go v0.20.12 // indirect
 	k8s.io/klog/v2 v2.40.1 // indirect
 	k8s.io/utils v0.0.0-20201110183641-67b214c5f920 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.1.2 // indirect
